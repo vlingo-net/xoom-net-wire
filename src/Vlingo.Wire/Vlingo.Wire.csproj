@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <!-- NuGet Metadata -->
+    <IsPackable>true</IsPackable>
+    <PackageVersion>0.0.1</PackageVersion>
+    <PackageId>Vlingo.Wire</PackageId>
+    <Authors>Vlingo</Authors>
+    <Description>
+      This is a very early stage release of the vlingo platform.
+      The vlingo-net-Wire project consists of some tools that are used across various other vlingo-net projects.
+    </Description>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageLicenseUrl>https://mozilla.org/MPL/2.0/</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/vlingo-net/vlingo-net-Wire</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/vlingo-net/vlingo-net-Wire/master/vlingo-64x64.png</PackageIconUrl>
+    <RepositoryUrl>https://github.com/vlingo-net/vlingo-net-Wire</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Channel\" />
+    <Folder Include="Fdx\" />
+    <Folder Include="Message\" />
+    <Folder Include="Multicast\" />
+  </ItemGroup>
+
+</Project>

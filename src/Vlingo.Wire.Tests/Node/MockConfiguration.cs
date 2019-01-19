@@ -26,25 +26,13 @@ namespace Vlingo.Wire.Tests.Node
             _nodes = new SortedSet<Node>(new [] {node1, node2, node3});
         }
         
-        public IEnumerable<Node> AllNodesOf(IEnumerable<Id> ids)
-        {
-            return new List<Node>();
-        }
+        public IEnumerable<Node> AllNodesOf(IEnumerable<Id> ids) => new List<Node>();
 
-        public IEnumerable<Node> AllGreaterNodes(Id id)
-        {
-            return _nodes.Where(node => node.Id.GreaterThan(id));
-        }
+        public IEnumerable<Node> AllGreaterNodes(Id id) => _nodes.Where(node => node.Id.GreaterThan(id));
 
-        public IEnumerable<Node> AllOtherNodes(Id id)
-        {
-            return _nodes.Where(node => !node.Id.Equals(id));
-        }
+        public IEnumerable<Node> AllOtherNodes(Id id) => _nodes.Where(node => !node.Id.Equals(id));
 
-        public IEnumerable<Id> AllOtherNodesId(Id id)
-        {
-            return AllOtherNodes(id).Select(node => node.Id);
-        }
+        public IEnumerable<Id> AllOtherNodesId(Id id) => AllOtherNodes(id).Select(node => node.Id);
 
         public Node NodeMatching(Id id)
         {
@@ -56,10 +44,7 @@ namespace Vlingo.Wire.Tests.Node
             return Node.NoNode;
         }
 
-        public bool HasNode(Id id)
-        {
-            return _nodes.Any(node => node.Id.Equals(id));
-        }
+        public bool HasNode(Id id) => _nodes.Any(node => node.Id.Equals(id));
 
         public IEnumerable<Node> AllNodes => _nodes;
 

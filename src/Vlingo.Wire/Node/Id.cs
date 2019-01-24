@@ -26,15 +26,9 @@ namespace Vlingo.Wire.Node
             Value = id;
         }
 
-        public static Id Of(int id)
-        {
-            return new Id(id);
-        }
+        public static Id Of(int id) => new Id(id);
 
-        public static Id Of(short id)
-        {
-            return new Id(id);
-        }
+        public static Id Of(short id) => new Id(id);
 
         public IEnumerable<Id> Collected => new[] {this};
 
@@ -44,10 +38,7 @@ namespace Vlingo.Wire.Node
 
         public string ValueString() => Value.ToString();
 
-        public bool GreaterThan(Id other)
-        {
-            return Value > other.Value;
-        }
+        public bool GreaterThan(Id other) => Value > other.Value;
 
         public int CompareTo(Id other)
         {

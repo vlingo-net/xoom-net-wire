@@ -11,8 +11,8 @@ namespace Vlingo.Wire.Node
 {
     public sealed class Id : IComparable<Id>
     {
-        private const short UndefinedId = -1;
-        public static Id NoId { get; } = Id.Of(UndefinedId);
+        public static short UndefinedId { get; } = -1;
+        public static Id NoId { get; } = Of(UndefinedId);
 
         public short Value { get; }
 

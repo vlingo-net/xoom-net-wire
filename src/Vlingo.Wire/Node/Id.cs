@@ -5,6 +5,7 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
+using System.Collections.Generic;
 
 namespace Vlingo.Wire.Node
 {
@@ -33,6 +34,8 @@ namespace Vlingo.Wire.Node
         {
             return new Id(id);
         }
+
+        public IEnumerable<Id> Collected => new[] {this};
 
         public bool HasNoId => Value == UndefinedId;
 

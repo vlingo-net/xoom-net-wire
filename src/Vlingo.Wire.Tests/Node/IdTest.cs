@@ -28,8 +28,8 @@ namespace Vlingo.Wire.Tests.Node
             var id2 = Id.Of(2);
             Assert.NotEqual(0, id1.CompareTo(id2));
             Assert.Equal(-1, id1.CompareTo(id2));
-//            Assert.True(id2.GreatherThan(id1));
-//            Assert.False(id1.GreatherThan(id2));
+            Assert.True(id2.GreaterThan(id1));
+            Assert.False(id1.GreaterThan(id2));
         }
     }
 }

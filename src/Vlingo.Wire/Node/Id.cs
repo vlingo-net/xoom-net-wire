@@ -41,6 +41,13 @@ namespace Vlingo.Wire.Node
 
         public bool IsValid => !HasNoId;
 
+        public string ValueString() => Value.ToString();
+
+        public bool GreaterThan(Id other)
+        {
+            return Value > other.Value;
+        }
+
         public int CompareTo(Id other)
         {
             if (other == null || other.GetType() != typeof(Id))
@@ -61,5 +68,10 @@ namespace Vlingo.Wire.Node
         }
 
         public override int GetHashCode() => Value.GetHashCode();
+
+        public override string ToString()
+        {
+            return $"Id[{Value}]";
+        }
     }
 }

@@ -67,7 +67,7 @@ namespace Vlingo.Wire.Node
             return Value.Equals(((Id)obj).Value);
         }
 
-        public override int GetHashCode() => Value.GetHashCode();
+        public override int GetHashCode() => 31 * Value.GetHashCode();
 
         public override string ToString()
         {

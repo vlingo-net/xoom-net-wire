@@ -8,7 +8,7 @@ using System;
 
 namespace Vlingo.Wire.Node
 {
-    public class Address
+    public sealed class Address : IComparable<Address>
     {
         private readonly Host _host;
         private readonly int _port;
@@ -53,6 +53,16 @@ namespace Vlingo.Wire.Node
         public int Port => _port;
 
         public AddressType Type => _type;
+
+        public int CompareTo(Address other)
+        {
+            if (other == null || other.GetType() != typeof(Address))
+            {
+                return 1;
+            }
+
+            return _host.CompareTo(other._host);
+        }
         
         public override bool Equals(object obj)
         {

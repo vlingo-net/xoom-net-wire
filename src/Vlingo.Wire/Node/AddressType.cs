@@ -5,11 +5,10 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
-using System.Globalization;
 
 namespace Vlingo.Wire.Node
 {
-    public class AddressType : IComparable<AddressType>
+    public sealed class AddressType : IComparable<AddressType>
     {
         public static readonly AddressType Main = new AddressType("addr=");
         public static readonly AddressType Op = new AddressType("op=");

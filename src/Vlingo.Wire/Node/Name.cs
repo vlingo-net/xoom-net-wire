@@ -4,9 +4,11 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System;
+
 namespace Vlingo.Wire.Node
 {
-    public sealed class Name
+    public sealed class Name : IComparable<Name>
     {
         public static string NoName { get; } = "?";
         public static Name NoNodeName { get; } = new Name(NoName);
@@ -23,6 +25,16 @@ namespace Vlingo.Wire.Node
         public bool SameAs(string name)
         {
             return Value == name;
+        }
+
+        public int CompareTo(Name other)
+        {
+            if (other == null || other.GetType() != typeof(Name))
+            {
+                return 1;
+            }
+
+            return String.Compare(Value, other.Value, StringComparison.InvariantCulture);
         }
         
         public override bool Equals(object obj)

@@ -20,5 +20,16 @@ namespace Vlingo.Wire.Tests.Node
             Assert.False(id.HasNoId);
             Assert.True(id.IsValid);
         }
+        
+        [Fact]
+        public void TestIdComparisons()
+        {
+            var id1 = Id.Of(1);
+            var id2 = Id.Of(2);
+            Assert.NotEqual(0, id1.CompareTo(id2));
+            Assert.Equal(-1, id1.CompareTo(id2));
+            Assert.True(id2.GreatherThan(id1));
+            Assert.False(id1.GreatherThan(id2));
+        }
     }
 }

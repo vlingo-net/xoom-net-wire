@@ -12,7 +12,7 @@ build:
 test_script:
 - cmd: dotnet test src/Vlingo.Wire.Tests
 deploy:
- - provider: NuGet
+- provider: NuGet
   api_key:
     secure: oy2at4bao6wpblp5xq4aykdfz6bszxvurjgdu2bme5tvfe
   skip_symbols: true

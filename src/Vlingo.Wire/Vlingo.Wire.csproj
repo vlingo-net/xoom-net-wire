@@ -13,7 +13,7 @@
     </Description>
     <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageLicenseUrl>https://mozilla.org/MPL/2.0/</PackageLicenseUrl>
+    <PackageLicenseFile>https://mozilla.org/MPL/2.0/</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/vlingo-net/vlingo-net-wire</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/vlingo-net/vlingo-net-common/master/vlingo-64x64.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/vlingo-net/vlingo-net-wire</RepositoryUrl>

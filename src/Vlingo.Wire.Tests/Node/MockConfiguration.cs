@@ -6,47 +6,69 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
+using System.Linq;
 using Vlingo.Actors;
-using Vlingo.Wire.Node;
 
 namespace Vlingo.Wire.Tests.Node
 {
+    using Vlingo.Wire.Node;
+    
     public class MockConfiguration : IConfiguration
     {
-        public IEnumerable<Wire.Node.Node> AllNodesOf(IEnumerable<Id> ids)
+        private readonly ISet<Node> _nodes;
+
+        public MockConfiguration()
         {
-            throw new System.NotImplementedException();
+            var node1 = Node.With(Id.Of(1), Name.Of("node1"), Host.Of("localhost"), 37371, 37372);
+            var node2 = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), 37373, 37374);
+            var node3 = Node.With(Id.Of(3), Name.Of("node3"), Host.Of("localhost"), 37375, 37376);
+            
+            _nodes = new SortedSet<Node>(new [] {node1, node2, node3});
+        }
+        
+        public IEnumerable<Node> AllNodesOf(IEnumerable<Id> ids)
+        {
+            return new List<Node>();
         }
 
-        public IEnumerable<Wire.Node.Node> AllGreaterNodes(Id id)
+        public IEnumerable<Node> AllGreaterNodes(Id id)
         {
-            throw new System.NotImplementedException();
+            return _nodes.Where(node => node.Id.GreaterThan(id));
         }
 
-        public IEnumerable<Wire.Node.Node> AllOtherNodes(Id id)
+        public IEnumerable<Node> AllOtherNodes(Id id)
         {
-            throw new System.NotImplementedException();
+            return _nodes.Where(node => !node.Id.Equals(id));
         }
 
         public IEnumerable<Id> AllOtherNodesId(Id id)
         {
-            throw new System.NotImplementedException();
+            return AllOtherNodes(id).Select(node => node.Id);
         }
 
-        public Wire.Node.Node NodeMatching(Id id)
+        public Node NodeMatching(Id id)
         {
-            throw new System.NotImplementedException();
+            var firstNode = _nodes.FirstOrDefault(node => node.Id.Equals(id));
+            if (firstNode != null)
+            {
+                return firstNode;
+            }
+            return Node.NoNode;
         }
 
         public bool HasNode(Id id)
         {
-            throw new System.NotImplementedException();
+            return _nodes.Any(node => node.Id.Equals(id));
         }
 
-        public IEnumerable<Wire.Node.Node> AllNodes { get; }
-        public IEnumerable<string> AllNodeNames { get; }
-        public Id GreatestNodeId { get; }
-        public int TotalNodes { get; }
-        public ILogger Logger { get; }
+        public IEnumerable<Node> AllNodes => _nodes;
+
+        public IEnumerable<string> AllNodeNames => _nodes.Select(node => node.Name.Value);
+
+        public Id GreatestNodeId => _nodes.Max(node => node.Id);
+
+        public int TotalNodes => _nodes.Count;
+
+        public ILogger Logger => null;
     }
 }

@@ -13,6 +13,11 @@ namespace Vlingo.Wire.Node
     {
         public static string NoName { get; } = "?";
         public static Name NoNodeName { get; } = new Name(NoName);
+
+        public static Name Of(string name)
+        {
+            return new Name(name);
+        }
         
         public string Value { get; }
 

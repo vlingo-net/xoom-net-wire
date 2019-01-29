@@ -14,10 +14,7 @@ namespace Vlingo.Wire.Node
         public static string NoName { get; } = "?";
         public static Name NoNodeName { get; } = new Name(NoName);
 
-        public static Name Of(string name)
-        {
-            return new Name(name);
-        }
+        public static Name Of(string name) => new Name(name);
         
         public string Value { get; }
 
@@ -28,10 +25,7 @@ namespace Vlingo.Wire.Node
         
         public bool HasNoName => Value == NoName;
 
-        public bool SameAs(string name)
-        {
-            return Value == name;
-        }
+        public bool SameAs(string name) => Value == name;
 
         public int CompareTo(Name other)
         {

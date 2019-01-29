@@ -20,7 +20,7 @@ namespace Vlingo.Wire.Message
 
         public static int Bytes { get; } = ShortBytes * ShortFields + IntBytes * IntFields;
 
-        private int _length;
+        private long _length;
         private short _nodeId;
         private short _type;
 
@@ -28,11 +28,11 @@ namespace Vlingo.Wire.Message
         {
         }
         
-        public RawMessageHeader(int nodeId, int type, int length) : this((short)nodeId, (short)type, length)
+        public RawMessageHeader(int nodeId, int type, long length) : this((short)nodeId, (short)type, length)
         {
         }
 
-        public RawMessageHeader(short nodeId, short type, int length)
+        public RawMessageHeader(short nodeId, short type, long length)
         {
             _nodeId = nodeId;
             _type = type;
@@ -46,17 +46,17 @@ namespace Vlingo.Wire.Message
             return header.Read(buffer);
         }
 
-        public static RawMessageHeader From(short nodeId, short type, int length)
+        public static RawMessageHeader From(short nodeId, short type, long length)
         {
             return new RawMessageHeader(nodeId, type, length);
         }
         
-        public static RawMessageHeader From(short nodeId, int type, int length)
+        public static RawMessageHeader From(short nodeId, int type, long length)
         {
             return new RawMessageHeader(nodeId, (short)type, length);
         }
         
-        public static RawMessageHeader From(int nodeId, int type, int length)
+        public static RawMessageHeader From(int nodeId, int type, long length)
         {
             return new RawMessageHeader((short)nodeId, (short)type, length);
         }
@@ -66,7 +66,7 @@ namespace Vlingo.Wire.Message
             return From(copy._nodeId, copy._type, copy._length);
         }
 
-        public int Length => _length;
+        public long Length => _length;
 
         public short NodeId => _nodeId;
 

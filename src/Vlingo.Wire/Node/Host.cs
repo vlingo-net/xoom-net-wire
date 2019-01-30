@@ -21,17 +21,11 @@ namespace Vlingo.Wire.Node
             Name = name;
         }
         
-        public static Host Of(string name)
-        {
-            return new Host(name);
-        }
+        public static Host Of(string name) => new Host(name);
         
         public bool HasNoName => Name == NoName;
 
-        public bool SameAs(string name)
-        {
-            return Name == name;
-        }
+        public bool SameAs(string name) => Name == name;
 
         public int CompareTo(Host other)
         {

@@ -46,25 +46,13 @@ namespace Vlingo.Wire.Message
             return header.Read(buffer);
         }
 
-        public static RawMessageHeader From(short nodeId, short type, long length)
-        {
-            return new RawMessageHeader(nodeId, type, length);
-        }
+        public static RawMessageHeader From(short nodeId, short type, long length) => new RawMessageHeader(nodeId, type, length);
         
-        public static RawMessageHeader From(short nodeId, int type, long length)
-        {
-            return new RawMessageHeader(nodeId, (short)type, length);
-        }
+        public static RawMessageHeader From(short nodeId, int type, long length) => new RawMessageHeader(nodeId, (short)type, length);
         
-        public static RawMessageHeader From(int nodeId, int type, long length)
-        {
-            return new RawMessageHeader((short)nodeId, (short)type, length);
-        }
+        public static RawMessageHeader From(int nodeId, int type, long length) => new RawMessageHeader((short)nodeId, (short)type, length);
 
-        public static RawMessageHeader From(RawMessageHeader copy)
-        {
-            return From(copy._nodeId, copy._type, copy._length);
-        }
+        public static RawMessageHeader From(RawMessageHeader copy) => From(copy._nodeId, copy._type, copy._length);
 
         public long Length => _length;
 

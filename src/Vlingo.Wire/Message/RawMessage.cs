@@ -7,7 +7,6 @@
 
 using System;
 using System.IO;
-using System.Text;
 
 namespace Vlingo.Wire.Message
 {
@@ -51,7 +50,7 @@ namespace Vlingo.Wire.Message
 
         public static RawMessage From(int nodeId, int type, string textMessage)
         {
-            var textBytes = Encoding.UTF8.GetBytes(textMessage);
+            var textBytes = Converters.TextToBytes(textMessage);
             var header = RawMessageHeader.From(nodeId, type, textBytes.Length);
             var message = new RawMessage(header, textBytes.Length);
             message.Append(textBytes, 0, textBytes.Length);
@@ -106,7 +105,7 @@ namespace Vlingo.Wire.Message
             return buffer;
         }
 
-        public string AsTextMessage() => Encoding.UTF8.GetString(_bytes);
+        public string AsTextMessage() => Converters.BytesToText(_bytes);
 
         public void CopyBytesTo(Stream buffer)
         {

@@ -51,11 +51,13 @@ namespace Vlingo.Wire.Message
 
             var parts = content.Split('\n');
 
-            if (parts.Length < 3) {
+            if (parts.Length < 3)
+            {
                 return nodeEntries;
             }
 
-            for (int index = 2; index < parts.Length; ++index) {
+            for (int index = 2; index < parts.Length; ++index)
+            {
                 nodeEntries.Add(NodeFromRecord(parts[index]));
             }
 
@@ -66,7 +68,8 @@ namespace Vlingo.Wire.Message
         {
             var parts = content.Split('\n');
 
-            if (parts.Length < 2) {
+            if (parts.Length < 2)
+            {
                 return Node.NoNode;
             }
 
@@ -87,7 +90,8 @@ namespace Vlingo.Wire.Message
         {
             var parts = content.Split('\n');
 
-            if (parts.Length < 2) {
+            if (parts.Length < 2)
+            {
                 return Id.NoId;
             }
 
@@ -98,7 +102,8 @@ namespace Vlingo.Wire.Message
         {
             var text = ParseField(record, "id=");
 
-            if (text == null) {
+            if (text == null)
+            {
                 return Id.NoId;
             }
 
@@ -109,7 +114,8 @@ namespace Vlingo.Wire.Message
         {
             var parts = content.Split('\n');
 
-            if (parts.Length < 2) {
+            if (parts.Length < 2)
+            {
                 return Name.NoNodeName;
             }
 
@@ -120,7 +126,8 @@ namespace Vlingo.Wire.Message
         {
             var text = ParseField(record, "nm=");
 
-            if (text == null) {
+            if (text == null)
+            {
                 return Name.NoNodeName;
             }
 
@@ -146,7 +153,7 @@ namespace Vlingo.Wire.Message
                 return skinnyRecord.Substring(valueIndex);
             }
             
-            return skinnyRecord.Substring(valueIndex, space);
+            return skinnyRecord.Substring(valueIndex, space - valueIndex);
         }
     }
 }

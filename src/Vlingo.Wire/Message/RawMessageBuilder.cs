@@ -13,8 +13,8 @@ namespace Vlingo.Wire.Message
     public class RawMessageBuilder
     {
         private ScanMode _mode;
-        private RawMessage _rawMessage;
-        private MemoryStream _workBuffer;
+        private readonly RawMessage _rawMessage;
+        private readonly MemoryStream _workBuffer;
       
         public RawMessageBuilder(int maxMessageSize)
         {

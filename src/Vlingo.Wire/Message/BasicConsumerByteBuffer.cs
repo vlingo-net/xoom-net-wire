@@ -28,7 +28,7 @@ namespace Vlingo.Wire.Message
 
         public int Id => _id;
 
-        public void Release()
+        public virtual void Release()
         {
         }
 

@@ -67,7 +67,7 @@ namespace Vlingo.Wire.Message
                 _inUse = new AtomicBoolean(false);
             }
 
-            public void Release()
+            public override void Release()
             {
                 if (!_inUse.Get())
                 {

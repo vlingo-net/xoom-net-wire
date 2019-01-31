@@ -5,6 +5,7 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Vlingo.Common;
@@ -52,13 +53,14 @@ namespace Vlingo.Wire.Tests.Message
             Assert.Equal(testText, Converters.BytesToText(buffer1.Flip().Array()));
         }
 
-        [Fact(Skip = "'Cannot write to the buffer because it will overflow' exception is thrown")]
+        // TODO : This yields poor performance compared to java. Has to be investigated.
+        [Fact(Timeout = 60 * 1000)]
         public async Task TestAlwaysAccessible()
         {
             var pool = new ByteBufferPool(1, 100);
             var count = new AtomicInteger(0);
 
-            /*var t1 = Task.Factory.StartNew(() =>
+            var t1 = Task.Factory.StartNew(() =>
             {
                 for (int c = 0; c < 10_000_000; ++c)
                 {
@@ -69,7 +71,7 @@ namespace Vlingo.Wire.Tests.Message
 
                 count.IncrementAndGet();
             }, TaskCreationOptions.LongRunning);
-            
+
             var t2 = Task.Factory.StartNew(() =>
             {
                 for (int c = 0; c < 10_000_000; ++c)
@@ -80,35 +82,11 @@ namespace Vlingo.Wire.Tests.Message
                 }
 
                 count.IncrementAndGet();
-            }, TaskCreationOptions.LongRunning);*/
+            }, TaskCreationOptions.LongRunning);
 
-            new Thread(() =>
-            {
-                for (int c = 0; c < 10_000_000; ++c)
-                {
-                    var pooled = pool.Access();
-                    pooled.Clear().Put(Converters.TextToBytes("I got it: 1!")).Flip();
-                    pooled.Release();
-                }
+            await Task.WhenAll(t1, t2);
 
-                count.IncrementAndGet();
-            });
-    
-            new Thread(() =>
-            {
-                for (int c = 0; c < 10_000_000; ++c)
-                {
-                    var pooled = pool.Access();
-                    pooled.Clear().Put(Converters.TextToBytes("I got it: 2!")).Flip();
-                    pooled.Release();
-                }
-
-                count.IncrementAndGet();
-            }).Start();
-    
-            while (count.Get() < 2) {
-                Thread.Sleep(100);
-            }
+            Assert.Equal(2, count.Get());
         }
     }
 }

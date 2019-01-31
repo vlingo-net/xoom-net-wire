@@ -144,9 +144,9 @@ namespace Vlingo.Wire.Message
             return this;
         }
 
-        public long Remaining => _buffer.Length - _buffer.Position;
+        public long Remaining => _buffer.Capacity - _buffer.Position;
 
-        public bool HasRemaining => _buffer.Position < _buffer.Length;
+        public bool HasRemaining => _buffer.Position < _buffer.Capacity;
 
         public bool IsReadOnly => !_buffer.CanWrite;
 

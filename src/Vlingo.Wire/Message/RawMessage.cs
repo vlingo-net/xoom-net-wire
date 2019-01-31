@@ -77,7 +77,7 @@ namespace Vlingo.Wire.Message
 
         public byte[] AsBinaryMessage => _bytes;
 
-        public void Append(byte[] sourceBytes, int sourceIndex, long sourceLength)
+        public void Append(byte[] sourceBytes, long sourceIndex, long sourceLength)
         {
             Array.Copy(sourceBytes, sourceIndex, _bytes, _index, sourceLength);
             _index += sourceLength;

@@ -5,6 +5,7 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using Vlingo.Wire.Channel;
 using Xunit;
 
 namespace Vlingo.Wire.Tests.Multicast
@@ -14,7 +15,7 @@ namespace Vlingo.Wire.Tests.Multicast
         [Fact]
         public void TestMulticastPublishSubscribe()
         {
-            
+            var publisherConsumer = new MockChannelReaderConsumer();
         }
     }
 }

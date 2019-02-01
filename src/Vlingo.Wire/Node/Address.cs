@@ -36,10 +36,7 @@ namespace Vlingo.Wire.Node
             return new Address(Host.Of(fullAddress.Substring(0, lastColon)), int.Parse(fullAddress.Substring(lastColon + 1)), type);
         }
 
-        public static Address From(Host host, int port, AddressType type)
-        {
-            return new Address(host, port, type);
-        }
+        public static Address From(Host host, int port, AddressType type) => new Address(host, port, type);
 
         public string Full => $"{_host.Name}:{_port}";
 

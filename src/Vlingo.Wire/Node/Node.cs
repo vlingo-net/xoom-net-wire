@@ -47,15 +47,9 @@ namespace Vlingo.Wire.Node
 
         public bool IsValid => !HasMissingPart;
 
-        public bool IsLeaderOver(Id nodeId)
-        {
-            return IsValid && Id.GreaterThan(nodeId);
-        }
+        public bool IsLeaderOver(Id nodeId) => IsValid && Id.GreaterThan(nodeId);
 
-        public bool GreaterThan(Node other)
-        {
-            return Id.GreaterThan(other.Id);
-        }
+        public bool GreaterThan(Node other) => Id.GreaterThan(other.Id);
         
         public int CompareTo(Node other)
         {

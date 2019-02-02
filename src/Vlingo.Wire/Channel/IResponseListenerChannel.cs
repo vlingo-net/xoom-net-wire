@@ -9,6 +9,6 @@ namespace Vlingo.Wire.Channel
 {
     public interface IResponseListenerChannel
     {
-        
+        void ProbeChannel();
     }
 }

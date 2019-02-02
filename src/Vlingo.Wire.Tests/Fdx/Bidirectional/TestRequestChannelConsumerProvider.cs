@@ -13,7 +13,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
     public class TestRequestChannelConsumerProvider : IRequestChannelConsumerProvider
     {
         public TestUntil Until { get; }
-        public IRequestChannelConsumer Consumer  => new TestRequestChannelConsumer();
+        
+        public IRequestChannelConsumer Consumer { get; } = new TestRequestChannelConsumer();
 
         public IRequestChannelConsumer RequestChannelConsumer() => Consumer;
     }

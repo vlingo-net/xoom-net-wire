@@ -16,7 +16,7 @@ namespace Vlingo.Wire.Channel
     {
         public static bool IsSocketConnected(this Socket s)
         {
-            return !((s.Poll(1000, SelectMode.SelectRead) && (s.Available == 0)) || !s.Connected);
+            return !(s.Poll(1000, SelectMode.SelectRead) && s.Available == 0 || !s.Connected);
         }
         
         public static Task<int> ReceiveAsync(this Socket socket, Memory<byte> memory, SocketFlags socketFlags)

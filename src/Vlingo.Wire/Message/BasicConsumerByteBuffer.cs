@@ -123,7 +123,7 @@ namespace Vlingo.Wire.Message
 
         public IConsumerByteBuffer Clear()
         {
-            _buffer.SetLength(0);
+            _buffer.SetLength(_buffer.Capacity);
             _buffer.Position = 0;
             _mark = -1;
             return this;

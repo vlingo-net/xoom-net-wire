@@ -49,7 +49,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 throw;
             }
 
-            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled>(),
+            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled>(), // TODO: don't forget to change probeInterval to ms
                 null, TimeSpan.FromMilliseconds(100), TimeSpan.FromHours(probeInterval));
         }
         

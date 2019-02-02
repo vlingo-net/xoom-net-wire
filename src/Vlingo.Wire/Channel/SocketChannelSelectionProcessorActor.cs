@@ -73,11 +73,8 @@ namespace Vlingo.Wire.Channel
             try
             {
                 var clientChannel = await channel.AcceptAsync();
-                if (clientChannel != null)
-                {
-                    clientChannel.Blocking = false;
-                    _context = new Context(this, clientChannel);
-                }
+                clientChannel.Blocking = false;
+                _context = new Context(this, clientChannel);
             }
             catch (Exception e)
             {
@@ -141,21 +138,15 @@ namespace Vlingo.Wire.Channel
 
             try
             {
-                if (_context != null)
+                if (_context != null && _context.Channel.IsSocketConnected())
                 {
-                    if (_context.Channel.Poll(1000, SelectMode.SelectRead))
+                    if (_context.Channel.Available > 0)
                     {
-                        if (_context.Channel.IsSocketConnected())
-                        {
-                            if (_context.Channel.Available > 0)
-                            {
-                                await ReadAsync(_context);
-                            }
-                            else
-                            {
-                                await WriteAsync(_context);
-                            }
-                        }
+                        await ReadAsync(_context);
+                    }
+                    else
+                    {
+                        await WriteAsync(_context);
                     }
 
                     CleanUp(_context);
@@ -179,14 +170,13 @@ namespace Vlingo.Wire.Channel
 
             var buffer = readable.RequestBuffer.Clear();
             var readBuffer = buffer.Array();
-            var bytes = new byte[1024];
             var totalBytesRead = 0;
             var bytesRead = 0;
             do
             {
-                bytesRead = await channel.ReceiveAsync(bytes, SocketFlags.None);
+                bytesRead = await channel.ReceiveAsync(readBuffer, SocketFlags.None);
                 totalBytesRead += bytesRead;
-            } while (channel.Available == 0);
+            } while (channel.Available > 0);
             
             if (totalBytesRead > 0)
             {

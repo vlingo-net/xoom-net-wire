@@ -33,7 +33,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         private TestRequestChannelConsumer _serverConsumer;
         private World _world;
 
-        [Fact(Skip = "Not working because of some issues with Proxy generation")]
+        [Fact]
         public async Task TestBasicRequestResponse()
         {
             var request = "Hello, Request-Response";

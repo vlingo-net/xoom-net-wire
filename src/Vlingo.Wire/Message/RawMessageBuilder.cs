@@ -49,7 +49,7 @@ namespace Vlingo.Wire.Message
       
         public RawMessageBuilder PrepareContent()
         {
-            Flip(_workBuffer);
+            _workBuffer.Flip();
             return this;
         }
       
@@ -118,12 +118,6 @@ namespace Vlingo.Wire.Message
             }
             
             return false;
-        }
-        
-        private void Flip(Stream buffer)
-        {
-            buffer.SetLength(buffer.Position);
-            buffer.Position = 0;
         }
       
         private enum ScanMode

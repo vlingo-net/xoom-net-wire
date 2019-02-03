@@ -14,7 +14,7 @@ namespace Vlingo.Wire.Message
     {
         private static Encoding EncodingValue = Encoding.GetEncoding(Encoding.UTF8.WebName);
 
-        public static string BytesToText(byte[] bytes, int index, int length) =>
+        public static string BytesToText(this byte[] bytes, int index, int length) =>
             EncodingValue.GetString(bytes, index, length);
 
         public static string BytesToText(byte[] bytes) => EncodingValue.GetString(bytes);
@@ -23,7 +23,7 @@ namespace Vlingo.Wire.Message
 
         public static byte[] TextToBytes(string text) => EncodingValue.GetBytes(text);
 
-        public static RawMessage ToRawMessage(short sendingNodeId, Stream buffer)
+        public static RawMessage ToRawMessage(this short sendingNodeId, Stream buffer)
         {
             Flip(buffer);
             var message = new RawMessage(buffer.Length);
@@ -35,7 +35,7 @@ namespace Vlingo.Wire.Message
             return message;
         }
         
-        private static void Flip(Stream buffer)
+        public static void Flip(this Stream buffer)
         {
             buffer.SetLength(buffer.Position);
             buffer.Position = 0;

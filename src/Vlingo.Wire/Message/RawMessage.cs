@@ -101,8 +101,14 @@ namespace Vlingo.Wire.Message
         {
             buffer.SetLength(0);
             CopyBytesTo(buffer);
-            Flip(buffer);
+            buffer.Flip();
             return buffer;
+        }
+
+        public byte[] AsBuffer(Stream buffer)
+        {
+            var s = (MemoryStream)AsStream(buffer);
+            return s.GetBuffer();
         }
 
         public string AsTextMessage() => Converters.BytesToText(_bytes);
@@ -124,7 +130,7 @@ namespace Vlingo.Wire.Message
         {
             if (flip)
             {
-                Flip(buffer);
+                buffer.Flip();
             }
 
             var length = buffer.Length;
@@ -159,11 +165,5 @@ namespace Vlingo.Wire.Message
         }
 
         public override string ToString() => $"RawMessage[header={_header} length={Length}]";
-
-        private void Flip(Stream buffer)
-        {
-            buffer.SetLength(buffer.Position);
-            buffer.Position = 0;
-        }
     }
 }

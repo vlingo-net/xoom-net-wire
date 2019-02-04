@@ -15,7 +15,7 @@ namespace Vlingo.Wire.Tests.Multicast
 {
     public class MulticastTest
     {
-        [Fact(Skip = "not ready")]
+        [Fact(Skip = "still doesn't work")]
         public async Task TestMulticastPublishSubscribe()
         {
             var publisherConsumer = new MockChannelReaderConsumer();

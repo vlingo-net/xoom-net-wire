@@ -56,7 +56,7 @@ namespace Vlingo.Wire.Multicast
             _channel.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             _channel.ExclusiveAddressUse = false;
             _channel.Blocking = false;
-            _ipEndPoint = new IPEndPoint(IPAddress.Any, @group.Port);
+            _ipEndPoint = new IPEndPoint(IPAddress.Any, group.Port);
             _channel.Bind(_ipEndPoint);
             _networkInterface = AssignNetworkInterfaceTo(_channel, networkInterfaceName);
             _groupAddress = IPAddress.Parse(group.Address);
@@ -121,13 +121,15 @@ namespace Vlingo.Wire.Multicast
                 for (var receives = 0; receives < _maxReceives; ++receives)
                 {
                     _buffer.SetLength(0); // clear
+                    var bytes = new byte [_buffer.Capacity];
                     var received = await _channel.ReceiveFromAsync(
-                        new ArraySegment<byte>(_buffer.GetBuffer()),
-                        SocketFlags.Multicast,
+                        new ArraySegment<byte>(bytes),
+                        SocketFlags.None,
                         _ipEndPoint);
                     
                     if (received.ReceivedBytes > 0)
                     {
+                        _buffer.Write(bytes, 0, bytes.Length);
                         _buffer.Flip();
                         _message.From(_buffer);
                         

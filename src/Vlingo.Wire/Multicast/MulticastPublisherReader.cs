@@ -168,14 +168,25 @@ namespace Vlingo.Wire.Multicast
         {
             while (true)
             {
-                var message = _messageQueue.Peek();
-                if (message == null)
+                if (_messageQueue.Count == 0)
                 {
                     return;
                 }
                 
-                var sent = await _publisherChannel.SendToAsync(new ArraySegment<byte>(message.AsBuffer(_messageBuffer)),
-                    SocketFlags.Multicast, _groupAddress);
+                var message = _messageQueue.Peek();
+
+                var sent = 0;
+                
+                try
+                {
+                    sent = await _publisherChannel.SendToAsync(new ArraySegment<byte>(message.AsBuffer(_messageBuffer)),
+                        SocketFlags.None, _groupAddress);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
 
                 if (sent > 0)
                 {

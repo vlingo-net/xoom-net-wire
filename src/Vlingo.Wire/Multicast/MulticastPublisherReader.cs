@@ -53,14 +53,15 @@ namespace Vlingo.Wire.Multicast
             // published as my availabilityMessage
             _publisherChannel.Bind(new IPEndPoint(IPAddress.Any, 0));
             
-//            _readChannel = new Socket(
-//                new IPEndPoint(IPAddress.Any, incomingSocketPort).AddressFamily,
-//                SocketType.Stream,
-//                ProtocolType.Tcp);
-//            _readChannel.Blocking = false;
-//            _readChannel.ExclusiveAddressUse = false;
+            _readChannel = new Socket(
+                new IPEndPoint(IPAddress.Any, incomingSocketPort).AddressFamily,
+                SocketType.Stream,
+                ProtocolType.Tcp);
+            _readChannel.Blocking = false;
+            _readChannel.ExclusiveAddressUse = false;
+            _readChannel.Bind(new IPEndPoint(IPAddress.Any, incomingSocketPort));
             
-            // _publisherAddress = (IPEndPoint)_readChannel.LocalEndPoint;
+            _publisherAddress = (IPEndPoint)_readChannel.LocalEndPoint;
             
             _availability = AvailabilityMessage();
         }
@@ -71,6 +72,8 @@ namespace Vlingo.Wire.Multicast
             {
                 return;
             }
+
+            _closed = true;
 
             try
             {
@@ -83,6 +86,7 @@ namespace Vlingo.Wire.Multicast
             
             try
             {
+                // TODO: Implement with TCP with _readChannel
                 // _readChannel.Close();
             }
             catch (Exception e)
@@ -91,7 +95,7 @@ namespace Vlingo.Wire.Multicast
             }
         }
 
-        public void ProcessChannel()
+        public async Task ProcessChannel()
         {
             if (_closed)
             {
@@ -100,7 +104,7 @@ namespace Vlingo.Wire.Multicast
 
             try
             {
-                SendMax();
+                await SendMax();
             }
             catch (SocketException e)
             {
@@ -108,27 +112,36 @@ namespace Vlingo.Wire.Multicast
             }
         }
 
-        public void SendAvailability()
-        {
-            throw new System.NotImplementedException();
-        }
+        public void SendAvailability() => Send(_availability);
 
         public void Send(RawMessage message)
         {
-            throw new System.NotImplementedException();
+            var length = message.Length;
+
+            if (length <= 0)
+            {
+                throw new ArgumentException("The message length must be greater than zero.");
+            }
+
+            if (length > _messageBuffer.Capacity)
+            {
+                throw new ArgumentException($"The message length is greater than {_messageBuffer.Capacity}");
+            }
+            
+            _messageQueue.Enqueue(message);
         }
 
-        public override IChannelReaderConsumer Consumer { get; }
+        public override IChannelReaderConsumer Consumer => _consumer;
 
-        public override ILogger Logger { get; }
+        public override ILogger Logger => _logger;
 
-        public override string Name { get; }
+        public override string Name => _name;
         
         private RawMessage AvailabilityMessage()
         {
             var message = new PublisherAvailability(
                 _name,
-                Dns.GetHostEntry(_publisherAddress.Address).HostName,
+                GetHostName(_publisherAddress.Address),
                 _publisherAddress.Port).ToString();
             
             var buffer = new MemoryStream(message.Length);
@@ -138,7 +151,19 @@ namespace Vlingo.Wire.Multicast
 
             return RawMessage.ReadFromWithoutHeader(buffer);
         }
-        
+
+        private string GetHostName(IPAddress publisherAddress)
+        {
+            try
+            {
+                return Dns.GetHostEntry(publisherAddress).HostName;
+            }
+            catch
+            {
+                return publisherAddress.ToString();
+            }
+        }
+
         private async Task SendMax()
         {
             while (true)

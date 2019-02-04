@@ -5,6 +5,7 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System.Threading.Tasks;
 using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Multicast;
@@ -14,8 +15,8 @@ namespace Vlingo.Wire.Tests.Multicast
 {
     public class MulticastTest
     {
-        [Fact(Skip = "Not ready")]
-        public void TestMulticastPublishSubscribe()
+        [Fact(Skip = "not ready")]
+        public async Task TestMulticastPublishSubscribe()
         {
             var publisherConsumer = new MockChannelReaderConsumer();
 
@@ -42,11 +43,11 @@ namespace Vlingo.Wire.Tests.Multicast
                 publisher.SendAvailability();
             }
             
-            publisher.ProcessChannel();
+            await publisher.ProcessChannel();
     
             for (int i = 0; i < 2; ++i)
             {
-                subscriber.ProbeChannel();
+                await subscriber.ProbeChannel();
             }
     
             Assert.Equal(0, publisherConsumer.ConsumeCount);

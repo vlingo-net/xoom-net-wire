@@ -12,7 +12,7 @@ namespace Vlingo.Wire.Message
 {
     public static class Converters
     {
-        private static Encoding EncodingValue = Encoding.GetEncoding(Encoding.UTF8.WebName);
+        public static Encoding EncodingValue { get; private set; } = Encoding.GetEncoding(Encoding.UTF8.WebName);
 
         public static string BytesToText(this byte[] bytes, int index, int length) =>
             EncodingValue.GetString(bytes, index, length);

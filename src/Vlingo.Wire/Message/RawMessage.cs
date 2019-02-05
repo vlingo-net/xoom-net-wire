@@ -152,7 +152,7 @@ namespace Vlingo.Wire.Message
             using (MemoryStream ms = new MemoryStream())
             {
                 buffer.CopyTo(ms);
-                Array.Copy(ms.ToArray(), position, _bytes, 0, length);
+                Array.Copy(ms.GetBuffer(), position, _bytes, 0, length);
             }
 
             _index = length;

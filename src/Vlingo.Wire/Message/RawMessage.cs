@@ -147,12 +147,13 @@ namespace Vlingo.Wire.Message
 
         public void PutRemaining(Stream buffer)
         {
-            var position = buffer.Position;
-            var length = buffer.Length - position;
+            var length = buffer.Length - buffer.Position;
             using (MemoryStream ms = new MemoryStream())
             {
+                // this copies from the actual position to the end of the stream so for the Array.Copy we need just to start at position = 0
+                // because the call to ms.GetBuffer() will bring the remaining buffer.
                 buffer.CopyTo(ms);
-                Array.Copy(ms.GetBuffer(), position, _bytes, 0, length);
+                Array.Copy(ms.GetBuffer(), 0, _bytes, 0, length);
             }
 
             _index = length;

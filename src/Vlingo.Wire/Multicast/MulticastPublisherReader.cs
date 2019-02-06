@@ -53,10 +53,7 @@ namespace Vlingo.Wire.Multicast
             // published as my availabilityMessage
             _publisherChannel.Bind(new IPEndPoint(IPAddress.Any, 0));
             
-            _readChannel = new Socket(
-                new IPEndPoint(IPAddress.Any, incomingSocketPort).AddressFamily,
-                SocketType.Stream,
-                ProtocolType.Tcp);
+            _readChannel = new Socket(SocketType.Stream, ProtocolType.Tcp);
             _readChannel.Blocking = false;
             _readChannel.ExclusiveAddressUse = false;
             _readChannel.Bind(new IPEndPoint(IPAddress.Any, incomingSocketPort));
@@ -95,7 +92,7 @@ namespace Vlingo.Wire.Multicast
             }
         }
 
-        public async Task ProcessChannel()
+        public void ProcessChannel()
         {
             if (_closed)
             {
@@ -104,7 +101,7 @@ namespace Vlingo.Wire.Multicast
 
             try
             {
-                await SendMax();
+                SendMax();
             }
             catch (SocketException e)
             {
@@ -164,7 +161,7 @@ namespace Vlingo.Wire.Multicast
             }
         }
 
-        private async Task SendMax()
+        private void SendMax()
         {
             while (true)
             {
@@ -179,7 +176,7 @@ namespace Vlingo.Wire.Multicast
                 
                 try
                 {
-                    sent = await _publisherChannel.SendToAsync(new ArraySegment<byte>(message.AsBuffer(_messageBuffer)),
+                    sent = _publisherChannel.SendTo(message.AsBuffer(_messageBuffer),
                         SocketFlags.None, _groupAddress);
                 }
                 catch (Exception e)

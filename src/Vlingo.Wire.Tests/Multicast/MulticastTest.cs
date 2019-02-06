@@ -15,7 +15,7 @@ namespace Vlingo.Wire.Tests.Multicast
 {
     public class MulticastTest
     {
-        [Fact(Skip = "still doesn't work")]
+        [Fact]
         public async Task TestMulticastPublishSubscribe()
         {
             var publisherConsumer = new MockChannelReaderConsumer();
@@ -43,11 +43,11 @@ namespace Vlingo.Wire.Tests.Multicast
                 publisher.SendAvailability();
             }
             
-            await publisher.ProcessChannel();
+            publisher.ProcessChannel();
     
             for (int i = 0; i < 2; ++i)
             {
-                await subscriber.ProbeChannel();
+                subscriber.ProbeChannel();
             }
     
             Assert.Equal(0, publisherConsumer.ConsumeCount);

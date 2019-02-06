@@ -30,7 +30,7 @@ namespace Vlingo.Wire.Multicast
         private readonly RawMessage _message;
         private readonly string _name;
         private NetworkInterface _networkInterface;
-        private readonly IPEndPoint _ipEndPoint;
+        private EndPoint _ipEndPoint;
 
         public MulticastSubscriber(
             string name,
@@ -107,7 +107,7 @@ namespace Vlingo.Wire.Multicast
             _consumer = consumer;
         }
 
-        public async Task ProbeChannel()
+        public void ProbeChannel()
         {
             if (_closed)
             {
@@ -122,12 +122,12 @@ namespace Vlingo.Wire.Multicast
                 {
                     _buffer.SetLength(0); // clear
                     var bytes = new byte [_buffer.Capacity];
-                    var received = await _channel.ReceiveFromAsync(
-                        new ArraySegment<byte>(bytes),
+                    var received = _channel.ReceiveFrom(
+                        bytes,
                         SocketFlags.None,
-                        _ipEndPoint);
+                        ref _ipEndPoint);
                     
-                    if (received.ReceivedBytes > 0)
+                    if (received > 0)
                     {
                         _buffer.Write(bytes, 0, bytes.Length);
                         _buffer.Flip();

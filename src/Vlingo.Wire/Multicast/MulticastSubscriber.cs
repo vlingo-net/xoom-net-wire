@@ -30,7 +30,7 @@ namespace Vlingo.Wire.Multicast
         private readonly RawMessage _message;
         private readonly string _name;
         private NetworkInterface _networkInterface;
-        private EndPoint _ipEndPoint;
+        private readonly EndPoint _ipEndPoint;
 
         public MulticastSubscriber(
             string name,
@@ -69,7 +69,7 @@ namespace Vlingo.Wire.Multicast
             _buffer = new MemoryStream(maxMessageSize);
             _message = new RawMessage(maxMessageSize);
             
-            logger.Log($"MulticastSubscriber joined: {_networkInterface}");
+            logger.Log($"MulticastSubscriber joined: {_networkInterface.Id}");
         }
 
         public override IChannelReaderConsumer Consumer => _consumer;
@@ -107,7 +107,7 @@ namespace Vlingo.Wire.Multicast
             _consumer = consumer;
         }
 
-        public void ProbeChannel()
+        public async Task ProbeChannel()
         {
             if (_closed)
             {
@@ -122,18 +122,24 @@ namespace Vlingo.Wire.Multicast
                 {
                     _buffer.SetLength(0); // clear
                     var bytes = new byte [_buffer.Capacity];
-                    var received = _channel.ReceiveFrom(
-                        bytes,
-                        SocketFlags.None,
-                        ref _ipEndPoint);
-                    
-                    if (received > 0)
+                    // check for availability because otherwise surprisingly
+                    // the call to _channel.ReceiveFromAsync is blocking and
+                    // _channel.Blocking = false; is not taken into account
+                    if (_channel.Available > 0)
                     {
-                        _buffer.Write(bytes, 0, bytes.Length);
-                        _buffer.Flip();
-                        _message.From(_buffer);
+                        var received = await _channel.ReceiveFromAsync(
+                            new ArraySegment<byte>(bytes),
+                            SocketFlags.None,
+                            _ipEndPoint);
                         
-                        _consumer.Consume(_message);
+                        if (received.ReceivedBytes > 0)
+                        {
+                            _buffer.Write(bytes, 0, bytes.Length);
+                            _buffer.Flip();
+                            _message.From(_buffer);
+                        
+                            _consumer.Consume(_message);
+                        }
                     }
                 }
             }

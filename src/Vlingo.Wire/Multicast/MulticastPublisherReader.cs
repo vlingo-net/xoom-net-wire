@@ -92,7 +92,7 @@ namespace Vlingo.Wire.Multicast
             }
         }
 
-        public void ProcessChannel()
+        public async Task ProcessChannel()
         {
             if (_closed)
             {
@@ -101,7 +101,7 @@ namespace Vlingo.Wire.Multicast
 
             try
             {
-                SendMax();
+                await SendMax();
             }
             catch (SocketException e)
             {
@@ -161,7 +161,7 @@ namespace Vlingo.Wire.Multicast
             }
         }
 
-        private void SendMax()
+        private async Task SendMax()
         {
             while (true)
             {
@@ -171,19 +171,9 @@ namespace Vlingo.Wire.Multicast
                 }
                 
                 var message = _messageQueue.Peek();
-
-                var sent = 0;
                 
-                try
-                {
-                    sent = _publisherChannel.SendTo(message.AsBuffer(_messageBuffer),
-                        SocketFlags.None, _groupAddress);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
+                var sent = await _publisherChannel.SendToAsync(new ArraySegment<byte>(message.AsBuffer(_messageBuffer)),
+                                    SocketFlags.None, _groupAddress);
 
                 if (sent > 0)
                 {

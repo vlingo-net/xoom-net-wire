@@ -18,7 +18,7 @@ using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Multicast
 {
-    public class MulticastSubscriber : ChannelMessageDispatcher, IChannelReader
+    public class MulticastSubscriber : ChannelMessageDispatcher, IChannelReader, IDisposable
     {
         private readonly MemoryStream _buffer;
         private bool _closed;
@@ -31,6 +31,7 @@ namespace Vlingo.Wire.Multicast
         private readonly string _name;
         private NetworkInterface _networkInterface;
         private readonly EndPoint _ipEndPoint;
+        private bool _disposed;
 
         public MulticastSubscriber(
             string name,
@@ -90,6 +91,8 @@ namespace Vlingo.Wire.Multicast
             try
             {
                 _channel.Close();
+                _buffer.Dispose();
+                Dispose(true);
             }
             catch (Exception e)
             {
@@ -147,6 +150,27 @@ namespace Vlingo.Wire.Multicast
             {
                 _logger.Log($"Failed to read channel selector for: '{_name}'", e);
             }
+        }
+        
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);  
+        }
+        
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+      
+            if (disposing) 
+            {
+                Close();
+            }
+      
+            _disposed = true;
         }
         
         private NetworkInterface AssignNetworkInterfaceTo(Socket channel, string networkInterfaceName)

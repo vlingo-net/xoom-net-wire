@@ -17,7 +17,7 @@ using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Multicast
 {
-    public class MulticastPublisherReader : ChannelMessageDispatcher, IChannelPublisher
+    public class MulticastPublisherReader : ChannelMessageDispatcher, IChannelPublisher, IDisposable
     {
         private readonly RawMessage _availability;
         private readonly Socket _publisherChannel;
@@ -30,6 +30,7 @@ namespace Vlingo.Wire.Multicast
         private readonly string _name;
         private readonly IPEndPoint _publisherAddress;
         private readonly Socket _readChannel;
+        private bool _disposed;
 
         public MulticastPublisherReader(
             string name,
@@ -75,6 +76,8 @@ namespace Vlingo.Wire.Multicast
             try
             {
                 _publisherChannel.Close();
+                _messageBuffer.Dispose();
+                _readChannel.Dispose();
             }
             catch (Exception e)
             {
@@ -126,6 +129,27 @@ namespace Vlingo.Wire.Multicast
             }
             
             _messageQueue.Enqueue(message);
+        }
+        
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);  
+        }
+        
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+      
+            if (disposing) 
+            {
+                Close();
+            }
+      
+            _disposed = true;
         }
 
         public override IChannelReaderConsumer Consumer => _consumer;

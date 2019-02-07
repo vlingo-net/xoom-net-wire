@@ -5,14 +5,15 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-using System.IO;
-using System.Threading.Tasks;
+using System.Net.Sockets;
 
 namespace Vlingo.Wire.Channel
 {
-    public interface IRequestSenderChannel
+    public static class SocketExtensions
     {
-        void Close();
-        Task RequestWith(Stream stream);
+        public static bool IsSocketConnected(this Socket s)
+        {
+            return !((s.Poll(1000, SelectMode.SelectRead) && (s.Available == 0)) || !s.Connected);
+        }
     }
 }

@@ -6,13 +6,20 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.IO;
-using System.Threading.Tasks;
 
 namespace Vlingo.Wire.Channel
 {
-    public interface IRequestSenderChannel
+    public static class StreamExtensions
     {
-        void Close();
-        Task RequestWith(Stream stream);
+        public static void Flip(this Stream buffer)
+        {
+            buffer.SetLength(buffer.Position);
+            buffer.Position = 0;
+        }
+
+        public static bool HasRemaining(this Stream buffer)
+        {
+            return buffer.Length - buffer.Position > 0;
+        }
     }
 }

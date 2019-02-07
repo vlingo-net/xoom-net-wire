@@ -5,14 +5,12 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-using System.IO;
-using System.Threading.Tasks;
+using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Channel
 {
-    public interface IRequestSenderChannel
+    public interface IResponseChannelConsumer
     {
-        void Close();
-        Task RequestWith(Stream stream);
+        void Consume(IConsumerByteBuffer buffer);
     }
 }

@@ -16,4 +16,8 @@
     <ProjectReference Include="..\Vlingo.Wire\Vlingo.Wire.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Fdx\Bidirectional" />
+  </ItemGroup>
+
 </Project>

@@ -49,7 +49,7 @@ namespace Vlingo.Wire.Message
       
         public RawMessageBuilder PrepareContent()
         {
-            Flip(_workBuffer);
+            _workBuffer.Flip();
             return this;
         }
       
@@ -73,7 +73,7 @@ namespace Vlingo.Wire.Message
                 var messageTotalLength = _rawMessage.RequiredMessageLength;
                 var missingRawMessageLength = messageTotalLength - _rawMessage.Length;
                 var contentPosition = _workBuffer.Position;
-                var availableContentLength = _workBuffer.Capacity - contentPosition;
+                var availableContentLength = _workBuffer.Length - contentPosition;
             
                 var appendLength = Math.Min(missingRawMessageLength, availableContentLength);
             
@@ -104,7 +104,7 @@ namespace Vlingo.Wire.Message
       
         private bool Underflow()
         {
-            var remainingContentLength = _workBuffer.Capacity - _workBuffer.Position;
+            var remainingContentLength = _workBuffer.Length - _workBuffer.Position;
             var minimumRequiredLength = RawMessageHeader.Bytes + 1;
             
             if (_rawMessage.RequiredMessageLength == 0 && remainingContentLength < minimumRequiredLength)
@@ -118,12 +118,6 @@ namespace Vlingo.Wire.Message
             }
             
             return false;
-        }
-        
-        private void Flip(Stream buffer)
-        {
-            buffer.SetLength(buffer.Position);
-            buffer.Position = 0;
         }
       
         private enum ScanMode

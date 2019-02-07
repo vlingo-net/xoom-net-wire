@@ -62,7 +62,7 @@ namespace Vlingo.Wire.Message
 
         public RawMessageHeader Read(Stream buffer)
         {
-            using (var binaryReader = new BinaryReader(buffer))
+            using (var binaryReader = new BinaryReader(buffer, Converters.EncodingValue, true))
             {
                 var headerId = binaryReader.ReadInt16();
                 if (headerId != HeaderId)
@@ -82,7 +82,7 @@ namespace Vlingo.Wire.Message
 
         public void CopyBytesTo(Stream buffer)
         {
-            using (var binaryWriter = new BinaryWriter(buffer))
+            using (var binaryWriter = new BinaryWriter(buffer, Converters.EncodingValue, true))
             {
                 binaryWriter.Write(HeaderId);
                 binaryWriter.Write(_nodeId);

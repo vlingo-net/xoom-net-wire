@@ -72,10 +72,18 @@ namespace Vlingo.Wire.Multicast
             
             logger.Log($"MulticastSubscriber joined: {_networkInterface.Id}");
         }
+        
+        //=========================================
+        // ChannelMessageDispatcher
+        //=========================================
 
         public override IChannelReaderConsumer Consumer => _consumer;
         
         public override ILogger Logger => _logger;
+        
+        //=========================================
+        // ChannelReader
+        //=========================================
         
         public override string Name => _name;
 
@@ -172,6 +180,10 @@ namespace Vlingo.Wire.Multicast
       
             _disposed = true;
         }
+        
+        //=========================================
+        // internal implementation
+        //=========================================
         
         private NetworkInterface AssignNetworkInterfaceTo(Socket channel, string networkInterfaceName)
         {

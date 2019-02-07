@@ -63,6 +63,10 @@ namespace Vlingo.Wire.Multicast
             
             _availability = AvailabilityMessage();
         }
+        
+        //====================================
+        // ChannelPublisher
+        //====================================
 
         public void Close()
         {
@@ -151,12 +155,20 @@ namespace Vlingo.Wire.Multicast
       
             _disposed = true;
         }
+        
+        //====================================
+        // ChannelMessageDispatcher
+        //====================================
 
         public override IChannelReaderConsumer Consumer => _consumer;
 
         public override ILogger Logger => _logger;
 
         public override string Name => _name;
+        
+        //====================================
+        // internal implementation
+        //====================================
         
         private RawMessage AvailabilityMessage()
         {

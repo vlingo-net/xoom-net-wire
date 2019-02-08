@@ -99,7 +99,7 @@ namespace Vlingo.Wire.Multicast
             }
         }
 
-        public async Task ProcessChannel()
+        public async Task ProcessChannelAsync()
         {
             if (_closed)
             {
@@ -108,7 +108,7 @@ namespace Vlingo.Wire.Multicast
 
             try
             {
-                await SendMax();
+                await SendMaxAsync();
             }
             catch (SocketException e)
             {
@@ -197,7 +197,7 @@ namespace Vlingo.Wire.Multicast
             }
         }
 
-        private async Task SendMax()
+        private async Task SendMaxAsync()
         {
             while (true)
             {

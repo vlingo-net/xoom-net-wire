@@ -14,6 +14,6 @@ namespace Vlingo.Wire.Channel
         void Close();
         string Name { get; }
         void OpenFor(IChannelReaderConsumer consumer);
-        Task ProbeChannel();
+        Task ProbeChannelAsync();
     }
 }

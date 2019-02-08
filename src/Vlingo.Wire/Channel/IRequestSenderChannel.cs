@@ -13,6 +13,6 @@ namespace Vlingo.Wire.Channel
     public interface IRequestSenderChannel
     {
         void Close();
-        Task RequestWith(Stream stream);
+        Task RequestWithAsync(Stream stream);
     }
 }

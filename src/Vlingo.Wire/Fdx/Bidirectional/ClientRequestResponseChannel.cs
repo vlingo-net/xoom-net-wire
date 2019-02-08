@@ -6,7 +6,6 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
-using System.Buffers;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -59,19 +58,18 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             CloseChannel();
         }
 
-        public async Task RequestWithAsync(Stream stream)
+        public void RequestWithAsync(Stream stream)
         {
-            var preparedChannel = await PreparedChannelAsync();
+            var preparedChannel = PreparedChannelAsync();
             if (preparedChannel != null)
             {
                 try
                 {
                     while (stream.HasRemaining())
                     {
-                        var buffer = ArrayPool<byte>.Shared.Rent((int)stream.Length);
-                        await stream.ReadAsync(buffer, 0, buffer.Length);
-                        await preparedChannel.SendAsync(new ArraySegment<byte>(buffer), SocketFlags.None);
-                        ArrayPool<byte>.Shared.Return(buffer);
+                        var buffer = new byte[stream.Length];
+                        stream.Read(buffer, 0, buffer.Length);
+                        preparedChannel.Send(buffer, SocketFlags.None);
                     }
                 }
                 catch (Exception e)
@@ -86,7 +84,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         // ResponseListenerChannel
         //=========================================
 
-        public async Task ProbeChannelAsync()
+        public void ProbeChannelAsync()
         {
             if (_closed)
             {
@@ -95,10 +93,10 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
             try
             {
-                var channel = await PreparedChannelAsync();
+                var channel = PreparedChannelAsync();
                 if (channel != null)
                 {
-                    await ReadConsumeAsync(channel);
+                    ReadConsumeAsync(channel);
                 }
             }
             catch (Exception e)
@@ -128,7 +126,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _channel = null;
         }
 
-        private async Task<Socket> PreparedChannelAsync()
+        private Socket PreparedChannelAsync()
         {
             try
             {
@@ -145,8 +143,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 else
                 {
                     _channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    _channel.Blocking = false;
-                    await _channel.ConnectAsync(_address.HostName, _address.Port);
+                    // _channel.Blocking = false;
+                    _channel.Connect(_address.HostName, _address.Port);
                     _previousPrepareFailures = 0;
                     return _channel;
                 }
@@ -168,7 +166,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             return null;
         }
 
-        private async Task ReadConsumeAsync(Socket channel)
+        private void ReadConsumeAsync(Socket channel)
         {
             var pooledBuffer = _readBufferPool.AccessFor("client-response", 25);
             var readBuffer = pooledBuffer.Array();
@@ -178,7 +176,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             {
                 do
                 {
-                    bytesRead = await channel.ReceiveAsync(readBuffer, SocketFlags.None);
+                    bytesRead = channel.Receive(readBuffer, SocketFlags.None);
                     totalBytesRead += bytesRead;
                 } while (bytesRead > 0);
 

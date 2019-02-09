@@ -29,7 +29,7 @@ namespace Vlingo.Wire.Channel
         private readonly IRequestChannelConsumerProvider _provider;
         private readonly IResponseSenderChannel<Socket> _responder;
         private Context _context;
-
+        
         public SocketChannelSelectionProcessorActor(
             IRequestChannelConsumerProvider provider,
             string name,
@@ -42,7 +42,7 @@ namespace Vlingo.Wire.Channel
             _messageBufferSize = messageBufferSize;
             _responder = SelfAs<IResponseSenderChannel<Socket>>();
             _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled>(),
-                null, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(probeInterval));
+                null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(probeInterval));
         }
         
         //=========================================
@@ -68,13 +68,16 @@ namespace Vlingo.Wire.Channel
         // SocketChannelSelectionProcessor
         //=========================================
         
-        public async Task ProcessAsync(Socket channel)
+        public void ProcessAsync(Socket channel)
         {
             try
             {
-                var clientChannel = await channel.AcceptAsync();
-                clientChannel.Blocking = false;
-                _context = new Context(this, clientChannel);
+                if (channel.Poll(10000, SelectMode.SelectRead))
+                {
+                    var clientChannel = channel.Accept();
+                    clientChannel.Blocking = false;
+                    _context = new Context(this, clientChannel);
+                }
             }
             catch (Exception e)
             {
@@ -94,7 +97,7 @@ namespace Vlingo.Wire.Channel
             {
                 // this is invoked in the context of another Thread so even if we can block here
                 // TODO: should be a better way than blocking
-                ProbeChannelAsync().Wait();
+                ProbeChannelAsync();
             }
             catch (AggregateException ae)
             {
@@ -129,7 +132,7 @@ namespace Vlingo.Wire.Channel
         // internal implementation
         //=========================================
 
-        private async Task ProbeChannelAsync()
+        private void ProbeChannelAsync()
         {
             if (IsStopped)
             {
@@ -142,14 +145,12 @@ namespace Vlingo.Wire.Channel
                 {
                     if (_context.Channel.Available > 0)
                     {
-                        await ReadAsync(_context);
+                        ReadAsync(_context);
                     }
                     else
                     {
-                        await WriteAsync(_context);
+                        WriteAsync(_context);
                     }
-
-                    CleanUp(_context);
                 }
             }
             catch (Exception e)
@@ -158,7 +159,7 @@ namespace Vlingo.Wire.Channel
             }
         }
         
-        private async Task ReadAsync(Context readable)
+        private void ReadAsync(Context readable)
         {
             var channel = readable.Channel;
             if (!channel.IsSocketConnected())
@@ -174,9 +175,16 @@ namespace Vlingo.Wire.Channel
             var bytesRead = 0;
             do
             {
-                bytesRead = await channel.ReceiveAsync(readBuffer, SocketFlags.None);
+                bytesRead = channel.Receive(readBuffer, SocketFlags.None);
+                buffer.Put(readBuffer, totalBytesRead, bytesRead);
                 totalBytesRead += bytesRead;
             } while (channel.Available > 0);
+
+            if (bytesRead == 0)
+            {
+                readable.Close();
+                readable.Channel.Close();
+            }
             
             if (totalBytesRead > 0)
             {
@@ -188,7 +196,7 @@ namespace Vlingo.Wire.Channel
             }
         }
 
-        private async Task WriteAsync(Context writable)
+        private void WriteAsync(Context writable)
         {
             var channel = writable.Channel;
             if (!channel.IsSocketConnected())
@@ -200,30 +208,24 @@ namespace Vlingo.Wire.Channel
             
             if (writable.HasNextWritable)
             {
-                await WriteWithCachedDataAsync(writable, channel);
+                WriteWithCachedDataAsync(writable, channel);
             }
         }
 
-        private void CleanUp(Context context)
-        {
-            context.Close();
-            context.Channel.Close();
-        }
-
-        private async Task WriteWithCachedDataAsync(Context context, Socket channel)
+        private void WriteWithCachedDataAsync(Context context, Socket channel)
         {
             for (var buffer = context.NextWritable(); buffer != null; buffer = context.NextWritable())
             {
-                await WriteWithCachedDataAsync(context, channel, buffer);
+                WriteWithCachedDataAsync(context, channel, buffer);
             }
         }
 
-        private async Task WriteWithCachedDataAsync(Context context, Socket clientChannel, IConsumerByteBuffer buffer)
+        private void WriteWithCachedDataAsync(Context context, Socket clientChannel, IConsumerByteBuffer buffer)
         {
             try
             {
                 var responseBuffer = buffer.Array();
-                await clientChannel.SendAsync(new ArraySegment<byte>(responseBuffer), SocketFlags.None);
+                clientChannel.Send(responseBuffer, SocketFlags.None);
             }
             catch (Exception e)
             {

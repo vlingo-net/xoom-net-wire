@@ -6,6 +6,7 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.IO;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 
 namespace Vlingo.Wire.Channel
@@ -13,6 +14,6 @@ namespace Vlingo.Wire.Channel
     public interface IRequestSenderChannel
     {
         void Close();
-        Task RequestWithAsync(Stream stream);
+        Task RequestWithAsync(NetworkStream stream);
     }
 }

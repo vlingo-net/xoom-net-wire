@@ -50,7 +50,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             }
 
             _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled>(), // TODO: don't forget to change probeInterval to ms
-                null, TimeSpan.FromMilliseconds(100), TimeSpan.FromHours(probeInterval));
+                null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(probeInterval));
         }
         
         //=========================================
@@ -105,7 +105,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         {
             // this is invoked in the context of another Thread so even if we can block here
             // TODO: should be a better way than blocking
-            ProbeChannel().Wait();
+            ProbeChannel();
         }
         
         //=========================================
@@ -136,7 +136,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         //=========================================
         // internal implementation
         //=========================================
-        private async Task ProbeChannel()
+        private void ProbeChannel()
         {
             if (IsStopped)
             {
@@ -145,7 +145,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
             try
             {
-                await Accept(_channel);
+                Accept(_channel);
             }
             catch (Exception e)
             {
@@ -153,9 +153,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             }
         }
 
-        private async Task Accept(Socket channel)
+        private void Accept(Socket channel)
         {
-            await PooledProcessor().ProcessAsync(channel);
+            PooledProcessor().ProcessAsync(channel);
         }
 
         private ISocketChannelSelectionProcessor PooledProcessor()

@@ -40,11 +40,11 @@ namespace Vlingo.Wire.Channel
             }
         }
 
-        public Task ProcessAsync(Socket channel)
+        public void ProcessAsync(Socket channel)
         {
             if (!actor.IsStopped)
             {
-                Action<ISocketChannelSelectionProcessor> consumer = async x => await x.ProcessAsync(channel);
+                Action<ISocketChannelSelectionProcessor> consumer = x => x.ProcessAsync(channel);
                 if (mailbox.IsPreallocated)
                 {
                     mailbox.Send(actor, consumer, null, ProcessAsyncRepresentation2);
@@ -60,8 +60,6 @@ namespace Vlingo.Wire.Channel
             {
                 actor.DeadLetters.FailedDelivery(new DeadLetter(actor, ProcessAsyncRepresentation2));
             }
-
-            return null;
         }
     }
 }

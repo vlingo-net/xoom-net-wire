@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using Vlingo.Actors;
 using Vlingo.Wire.Message;
 
@@ -17,7 +18,7 @@ namespace Vlingo.Wire.Channel
     
     public class SocketChannelSelectionProcessorActor : Actor,
                                                         ISocketChannelSelectionProcessor,
-                                                        IResponseSenderChannel,
+                                                        IResponseSenderChannel<Socket>,
                                                         IScheduled
     {
         private int _bufferId;
@@ -26,7 +27,7 @@ namespace Vlingo.Wire.Channel
         private readonly int _messageBufferSize;
         private readonly string _name;
         private readonly IRequestChannelConsumerProvider _provider;
-        private readonly IResponseSenderChannel _responder;
+        private readonly IResponseSenderChannel<Socket> _responder;
 
         public SocketChannelSelectionProcessorActor(
             IRequestChannelConsumerProvider provider,
@@ -38,7 +39,7 @@ namespace Vlingo.Wire.Channel
             _provider = provider;
             _name = name;
             _messageBufferSize = messageBufferSize;
-            _responder = SelfAs<IResponseSenderChannel>();
+            _responder = SelfAs<IResponseSenderChannel<Socket>>();
             _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled>(), null, 100, probeInterval);
         }
         
@@ -56,19 +57,34 @@ namespace Vlingo.Wire.Channel
             SelfAs<IStoppable>().Stop();
         }
 
-        public void Abandon<T>(RequestResponseContext<T> context)
-        {
-            throw new System.NotImplementedException();
-        }
+        public void Abandon(RequestResponseContext<Socket> context) => ((Context)context).Close();
 
-        public void RespondWith<T>(RequestResponseContext<T> context, IConsumerByteBuffer buffer)
-        {
-            throw new System.NotImplementedException();
-        }
+        public void RespondWith(RequestResponseContext<Socket> context, IConsumerByteBuffer buffer) =>
+            ((Context) context).QueueWritable(buffer);
         
-        public void Process(Socket channel)
+        //=========================================
+        // SocketChannelSelectionProcessor
+        //=========================================
+        
+        public async Task Process(Socket channel)
         {
-            throw new System.NotImplementedException();
+            try
+            {
+                if (channel.IsSocketConnected())
+                {
+                    var clientChannel = await channel.AcceptAsync();
+                    if (clientChannel != null)
+                    {
+                        clientChannel.Blocking = false;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                var message = $"Failed to accept client socket for {_name} because: {e.Message}";
+                Logger.Log(message, e);
+                throw;
+            }
         }
 
         public void IntervalSignal(IScheduled scheduled, object data)
@@ -112,11 +128,12 @@ namespace Vlingo.Wire.Channel
             public override bool HasConsumerData => _consumerData != null;
             
             public override string Id => _id;
-            public override IResponseSenderChannel Sender => _parent._responder;
+            
+            public override IResponseSenderChannel<Socket> Sender => _parent._responder;
 
             public override void WhenClosing(object data) => _closingData = data;
 
-            void Close()
+            public void Close()
             {
                 if (!_clientChannel.IsSocketConnected())
                 {
@@ -136,13 +153,13 @@ namespace Vlingo.Wire.Channel
 
             IRequestChannelConsumer Consumer => _consumer;
 
-            bool HasNextWritable => _writables.Peek() != null;
+            public bool HasNextWritable => _writables.Peek() != null;
 
-            IConsumerByteBuffer NextWritable() => _writables.Dequeue();
+            public IConsumerByteBuffer NextWritable() => _writables.Dequeue();
 
-            void QueueWritable(IConsumerByteBuffer buffer) => _writables.Enqueue(buffer);
+            public void QueueWritable(IConsumerByteBuffer buffer) => _writables.Enqueue(buffer);
 
-            IConsumerByteBuffer RequestBuffer => _buffer;
+            public IConsumerByteBuffer RequestBuffer => _buffer;
         }
     }
 }

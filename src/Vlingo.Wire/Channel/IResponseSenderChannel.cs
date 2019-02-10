@@ -9,9 +9,9 @@ using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Channel
 {
-    public interface IResponseSenderChannel
+    public interface IResponseSenderChannel<T>
     {
-        void Abandon<T>(RequestResponseContext<T> context);
-        void RespondWith<T>(RequestResponseContext<T> context, IConsumerByteBuffer buffer);
+        void Abandon(RequestResponseContext<T> context);
+        void RespondWith(RequestResponseContext<T> context, IConsumerByteBuffer buffer);
     }
 }

@@ -6,12 +6,13 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace Vlingo.Wire.Channel
 {
     public interface ISocketChannelSelectionProcessor
     {
         void Close();
-        void Process(Socket channel);
+        Task Process(Socket channel);
     }
 }

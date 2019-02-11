@@ -6,6 +6,7 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -28,6 +29,7 @@ namespace Vlingo.Wire.Channel
         private readonly string _name;
         private readonly IRequestChannelConsumerProvider _provider;
         private readonly IResponseSenderChannel<Socket> _responder;
+        private readonly ConcurrentBag<Context> _contexts;
 
         public SocketChannelSelectionProcessorActor(
             IRequestChannelConsumerProvider provider,
@@ -66,7 +68,7 @@ namespace Vlingo.Wire.Channel
         // SocketChannelSelectionProcessor
         //=========================================
         
-        public async Task Process(Socket channel)
+        public async Task ProcessAsync(Socket channel)
         {
             try
             {
@@ -76,6 +78,7 @@ namespace Vlingo.Wire.Channel
                     if (clientChannel != null)
                     {
                         clientChannel.Blocking = false;
+                        _contexts.Add(new Context(this, clientChannel));
                     }
                 }
             }
@@ -86,16 +89,47 @@ namespace Vlingo.Wire.Channel
                 throw;
             }
         }
+        
+        //=========================================
+        // Scheduled
+        //=========================================
 
         public void IntervalSignal(IScheduled scheduled, object data)
         {
-            throw new System.NotImplementedException();
+            ProbeChannel();
+        }
+
+        //=========================================
+        // Stoppable
+        //=========================================
+
+        public override void Stop()
+        {
+            _cancellable.Cancel();
+
+            try
+            {
+                while (!_contexts.IsEmpty) 
+                {
+                    _contexts.TryTake(out var context);
+                    context.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Failed to close selctor for {_name} while stopping because: {e.Message}", e);
+            }
         }
         
         //=========================================
         // internal implementation
         //=========================================
 
+        private void ProbeChannel()
+        {
+            throw new NotImplementedException();
+        }
+        
         private class Context : RequestResponseContext<Socket>
         {
             private readonly IConsumerByteBuffer _buffer;

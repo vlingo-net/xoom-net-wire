@@ -95,7 +95,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 {
                     var pipe = new Pipe();
                     var input = ReadConsumeAsync(channel, pipe.Writer);
-                    var output = WriteConsumeAsync(channel, pipe.Reader);
+                    var output = WriteConsumeAsync(pipe.Reader);
                     await Task.WhenAll(input, output);
                 }
             }
@@ -202,7 +202,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             writer.Complete();
         }
 
-        private async Task WriteConsumeAsync(Socket channel, PipeReader reader)
+        private async Task WriteConsumeAsync(PipeReader reader)
         {
             while (true)
             {

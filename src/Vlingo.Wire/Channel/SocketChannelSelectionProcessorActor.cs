@@ -107,17 +107,17 @@ namespace Vlingo.Wire.Channel
         {
             _cancellable.Cancel();
 
-            try
+            while (!_contexts.IsEmpty) 
             {
-                while (!_contexts.IsEmpty) 
+                try
                 {
                     _contexts.TryTake(out var context);
                     context.Close();
                 }
-            }
-            catch (Exception e)
-            {
-                Logger.Log($"Failed to close selctor for {_name} while stopping because: {e.Message}", e);
+                catch (Exception e)
+                {
+                    Logger.Log($"Failed to close client contexts sockets for {_name} while stopping because: {e.Message}", e);
+                }
             }
         }
         
@@ -127,7 +127,20 @@ namespace Vlingo.Wire.Channel
 
         private void ProbeChannel()
         {
-            throw new NotImplementedException();
+            if (IsStopped)
+            {
+                return;
+            }
+
+            try
+            {
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
         
         private class Context : RequestResponseContext<Socket>

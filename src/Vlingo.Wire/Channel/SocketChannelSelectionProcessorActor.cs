@@ -8,7 +8,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 using Vlingo.Actors;
 using Vlingo.Wire.Message;
 
@@ -75,7 +74,6 @@ namespace Vlingo.Wire.Channel
                 if (channel.Poll(10000, SelectMode.SelectRead))
                 {
                     var clientChannel = channel.Accept();
-                    clientChannel.Blocking = false;
                     _context = new Context(this, clientChannel);
                 }
             }
@@ -296,7 +294,15 @@ namespace Vlingo.Wire.Channel
 
             public bool HasNextWritable => _writables.Count > 0;
 
-            public IConsumerByteBuffer NextWritable() => _writables.Dequeue();
+            public IConsumerByteBuffer NextWritable()
+            {
+                if (HasNextWritable)
+                {
+                    return _writables.Dequeue();
+                }
+
+                return null;
+            }
 
             public void QueueWritable(IConsumerByteBuffer buffer) => _writables.Enqueue(buffer);
 

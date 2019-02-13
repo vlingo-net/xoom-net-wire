@@ -177,8 +177,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 do
                 {
                     bytesRead = channel.Receive(readBuffer, SocketFlags.None);
+                    pooledBuffer.Put(readBuffer, totalBytesRead, bytesRead);
                     totalBytesRead += bytesRead;
-                } while (bytesRead > 0);
+                } while (channel.Available > 0);
 
                 if (totalBytesRead > 0)
                 {

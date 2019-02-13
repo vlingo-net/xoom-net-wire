@@ -134,15 +134,37 @@ namespace Vlingo.Wire.Channel
 
             try
             {
+                var copy = _contexts.ToArray();
+                var checkRead = new List<Context>(copy);
+                var checkWrite = new List<Context>(copy);
+                Socket.Select(checkRead, checkWrite, null, 1000);
 
+                foreach (var readable in checkRead)
+                {
+                    Read(readable);
+                }
+                
+                foreach (var writable in checkWrite)
+                {
+                    Write(writable);
+                }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-                throw;
+                Logger.Log($"Failed client channel processing for {_name} because: {e.Message}", e);
             }
         }
-        
+
+        private void Write(Context writable)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void Read(Context readable)
+        {
+            throw new NotImplementedException();
+        }
+
         private class Context : RequestResponseContext<Socket>
         {
             private readonly IConsumerByteBuffer _buffer;

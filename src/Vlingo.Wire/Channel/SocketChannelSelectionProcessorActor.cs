@@ -6,6 +6,7 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -29,7 +30,7 @@ namespace Vlingo.Wire.Channel
         private readonly string _name;
         private readonly IRequestChannelConsumerProvider _provider;
         private readonly IResponseSenderChannel<Socket> _responder;
-        private readonly IList<Context> _contexts;
+        private readonly ConcurrentDictionary<string, Context> _contexts;
 
         public SocketChannelSelectionProcessorActor(
             IRequestChannelConsumerProvider provider,
@@ -41,7 +42,7 @@ namespace Vlingo.Wire.Channel
             _provider = provider;
             _name = name;
             _messageBufferSize = messageBufferSize;
-            _contexts = new List<Context>();
+            _contexts = new ConcurrentDictionary<string, Context>();
             _responder = SelfAs<IResponseSenderChannel<Socket>>();
             _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled>(), null, 100, probeInterval);
         }
@@ -79,7 +80,11 @@ namespace Vlingo.Wire.Channel
                     if (clientChannel != null)
                     {
                         clientChannel.Blocking = false;
-                        _contexts.Add(new Context(this, clientChannel));
+                        var context = new Context(this, clientChannel);
+                        if (!_contexts.TryAdd(context.Id, context))
+                        {
+                            throw new InvalidOperationException($"Unable to add context for id '{context.Id}'");
+                        }
                     }
                 }
             }
@@ -97,8 +102,21 @@ namespace Vlingo.Wire.Channel
 
         public void IntervalSignal(IScheduled scheduled, object data)
         {
-            // TODO : change the signature in IScheduled vlingo commun so we can use an asynchronous version
-            Task.Run(async () =>  await ProbeChannelAsync());
+            try
+            {
+                // this is invoked in the context of another Thread so even if we can block here
+                // TODO: should be a better way than blocking
+                ProbeChannelAsync().Wait();
+            }
+            catch (AggregateException ae)
+            {
+                foreach (var e in ae.InnerExceptions)
+                {
+                    Logger.Log($"Failed to ProbeChannelAsync for {_name} because: {e.Message}", e);
+                }
+                
+                throw ae.Flatten();
+            }
         }
 
         //=========================================
@@ -109,18 +127,19 @@ namespace Vlingo.Wire.Channel
         {
             _cancellable.Cancel();
 
-            while (!_contexts.Any()) 
+            foreach (var key in _contexts.Keys)
             {
                 try
                 {
-                    var context = _contexts[0];
-                    context.Close();
+                    _contexts[key].Close();
                 }
                 catch (Exception e)
                 {
-                    Logger.Log($"Failed to close client contexts sockets for {_name} while stopping because: {e.Message}", e);
+                    Logger.Log($"Failed to close client context '{key}' socket for {_name} while stopping because: {e.Message}", e);
                 }
             }
+            
+            _contexts.Clear();
         }
         
         //=========================================
@@ -136,10 +155,9 @@ namespace Vlingo.Wire.Channel
 
             try
             {
-                var checkRead = new Context[_contexts.Count];
-                var checkWrite = new Context[_contexts.Count];
-                _contexts.CopyTo(checkRead, 0);
-                _contexts.CopyTo(checkWrite, 0);
+                var copy = _contexts.Values.ToArray();
+                var checkRead = new List<Context>(copy);
+                var checkWrite = new List<Context>(copy);
                 Socket.Select(checkRead, checkWrite, null, 1000);
 
                 foreach (var readable in checkRead)
@@ -163,7 +181,8 @@ namespace Vlingo.Wire.Channel
             var channel = readable.Channel;
             if (!channel.IsSocketConnected())
             {
-                _contexts.Remove(readable); // TODO: check if removed (the same reference as passed in)
+                _contexts.TryRemove(readable.Id, out var removed);
+                removed.Close();
                 channel.Close();
                 return;
             }
@@ -174,13 +193,14 @@ namespace Vlingo.Wire.Channel
             var bytesRead = 0;
             do
             {
-                bytesRead = await channel.ReceiveAsync(new ArraySegment<byte>(readBuffer), SocketFlags.None);
+                bytesRead = await channel.ReceiveAsync(new ArraySegment<byte>(readBuffer), SocketFlags.None).ConfigureAwait(false);
                 totalBytesRead += bytesRead;
             } while (bytesRead > 0);
 
             if (bytesRead == 0)
             {
-                _contexts.Remove(readable);
+                _contexts.TryRemove(readable.Id, out var removed);
+                removed.Close();
                 channel.Close();
             }
             

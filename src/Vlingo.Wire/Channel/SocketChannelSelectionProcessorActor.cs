@@ -167,7 +167,7 @@ namespace Vlingo.Wire.Channel
                 
                 foreach (var writable in checkWrite)
                 {
-                    Write(writable);
+                    await WriteAsync(writable);
                 }
             }
             catch (Exception e)
@@ -214,9 +214,46 @@ namespace Vlingo.Wire.Channel
             }
         }
 
-        private void Write(Context writable)
+        private async Task WriteAsync(Context writable)
         {
-            throw new NotImplementedException();
+            var channel = writable.Channel;
+            if (!channel.IsSocketConnected())
+            {
+                _contexts.TryRemove(writable.Id, out var removed);
+                removed.Close();
+                channel.Close();
+                return;
+            }
+            
+            if (writable.HasNextWritable)
+            {
+                await WriteWithCachedDataAsync(writable, channel);
+            }
+        }
+
+        private async Task WriteWithCachedDataAsync(Context context, Socket channel)
+        {
+            for (var buffer = context.NextWritable(); buffer != null; buffer = context.NextWritable())
+            {
+                await WriteWithCachedDataAsync(context, channel, buffer);
+            }
+        }
+
+        private async Task WriteWithCachedDataAsync(Context context, Socket clientChannel, IConsumerByteBuffer buffer)
+        {
+            try
+            {
+                var responseBuffer = buffer.Array();
+                await clientChannel.SendAsync(new ArraySegment<byte>(responseBuffer), SocketFlags.None);
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Failed to write buffer for {_name} with channel {clientChannel.RemoteEndPoint} because: {e.Message}", e);
+            }
+            finally
+            {
+                buffer.Release();
+            }
         }
 
         private class Context : RequestResponseContext<Socket>

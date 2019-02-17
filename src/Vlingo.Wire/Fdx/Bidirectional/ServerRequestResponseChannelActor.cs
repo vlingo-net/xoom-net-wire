@@ -5,6 +5,7 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System;
 using System.Net.Sockets;
 using Vlingo.Actors;
 using Vlingo.Wire.Channel;
@@ -13,7 +14,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 {
     using Common;
     
-    public class ServerRequestResponseChannelActor : Actor, IServerRequestResponseChannel, IScheduled
+    public sealed class ServerRequestResponseChannelActor : Actor, IServerRequestResponseChannel, IScheduled
     {
         private readonly ICancellable _cancellable;
         private readonly Socket _channel;
@@ -31,8 +32,17 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             long probeInterval)
         {
             _name = name;
-            _processors = StartProcessors(provider, name, processorPoolSize, maxBufferPoolSize, maxMessageSize,
-                probeInterval);
+            _processors = StartProcessors(provider, name, processorPoolSize, maxBufferPoolSize, maxMessageSize, probeInterval);
+
+            try
+            {
+
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Failure opening socket because: {e.Message}", e);
+                throw;
+            }
         }
 
         public IServerRequestResponseChannel Start(
@@ -87,8 +97,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             {
                 processors[idx] = ChildActorFor<ISocketChannelSelectionProcessor>(
                     Definition.Has<SocketChannelSelectionProcessorActor>(
-                        Definition.Parameters(provider, $"{name}-processor-{idx}", maxBufferPoolSize, maxMessageSize,
-                            probeInterval)));
+                        Definition.Parameters(provider, $"{name}-processor-{idx}", maxBufferPoolSize, maxMessageSize, probeInterval)));
             }
 
             return processors;

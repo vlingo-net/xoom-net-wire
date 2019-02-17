@@ -18,7 +18,7 @@ namespace Vlingo.Wire.Channel
 {
     using Common;
     
-    public class SocketChannelSelectionProcessorActor : Actor,
+    public sealed class SocketChannelSelectionProcessorActor : Actor,
                                                         ISocketChannelSelectionProcessor,
                                                         IResponseSenderChannel<Socket>,
                                                         IScheduled

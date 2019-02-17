@@ -5,7 +5,6 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 

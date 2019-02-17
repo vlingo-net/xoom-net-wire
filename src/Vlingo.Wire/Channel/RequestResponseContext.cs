@@ -11,8 +11,8 @@ namespace Vlingo.Wire.Channel
 {
     public abstract class RequestResponseContext<T>
     {
-        public abstract R ConsumerData<R>();
-        public abstract R ConsumerData<R>(R data);
+        public abstract TR ConsumerData<TR>();
+        public abstract TR ConsumerData<TR>(TR data);
         public abstract bool HasConsumerData { get; }
         public abstract string Id { get; }
         public abstract IResponseSenderChannel<T> Sender { get; }

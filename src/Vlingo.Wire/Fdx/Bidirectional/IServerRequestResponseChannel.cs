@@ -49,8 +49,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             int maxMessageSize,
             long probeInterval)
         {
-            var parameters = Definition.Parameters(provider, port, name, processorPoolSize, maxBufferPoolSize,
-                maxMessageSize, probeInterval);
+            var parameters = Definition.Parameters(provider, port, name, processorPoolSize, maxBufferPoolSize, maxMessageSize, probeInterval);
 
             var channel =
                 stage.ActorFor<IServerRequestResponseChannel>(
@@ -71,8 +70,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             int maxMessageSize,
             long probeInterval)
         {
-            var parameters = Definition.Parameters(provider, port, name, processorPoolSize, maxBufferPoolSize,
-                maxMessageSize, probeInterval);
+            var parameters = Definition.Parameters(provider, port, name, processorPoolSize, maxBufferPoolSize, maxMessageSize, probeInterval);
 
             var channel =
                 stage.ActorFor<IServerRequestResponseChannel>(

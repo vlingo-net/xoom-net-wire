@@ -6,7 +6,9 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
+using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using Vlingo.Actors;
 using Vlingo.Wire.Channel;
 
@@ -36,15 +38,45 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
             try
             {
-
+                Logger.Log($"{GetType().Name}: OPENING PORT: {port}");
+                _channel = new Socket(SocketType.Stream, ProtocolType.Tcp);
+                _channel.Bind(new IPEndPoint(IPAddress.Any, port));
+                _channel.Listen(120);
             }
             catch (Exception e)
             {
                 Logger.Log($"Failure opening socket because: {e.Message}", e);
                 throw;
             }
-        }
 
+            _cancellable = Stage.Scheduler.Schedule(SelfAs<ServerRequestResponseChannelActor>(), null, 100, probeInterval);
+        }
+        
+        //=========================================
+        // ServerRequestResponseChannel
+        //=========================================
+        
+        public void Close()
+        {
+            if (IsStopped)
+            {
+                return;
+            }
+            
+            SelfAs<IStoppable>().Stop();
+        }
+        
+        //=========================================
+        // Scheduled
+        //=========================================
+        
+        public void IntervalSignal(IScheduled scheduled, object data)
+        {
+            // this is invoked in the context of another Thread so even if we can block here
+            // TODO: should be a better way than blocking
+            ProbeChannel().Wait();
+        }
+        
         public IServerRequestResponseChannel Start(
             Stage stage,
             IRequestChannelConsumerProvider provider,
@@ -55,7 +87,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             int maxMessageSize,
             long probeInterval)
         {
-            throw new System.NotImplementedException();
+            return ServerRequestResponseChannelHelper.Start(stage, provider, port, name, processorPoolSize,
+                maxBufferPoolSize, maxMessageSize, probeInterval);
         }
 
         public IServerRequestResponseChannel Start(
@@ -70,19 +103,70 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             int maxMessageSize,
             long probeInterval)
         {
-            throw new System.NotImplementedException();
-        }
-
-        public void Close()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void IntervalSignal(IScheduled scheduled, object data)
-        {
-            throw new System.NotImplementedException();
+            return ServerRequestResponseChannelHelper.Start(stage, address, mailboxName, provider, port, name, processorPoolSize,
+                maxBufferPoolSize, maxMessageSize, probeInterval);
         }
         
+        //=========================================
+        // Stoppable
+        //=========================================
+
+        public override void Stop()
+        {
+            _cancellable.Cancel();
+
+            foreach (var socketChannelSelectionProcessor in _processors)
+            {
+                socketChannelSelectionProcessor.Close();
+            }
+
+            try
+            {
+                _channel.Close();
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Failed to close channel for: '{_name}'", e);
+            }
+            
+            base.Stop();
+        }
+
+        //=========================================
+        // internal implementation
+        //=========================================
+        private async Task ProbeChannel()
+        {
+            if (IsStopped)
+            {
+                return;
+            }
+
+            try
+            {
+                await Accept(_channel);
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Failed to accept client channel for '{_name}' because: {e.Message}", e);
+            }
+        }
+
+        private async Task Accept(Socket channel)
+        {
+            await PooledProcessor().ProcessAsync(channel);
+        }
+
+        private ISocketChannelSelectionProcessor PooledProcessor()
+        {
+            if (_processorPoolIndex >= _processors.Length)
+            {
+                _processorPoolIndex = 0;
+            }
+
+            return _processors[_processorPoolIndex++];
+        }
+
         private ISocketChannelSelectionProcessor[] StartProcessors(
             IRequestChannelConsumerProvider provider,
             string name,

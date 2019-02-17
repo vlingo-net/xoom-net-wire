@@ -5,10 +5,16 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using Vlingo.Actors.TestKit;
+using Vlingo.Wire.Channel;
+
 namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 {
-    public class TestRequestChannelConsumerProvider
+    public class TestRequestChannelConsumerProvider : IRequestChannelConsumerProvider
     {
-        
+        public TestUntil Until { get; }
+        public IRequestChannelConsumer Consumer  => new TestRequestChannelConsumer();
+
+        public IRequestChannelConsumer RequestChannelConsumer() => Consumer;
     }
 }

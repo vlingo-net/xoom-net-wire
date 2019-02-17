@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.Threading;
 using Vlingo.Actors;
+using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Wire.Fdx.Bidirectional;
 
 namespace Vlingo.Wire.Tests.Fdx.Bidirectional
@@ -29,6 +30,10 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         public SocketRequestResponseChannelTest()
         {
             _world = World.StartWithDefault("test-request-response-channel");
+            
+            _buffer = new MemoryStream(1024);
+            var logger = ConsoleLogger.TestInstance();
+            _provider = new TestRequestChannelConsumerProvider();
         }
 
         public void Dispose()

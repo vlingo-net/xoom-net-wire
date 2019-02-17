@@ -16,16 +16,20 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 {
     public class TestRequestChannelConsumer : IRequestChannelConsumer
     {
-        private int _currentExpectedRequestLength;
-        private int _consumeCount;
-        private readonly IList<string> _requests = new List<string>();
-        private TestUntil _untilClosed;
-        private TestUntil _untilConsume;
-
         private readonly StringBuilder _requestBuilder = new StringBuilder();
         private string _remaining = string.Empty;
         
-        public void CloseWith<T>(RequestResponseContext<T> requestResponseContext, object data) => _untilClosed?.Happened();
+        public int CurrentExpectedRequestLength { get; }
+        
+        public int ConsumeCount { get; private set; }
+        
+        public IList<string> Requests { get; } = new List<string>();
+        
+        public TestUntil UntilClosed { get; }
+        
+        public TestUntil UntilConsume { get; }
+        
+        public void CloseWith<T>(RequestResponseContext<T> requestResponseContext, object data) => UntilClosed?.Happened();
 
         public void Consume<T>(RequestResponseContext<T> context, IConsumerByteBuffer buffer)
         {
@@ -39,7 +43,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             var requestPart = buffer.ToArray().BytesToText(0, (int)buffer.Length);
             _requestBuilder.Append(_remaining).Append(requestPart);
             _remaining = string.Empty;
-            if (_requestBuilder.Length >= _currentExpectedRequestLength)
+            if (_requestBuilder.Length >= CurrentExpectedRequestLength)
             {
                 // assume currentExpectedRequestLength is length of all
                 // requests when multiple are received at one time
@@ -51,7 +55,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 var last = false;
                 while (!last)
                 {
-                    var endIndex = currentIndex + _currentExpectedRequestLength;
+                    var endIndex = currentIndex + CurrentExpectedRequestLength;
                     if (endIndex > combinedRequests.Length)
                     {
                         _remaining = combinedRequests.Substring(currentIndex);
@@ -59,16 +63,16 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                     }
                     
                     var request = combinedRequests.Substring(currentIndex, endIndex);
-                    currentIndex += _currentExpectedRequestLength;
-                    _requests.Add(request);
-                    ++_consumeCount;
+                    currentIndex += CurrentExpectedRequestLength;
+                    Requests.Add(request);
+                    ++ConsumeCount;
                     
-                    var responseBuffer = new BasicConsumerByteBuffer(1, _currentExpectedRequestLength);
+                    var responseBuffer = new BasicConsumerByteBuffer(1, CurrentExpectedRequestLength);
                     context.RespondWith(responseBuffer.Clear().Put(Converters.TextToBytes(request)).Flip()); // echo back
         
                     last = currentIndex == combinedLength;
 
-                    _untilConsume?.Happened();
+                    UntilConsume?.Happened();
                 }
             }
         }

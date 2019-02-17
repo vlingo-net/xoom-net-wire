@@ -87,7 +87,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             int maxMessageSize,
             long probeInterval)
         {
-            return ServerRequestResponseChannelHelper.Start(stage, provider, port, name, processorPoolSize,
+            return ServerRequestResponseChannel.Start(stage, provider, port, name, processorPoolSize,
                 maxBufferPoolSize, maxMessageSize, probeInterval);
         }
 
@@ -103,7 +103,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             int maxMessageSize,
             long probeInterval)
         {
-            return ServerRequestResponseChannelHelper.Start(stage, address, mailboxName, provider, port, name, processorPoolSize,
+            return ServerRequestResponseChannel.Start(stage, address, mailboxName, provider, port, name, processorPoolSize,
                 maxBufferPoolSize, maxMessageSize, probeInterval);
         }
         

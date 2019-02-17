@@ -37,7 +37,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
     }
 
     // TODO: This is an workaround because C# doesn't allow implementation of default methods in interfaces. Should be fixed with C# 8
-    public static class ServerRequestResponseChannelHelper
+    public static class ServerRequestResponseChannel
     {
         public static IServerRequestResponseChannel Start(
             Stage stage,

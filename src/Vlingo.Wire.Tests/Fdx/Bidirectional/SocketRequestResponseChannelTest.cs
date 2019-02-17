@@ -34,6 +34,19 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _buffer = new MemoryStream(1024);
             var logger = ConsoleLogger.TestInstance();
             _provider = new TestRequestChannelConsumerProvider();
+            _serverConsumer = (TestRequestChannelConsumer)_provider.Consumer;
+
+            _server = ServerRequestResponseChannel.Start(
+                _world.Stage,
+                _provider,
+                TestPort,
+                "test-server",
+                1,
+                PoolSize,
+                10240,
+                10L);
+            
+            _clientConsumer = new TestResponseChannelConsumer();
         }
 
         public void Dispose()

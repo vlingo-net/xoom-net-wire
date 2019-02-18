@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <LangVersion>7.2</LangVersion>
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -14,6 +15,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Vlingo.Wire\Vlingo.Wire.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="vlingo-actors.properties">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -5,7 +5,7 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-using System.Net.Sockets;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Vlingo.Wire.Channel
@@ -13,6 +13,6 @@ namespace Vlingo.Wire.Channel
     public interface IRequestSenderChannel
     {
         void Close();
-        Task RequestWithAsync(NetworkStream stream);
+        Task RequestWithAsync(Stream stream);
     }
 }

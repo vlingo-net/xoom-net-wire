@@ -8,9 +8,15 @@
 using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Vlingo.Actors;
 using Vlingo.Actors.Plugin.Logging.Console;
+using Vlingo.Actors.TestKit;
+using Vlingo.Wire.Channel;
 using Vlingo.Wire.Fdx.Bidirectional;
+using Vlingo.Wire.Message;
+using Vlingo.Wire.Node;
+using Xunit;
 
 namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 {
@@ -26,6 +32,33 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         private IServerRequestResponseChannel _server;
         private TestRequestChannelConsumer _serverConsumer;
         private World _world;
+
+        [Fact(Skip = "Not working because of some issues with Proxy generation")]
+        public async Task TestBasicRequestResponse()
+        {
+            var request = "Hello, Request-Response";
+            
+            _serverConsumer.CurrentExpectedRequestLength = request.Length;
+            _clientConsumer.CurrentExpectedResponseLength = _serverConsumer.CurrentExpectedRequestLength;
+            await Request(request);
+            
+            _serverConsumer.UntilConsume = TestUntil.Happenings(1);
+            _clientConsumer.UntilConsume = TestUntil.Happenings(1);
+
+            while (_serverConsumer.UntilConsume.Remaining > 0)
+            {
+                await Task.Delay(1);
+            }
+            _serverConsumer.UntilConsume.Completes();
+            
+            while (_clientConsumer.UntilConsume.Remaining > 0)
+            {
+                await _client.ProbeChannelAsync();
+            }
+            _clientConsumer.UntilConsume.Completes();
+            
+            Assert.False(_serverConsumer.Requests.Count == 0);
+        }
 
         public SocketRequestResponseChannelTest()
         {
@@ -47,6 +80,11 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 10L);
             
             _clientConsumer = new TestResponseChannelConsumer();
+            
+            _client = new ClientRequestResponseChannel(Address.From(Host.Of("localhost"), TestPort, AddressType.None),
+                _clientConsumer, PoolSize, 10240, logger);
+
+            ++TestPort;
         }
 
         public void Dispose()
@@ -65,6 +103,14 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             }
             
             _world.Terminate();
+        }
+        
+        private async Task Request(string request)
+        {
+            _buffer.Clear();
+            _buffer.Write(Converters.TextToBytes(request));
+            _buffer.Flip();
+            await _client.RequestWithAsync(_buffer);
         }
     }
 }

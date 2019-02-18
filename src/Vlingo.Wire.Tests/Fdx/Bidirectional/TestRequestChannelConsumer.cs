@@ -19,7 +19,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         private readonly StringBuilder _requestBuilder = new StringBuilder();
         private string _remaining = string.Empty;
         
-        public int CurrentExpectedRequestLength { get; }
+        public int CurrentExpectedRequestLength { get; set; }
         
         public int ConsumeCount { get; private set; }
         
@@ -27,7 +27,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         
         public TestUntil UntilClosed { get; }
         
-        public TestUntil UntilConsume { get; }
+        public TestUntil UntilConsume { get; set; }
         
         public void CloseWith<T>(RequestResponseContext<T> requestResponseContext, object data) => UntilClosed?.Happened();
 

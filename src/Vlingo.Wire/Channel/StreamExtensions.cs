@@ -17,9 +17,8 @@ namespace Vlingo.Wire.Channel
             buffer.Position = 0;
         }
 
-        public static bool HasRemaining(this Stream buffer)
-        {
-            return buffer.Length - buffer.Position > 0;
-        }
+        public static bool HasRemaining(this Stream buffer) => buffer.Length - buffer.Position > 0;
+
+        public static void Clear(this Stream buffer) => buffer.SetLength(0);
     }
 }

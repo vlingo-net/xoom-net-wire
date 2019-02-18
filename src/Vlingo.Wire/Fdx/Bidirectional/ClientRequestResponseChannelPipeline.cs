@@ -7,6 +7,7 @@
 
 using System;
 using System.Buffers;
+using System.IO;
 using System.IO.Pipelines;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -54,7 +55,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             CloseChannel();
         }
 
-        public async Task RequestWithAsync(NetworkStream stream)
+        public async Task RequestWithAsync(Stream stream)
         {
             var preparedChannel = await PreparedChannelAsync();
             if (preparedChannel != null)

@@ -29,7 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.IO.Pipelines" Version="4.5.3" />
-    <PackageReference Include="Vlingo.Actors" Version="0.2.0" />
+    <PackageReference Include="Vlingo.Actors" Version="0.2.1" />
     <PackageReference Include="Vlingo.Common" Version="0.3.0" />
   </ItemGroup>
 </Project>

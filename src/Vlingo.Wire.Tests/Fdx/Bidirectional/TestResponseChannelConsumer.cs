@@ -18,13 +18,13 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
     {
         private readonly StringBuilder _responseBuilder = new StringBuilder();
         
-        public int CurrentExpectedResponseLength { get; }
+        public int CurrentExpectedResponseLength { get; set; }
         
         public int ConsumeCount { get; private set; }
         
         public IList<string> Responses { get; } = new List<string>();
         
-        public TestUntil UntilConsume { get; }
+        public TestUntil UntilConsume { get; set; }
         
         public void Consume(IConsumerByteBuffer buffer)
         {

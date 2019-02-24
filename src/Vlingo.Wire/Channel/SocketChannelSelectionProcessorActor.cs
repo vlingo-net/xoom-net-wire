@@ -6,9 +6,7 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Vlingo.Actors;
@@ -30,7 +28,7 @@ namespace Vlingo.Wire.Channel
         private readonly string _name;
         private readonly IRequestChannelConsumerProvider _provider;
         private readonly IResponseSenderChannel<Socket> _responder;
-        private readonly ConcurrentDictionary<string, Context> _contexts;
+        private Context _context;
 
         public SocketChannelSelectionProcessorActor(
             IRequestChannelConsumerProvider provider,
@@ -42,9 +40,9 @@ namespace Vlingo.Wire.Channel
             _provider = provider;
             _name = name;
             _messageBufferSize = messageBufferSize;
-            _contexts = new ConcurrentDictionary<string, Context>();
             _responder = SelfAs<IResponseSenderChannel<Socket>>();
-            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled>(), null, 100, probeInterval);
+            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled>(),
+                null, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(probeInterval));
         }
         
         //=========================================
@@ -74,18 +72,11 @@ namespace Vlingo.Wire.Channel
         {
             try
             {
-                if (channel.IsSocketConnected())
+                var clientChannel = await channel.AcceptAsync();
+                if (clientChannel != null)
                 {
-                    var clientChannel = await channel.AcceptAsync();
-                    if (clientChannel != null)
-                    {
-                        clientChannel.Blocking = false;
-                        var context = new Context(this, clientChannel);
-                        if (!_contexts.TryAdd(context.Id, context))
-                        {
-                            throw new InvalidOperationException($"Unable to add context for id '{context.Id}'");
-                        }
-                    }
+                    clientChannel.Blocking = false;
+                    _context = new Context(this, clientChannel);
                 }
             }
             catch (Exception e)
@@ -127,19 +118,14 @@ namespace Vlingo.Wire.Channel
         {
             _cancellable.Cancel();
 
-            foreach (var key in _contexts.Keys)
+            try
             {
-                try
-                {
-                    _contexts[key].Close();
-                }
-                catch (Exception e)
-                {
-                    Logger.Log($"Failed to close client context '{key}' socket for {_name} while stopping because: {e.Message}", e);
-                }
+                _context.Close();
             }
-            
-            _contexts.Clear();
+            catch (Exception e)
+            {
+                Logger.Log($"Failed to close client context '{_context.Id}' socket for {_name} while stopping because: {e.Message}", e);
+            }
         }
         
         //=========================================
@@ -155,19 +141,24 @@ namespace Vlingo.Wire.Channel
 
             try
             {
-                var copy = _contexts.Values.ToArray();
-                var checkRead = new List<Context>(copy);
-                var checkWrite = new List<Context>(copy);
-                Socket.Select(checkRead, checkWrite, null, 1000);
+                if (_context != null)
+                {
+                    if (_context.Channel.Poll(1000, SelectMode.SelectRead))
+                    {
+                        if (_context.Channel.IsSocketConnected())
+                        {
+                            if (_context.Channel.Available > 0)
+                            {
+                                await ReadAsync(_context);
+                            }
+                            else
+                            {
+                                await WriteAsync(_context);
+                            }
+                        }
+                    }
 
-                foreach (var readable in checkRead)
-                {
-                    await ReadAsync(readable);
-                }
-                
-                foreach (var writable in checkWrite)
-                {
-                    await WriteAsync(writable);
+                    CleanUp(_context);
                 }
             }
             catch (Exception e)
@@ -181,28 +172,21 @@ namespace Vlingo.Wire.Channel
             var channel = readable.Channel;
             if (!channel.IsSocketConnected())
             {
-                _contexts.TryRemove(readable.Id, out var removed);
-                removed.Close();
+                readable.Close();
                 channel.Close();
                 return;
             }
 
             var buffer = readable.RequestBuffer.Clear();
             var readBuffer = buffer.Array();
+            var bytes = new byte[1024];
             var totalBytesRead = 0;
             var bytesRead = 0;
             do
             {
-                bytesRead = await channel.ReceiveAsync(new ArraySegment<byte>(readBuffer), SocketFlags.None).ConfigureAwait(false);
+                bytesRead = await channel.ReceiveAsync(bytes, SocketFlags.None);
                 totalBytesRead += bytesRead;
-            } while (bytesRead > 0);
-
-            if (bytesRead == 0)
-            {
-                _contexts.TryRemove(readable.Id, out var removed);
-                removed.Close();
-                channel.Close();
-            }
+            } while (channel.Available == 0);
             
             if (totalBytesRead > 0)
             {
@@ -219,8 +203,7 @@ namespace Vlingo.Wire.Channel
             var channel = writable.Channel;
             if (!channel.IsSocketConnected())
             {
-                _contexts.TryRemove(writable.Id, out var removed);
-                removed.Close();
+                writable.Close();
                 channel.Close();
                 return;
             }
@@ -229,6 +212,12 @@ namespace Vlingo.Wire.Channel
             {
                 await WriteWithCachedDataAsync(writable, channel);
             }
+        }
+
+        private void CleanUp(Context context)
+        {
+            context.Close();
+            context.Channel.Close();
         }
 
         private async Task WriteWithCachedDataAsync(Context context, Socket channel)
@@ -313,7 +302,7 @@ namespace Vlingo.Wire.Channel
 
             public IRequestChannelConsumer Consumer => _consumer;
 
-            public bool HasNextWritable => _writables.Peek() != null;
+            public bool HasNextWritable => _writables.Count > 0;
 
             public IConsumerByteBuffer NextWritable() => _writables.Dequeue();
 

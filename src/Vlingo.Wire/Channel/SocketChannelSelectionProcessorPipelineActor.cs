@@ -45,7 +45,8 @@ namespace Vlingo.Wire.Channel
             _messageBufferSize = messageBufferSize;
             _contexts = new ConcurrentDictionary<string, Context>();
             _responder = SelfAs<IResponseSenderChannel<Socket>>();
-            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled>(), null, 100, probeInterval);
+            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled>(),
+                null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(probeInterval));
         }
         
         //=========================================
@@ -204,7 +205,7 @@ namespace Vlingo.Wire.Channel
                 {
                     // Request a minimum of 512 bytes from the PipeWriter
                     var memory = writer.GetMemory(minimumBufferSize);
-                    var bytesRead = await channel.ReceiveAsync(memory, SocketFlags.None).ConfigureAwait(false);
+                    var bytesRead = await channel.ReceiveAsync(memory, SocketFlags.None);
                     if (bytesRead == 0)
                     {
                         _contexts.TryRemove(readable.Id, out var removed);

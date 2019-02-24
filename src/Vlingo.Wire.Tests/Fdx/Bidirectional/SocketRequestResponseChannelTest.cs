@@ -69,7 +69,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _provider = new TestRequestChannelConsumerProvider();
             _serverConsumer = (TestRequestChannelConsumer)_provider.Consumer;
 
-            _server = ServerRequestResponseChannel.Start(
+            _server = ServerRequestResponseChannelFactory.Start(
                 _world.Stage,
                 _provider,
                 TestPort,

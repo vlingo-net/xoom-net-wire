@@ -49,12 +49,43 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 throw;
             }
 
-            _cancellable = Stage.Scheduler.Schedule(SelfAs<ServerRequestResponseChannelActor>(), null, 100, probeInterval);
+            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled>(),
+                null, TimeSpan.FromMilliseconds(100), TimeSpan.FromHours(probeInterval));
         }
         
         //=========================================
         // ServerRequestResponseChannel
         //=========================================
+        
+        IServerRequestResponseChannel IServerRequestResponseChannel.Start(
+            Stage stage,
+            IRequestChannelConsumerProvider provider,
+            int port,
+            string name,
+            int processorPoolSize,
+            int maxBufferPoolSize,
+            int maxMessageSize,
+            long probeInterval)
+        {
+            return ServerRequestResponseChannelFactory.Start(stage, provider, port, name, processorPoolSize,
+                maxBufferPoolSize, maxMessageSize, probeInterval);
+        }
+
+        IServerRequestResponseChannel IServerRequestResponseChannel.Start(
+            Stage stage,
+            IAddress address,
+            string mailboxName,
+            IRequestChannelConsumerProvider provider,
+            int port,
+            string name,
+            int processorPoolSize,
+            int maxBufferPoolSize,
+            int maxMessageSize,
+            long probeInterval)
+        {
+            return ServerRequestResponseChannelFactory.Start(stage, address, mailboxName, provider, port, name, processorPoolSize,
+                maxBufferPoolSize, maxMessageSize, probeInterval);
+        }
         
         public void Close()
         {
@@ -75,36 +106,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             // this is invoked in the context of another Thread so even if we can block here
             // TODO: should be a better way than blocking
             ProbeChannel().Wait();
-        }
-        
-        public IServerRequestResponseChannel Start(
-            Stage stage,
-            IRequestChannelConsumerProvider provider,
-            int port,
-            string name,
-            int processorPoolSize,
-            int maxBufferPoolSize,
-            int maxMessageSize,
-            long probeInterval)
-        {
-            return ServerRequestResponseChannel.Start(stage, provider, port, name, processorPoolSize,
-                maxBufferPoolSize, maxMessageSize, probeInterval);
-        }
-
-        public IServerRequestResponseChannel Start(
-            Stage stage,
-            IAddress address,
-            string mailboxName,
-            IRequestChannelConsumerProvider provider,
-            int port,
-            string name,
-            int processorPoolSize,
-            int maxBufferPoolSize,
-            int maxMessageSize,
-            long probeInterval)
-        {
-            return ServerRequestResponseChannel.Start(stage, address, mailboxName, provider, port, name, processorPoolSize,
-                maxBufferPoolSize, maxMessageSize, probeInterval);
         }
         
         //=========================================

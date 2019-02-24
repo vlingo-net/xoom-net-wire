@@ -61,7 +61,7 @@ namespace Vlingo.Wire.Channel
                 actor.DeadLetters.FailedDelivery(new DeadLetter(actor, ProcessAsyncRepresentation2));
             }
 
-            return null;
+            return Task.CompletedTask;
         }
     }
 }

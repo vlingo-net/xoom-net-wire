@@ -7,6 +7,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Vlingo.Actors;
@@ -58,6 +59,49 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _clientConsumer.UntilConsume.Completes();
             
             Assert.False(_serverConsumer.Requests.Count == 0);
+        }
+
+        [Fact]
+        public async Task TestGappyRequestResponse()
+        {
+            var requestPart1 = "Request Part-1";
+            var requestPart2 = "Request Part-2";
+            var requestPart3 = "Request Part-3";
+
+            _serverConsumer.CurrentExpectedRequestLength =
+                requestPart1.Length + requestPart2.Length + requestPart3.Length;
+            _clientConsumer.CurrentExpectedResponseLength = _serverConsumer.CurrentExpectedRequestLength;
+            
+            // simulate network latency for parts of single request
+            await Request(requestPart1);
+            await Task.Delay(100);
+            await Request(requestPart2);
+            await Task.Delay(200);
+            await Request(requestPart3);
+            _serverConsumer.UntilConsume = TestUntil.Happenings(1);
+            while (_serverConsumer.UntilConsume.Remaining > 0)
+            {
+                ;
+            }
+            _serverConsumer.UntilConsume.Completes();
+            
+            _clientConsumer.UntilConsume = TestUntil.Happenings(1);
+            while (_clientConsumer.UntilConsume.Remaining > 0)
+            {
+                await Task.Delay(10);
+                await _client.ProbeChannelAsync();
+            }
+            _clientConsumer.UntilConsume.Completes();
+            
+            Assert.True(_serverConsumer.Requests.Any());
+            Assert.Equal(1, _serverConsumer.ConsumeCount);
+            Assert.Equal(_serverConsumer.ConsumeCount, _serverConsumer.Requests.Count);
+            
+            Assert.True(_clientConsumer.Responses.Any());
+            Assert.Equal(1, _clientConsumer.ConsumeCount);
+            Assert.Equal(_clientConsumer.ConsumeCount, _clientConsumer.Responses.Count);
+            
+            Assert.Equal(_clientConsumer.Responses[0], _serverConsumer.Requests[0]);
         }
 
         public SocketRequestResponseChannelTest()

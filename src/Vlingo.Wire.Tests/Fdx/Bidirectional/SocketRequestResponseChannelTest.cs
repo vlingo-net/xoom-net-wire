@@ -18,11 +18,14 @@ using Vlingo.Wire.Fdx.Bidirectional;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Node;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 {
     public class SocketRequestResponseChannelTest : IDisposable
     {
+        private readonly ITestOutputHelper _output;
+        
         private static readonly int PoolSize = 100;
         private static int TestPort = 37371;
 
@@ -138,9 +141,46 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 Assert.Equal(_clientConsumer.Responses[idx], _serverConsumer.Requests[idx]);
             }
         }
-
-        public SocketRequestResponseChannelTest()
+        
+        [Fact]
+        public async Task TestThatRequestResponsePoolLimitsNotExceeded()
         {
+            var total = PoolSize * 2;
+            var request = "Hello, Request-Response";
+            
+            _serverConsumer.CurrentExpectedRequestLength = request.Length + 3; // digits 000 - 999
+            _clientConsumer.CurrentExpectedResponseLength = _serverConsumer.CurrentExpectedRequestLength;
+    
+            _serverConsumer.UntilConsume = TestUntil.Happenings(total);
+            _clientConsumer.UntilConsume = TestUntil.Happenings(total);
+    
+            for (int idx = 0; idx < total; ++idx) {
+                await Request(request + idx.ToString("D3"));
+            }
+    
+            while (_clientConsumer.UntilConsume.Remaining > 0) {
+                await _client.ProbeChannelAsync();
+            }
+            _serverConsumer.UntilConsume.Completes();
+            _clientConsumer.UntilConsume.Completes();
+
+            Assert.True(_serverConsumer.Requests.Any());
+            Assert.Equal(total, _serverConsumer.ConsumeCount);
+            Assert.Equal(_serverConsumer.ConsumeCount, _serverConsumer.Requests.Count);
+    
+            Assert.True(_clientConsumer.Responses.Any());
+            Assert.Equal(total, _clientConsumer.ConsumeCount);
+            Assert.Equal(_clientConsumer.ConsumeCount, _clientConsumer.Responses.Count);
+    
+            for (int idx = 0; idx < total; ++idx) {
+                Assert.Equal(_clientConsumer.Responses[idx], _serverConsumer.Requests[idx]);
+                // _output.WriteLine($"_clientConsumer.Responses[idx] - ${_clientConsumer.Responses[idx]} | _serverConsumer.Requests[idx] - ${_serverConsumer.Requests[idx]}");
+            }
+        }
+
+        public SocketRequestResponseChannelTest(ITestOutputHelper output)
+        {
+            _output = output;
             _world = World.StartWithDefault("test-request-response-channel");
             
             _buffer = new MemoryStream(1024);
@@ -190,6 +230,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _buffer.Write(Converters.TextToBytes(request));
             _buffer.Flip();
             await _client.RequestWithAsync(_buffer);
+            await Task.Delay(10); // TODO: Refactor this workaround for last assert in TestThatRequestResponsePoolLimitsNotExceeded
         }
     }
 }

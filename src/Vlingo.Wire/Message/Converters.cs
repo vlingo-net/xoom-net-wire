@@ -24,12 +24,12 @@ namespace Vlingo.Wire.Message
 
         public static byte[] TextToBytes(string text) => EncodingValue.GetBytes(text);
 
-        public static RawMessage ToRawMessage(this short sendingNodeId, Stream buffer)
+        public static RawMessage ToRawMessage(this short sendingNodeId, MemoryStream buffer)
         {
             buffer.Flip();
             var message = new RawMessage(buffer.Length);
             message.Put(buffer, false);
-            buffer.SetLength(0); // clear
+            buffer.Clear();
             
             var header = new RawMessageHeader(sendingNodeId, (short)0, message.Length);
             message.Header(header);

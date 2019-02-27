@@ -19,6 +19,10 @@ namespace Vlingo.Wire.Channel
 
         public static bool HasRemaining(this Stream buffer) => buffer.Length - buffer.Position > 0;
 
-        public static void Clear(this Stream buffer) => buffer.SetLength(0);
+        public static void Clear(this MemoryStream buffer)
+        {
+            buffer.SetLength(buffer.Capacity);
+            buffer.Position = 0;
+        }
     }
 }

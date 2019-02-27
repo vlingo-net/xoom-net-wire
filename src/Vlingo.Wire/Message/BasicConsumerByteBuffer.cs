@@ -8,6 +8,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using Vlingo.Wire.Channel;
 
 namespace Vlingo.Wire.Message
 {
@@ -123,8 +124,7 @@ namespace Vlingo.Wire.Message
 
         public IConsumerByteBuffer Clear()
         {
-            _buffer.SetLength(_buffer.Capacity);
-            _buffer.Position = 0;
+            _buffer.Clear();
             _mark = -1;
             return this;
         }

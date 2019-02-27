@@ -46,17 +46,17 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 var combinedLength = combinedResponse.Length;
                 _responseBuilder.Clear(); // reuse
       
-                var currentIndex = 0;
+                var startIndex = 0;
                 var last = false;
                 while (!last)
                 {
-                    var request = combinedResponse.Substring(currentIndex, currentIndex + CurrentExpectedResponseLength);
-                    currentIndex += CurrentExpectedResponseLength;
+                    var request = combinedResponse.Substring(startIndex, CurrentExpectedResponseLength);
+                    startIndex += CurrentExpectedResponseLength;
         
                     Responses.Add(request);
                     ++ConsumeCount;
         
-                    last = currentIndex == combinedLength;
+                    last = startIndex == combinedLength;
         
                     UntilConsume.Happened();
                 }

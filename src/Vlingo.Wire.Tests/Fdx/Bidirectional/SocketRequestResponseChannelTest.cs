@@ -104,6 +104,41 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             Assert.Equal(_clientConsumer.Responses[0], _serverConsumer.Requests[0]);
         }
 
+        [Fact]
+        public async Task Test10RequestResponse()
+        {
+            var request = "Hello, Request-Response";
+            
+            _serverConsumer.CurrentExpectedRequestLength = request.Length + 1; // digits 0 - 9
+            _clientConsumer.CurrentExpectedResponseLength = _serverConsumer.CurrentExpectedRequestLength;
+            
+            _serverConsumer.UntilConsume = TestUntil.Happenings(10);
+            _clientConsumer.UntilConsume = TestUntil.Happenings(10);
+            
+            for (int idx = 0; idx < 10; ++idx) {
+                await Request(request + idx);
+            }
+            
+            while (_clientConsumer.UntilConsume.Remaining > 0) {
+                await _client.ProbeChannelAsync();
+            }
+            
+            _serverConsumer.UntilConsume.Completes();
+            _clientConsumer.UntilConsume.Completes();
+            
+            Assert.True(_serverConsumer.Requests.Any());
+            Assert.Equal(10, _serverConsumer.ConsumeCount);
+            Assert.Equal(_serverConsumer.ConsumeCount, _serverConsumer.Requests.Count);
+    
+            Assert.True(_clientConsumer.Responses.Any());
+            Assert.Equal(10, _clientConsumer.ConsumeCount);
+            Assert.Equal(_clientConsumer.ConsumeCount, _clientConsumer.Responses.Count);
+    
+            for (int idx = 0; idx < 10; ++idx) {
+                Assert.Equal(_clientConsumer.Responses[idx], _serverConsumer.Requests[idx]);
+            }
+        }
+
         public SocketRequestResponseChannelTest()
         {
             _world = World.StartWithDefault("test-request-response-channel");

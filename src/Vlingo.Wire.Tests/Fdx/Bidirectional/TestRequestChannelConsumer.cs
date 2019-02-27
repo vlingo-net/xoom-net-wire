@@ -51,19 +51,21 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 var combinedLength = combinedRequests.Length;
                 _requestBuilder.Clear(); // reuse
 
+                var startIndex = 0;
                 var currentIndex = 0;
                 var last = false;
                 while (!last)
                 {
-                    var endIndex = currentIndex + CurrentExpectedRequestLength;
-                    if (endIndex > combinedRequests.Length)
+                    if (startIndex > combinedRequests.Length)
                     {
                         _remaining = combinedRequests.Substring(currentIndex);
                         return;
                     }
                     
-                    var request = combinedRequests.Substring(currentIndex, endIndex);
+                    var request = combinedRequests.Substring(startIndex, CurrentExpectedRequestLength);
                     currentIndex += CurrentExpectedRequestLength;
+                    startIndex = startIndex + CurrentExpectedRequestLength;
+
                     Requests.Add(request);
                     ++ConsumeCount;
                     

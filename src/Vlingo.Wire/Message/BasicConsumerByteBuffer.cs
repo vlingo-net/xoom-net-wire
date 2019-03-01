@@ -16,7 +16,7 @@ namespace Vlingo.Wire.Message
         private MemoryStream _buffer;
         private readonly int _id;
         private string _tag;
-        private long _mark = -1;
+        private long _mark = 0;
 
         public BasicConsumerByteBuffer(int id, int maxBufferSize)
         {
@@ -75,7 +75,7 @@ namespace Vlingo.Wire.Message
             
             if (_mark > _buffer.Position)
             {
-                _mark = -1;
+                _mark = 0;
             }
             return this;
         }
@@ -98,7 +98,7 @@ namespace Vlingo.Wire.Message
 
             if (_mark > _buffer.Length)
             {
-                _mark = -1;
+                _mark = 0;
             }
             
             return this;
@@ -125,7 +125,7 @@ namespace Vlingo.Wire.Message
         {
             _buffer.SetLength(_buffer.Capacity);
             _buffer.Position = 0;
-            _mark = -1;
+            _mark = 0;
             return this;
         }
 
@@ -133,14 +133,14 @@ namespace Vlingo.Wire.Message
         {
             _buffer.SetLength(_buffer.Position);
             _buffer.Position = 0;
-            _mark = -1;
+            _mark = 0;
             return this;
         }
 
         public IConsumerByteBuffer Rewind()
         {
             _buffer.Position = 0;
-            _mark = -1;
+            _mark = 0;
             return this;
         }
 

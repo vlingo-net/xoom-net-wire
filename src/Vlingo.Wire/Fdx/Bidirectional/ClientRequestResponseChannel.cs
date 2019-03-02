@@ -175,8 +175,10 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             {
                 do
                 {
-                    bytesRead = await channel.ReceiveAsync(readBuffer, SocketFlags.None);
-                    pooledBuffer.Put(readBuffer, totalBytesRead, bytesRead);
+                    var b = new byte[channel.Available];
+                    bytesRead = await channel.ReceiveAsync(b, SocketFlags.None);
+                    Console.WriteLine($"Receiving response: '{Converters.BytesToText(b)}'");
+                    pooledBuffer.Put(b);
                     totalBytesRead += bytesRead;
                 } while (channel.Available > 0);
 

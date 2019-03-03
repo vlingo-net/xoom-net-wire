@@ -38,7 +38,7 @@ namespace Vlingo.Wire.Message
             set => _tag = value;
         }
 
-        public byte[] Array() => _buffer.ToArray();
+        public byte[] ToArray() => _buffer.ToArray();
 
         // default values because ported from java this has no application here
         public int ArrayOffset => 0;

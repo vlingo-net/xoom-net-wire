@@ -33,7 +33,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 
         public void Consume<T>(RequestResponseContext<T> context, IConsumerByteBuffer buffer)
         {
-            var bytes = buffer.Array();
+            var bytes = buffer.ToArray();
             buffer.Release();
             Consume(context, new ReadOnlySequence<byte>(bytes));
         }

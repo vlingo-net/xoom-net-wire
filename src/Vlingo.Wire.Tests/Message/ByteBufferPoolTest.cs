@@ -50,7 +50,7 @@ namespace Vlingo.Wire.Tests.Message
             
             buffer1.AsStream().Write(Converters.TextToBytes(testText));
             
-            Assert.Equal(testText, Converters.BytesToText(buffer1.Flip().Array()));
+            Assert.Equal(testText, Converters.BytesToText(buffer1.Flip().ToArray()));
         }
 
         // TODO : This yields poor performance compared to java. Has to be investigated.

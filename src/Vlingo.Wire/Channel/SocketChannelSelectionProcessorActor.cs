@@ -169,13 +169,13 @@ namespace Vlingo.Wire.Channel
             }
 
             var buffer = readable.RequestBuffer.Clear();
-            var readBuffer = buffer.Array();
+            var readBuffer = buffer.ToArray();
             var totalBytesRead = 0;
             var bytesRead = 0;
             do
             {
                 bytesRead = await channel.ReceiveAsync(readBuffer, SocketFlags.None);
-                buffer.Put(readBuffer, totalBytesRead, bytesRead);
+                buffer.Put(readBuffer, 0, bytesRead);
                 totalBytesRead += bytesRead;
             } while (channel.Available > 0);
 
@@ -223,7 +223,7 @@ namespace Vlingo.Wire.Channel
         {
             try
             {
-                var responseBuffer = buffer.Array();
+                var responseBuffer = buffer.ToArray();
                 await clientChannel.SendAsync(new ArraySegment<byte>(responseBuffer), SocketFlags.None);
             }
             catch (Exception e)

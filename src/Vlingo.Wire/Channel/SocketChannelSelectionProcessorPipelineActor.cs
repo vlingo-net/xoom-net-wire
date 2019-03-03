@@ -288,7 +288,7 @@ namespace Vlingo.Wire.Channel
         {
             try
             {
-                var responseBuffer = buffer.Array();
+                var responseBuffer = buffer.ToArray();
                 await clientChannel.SendAsync(new ArraySegment<byte>(responseBuffer), SocketFlags.None);
             }
             catch (Exception e)

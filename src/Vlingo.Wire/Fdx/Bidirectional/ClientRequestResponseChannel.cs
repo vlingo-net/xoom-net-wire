@@ -168,17 +168,15 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private async Task ReadConsumeAsync(Socket channel)
         {
             var pooledBuffer = _readBufferPool.AccessFor("client-response", 25);
-            var readBuffer = pooledBuffer.Array();
+            var readBuffer = pooledBuffer.ToArray();
             var totalBytesRead = 0;
             var bytesRead = 0;
             try
             {
                 do
                 {
-                    var b = new byte[channel.Available];
-                    bytesRead = await channel.ReceiveAsync(b, SocketFlags.None);
-                    Console.WriteLine($"Receiving response: '{Converters.BytesToText(b)}'");
-                    pooledBuffer.Put(b);
+                    bytesRead = await channel.ReceiveAsync(readBuffer, SocketFlags.None);
+                    pooledBuffer.Put(readBuffer, 0, bytesRead);
                     totalBytesRead += bytesRead;
                 } while (channel.Available > 0);
 

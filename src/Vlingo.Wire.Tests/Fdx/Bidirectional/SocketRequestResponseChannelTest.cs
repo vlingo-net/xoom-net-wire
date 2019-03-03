@@ -173,7 +173,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             Assert.Equal(_clientConsumer.ConsumeCount, _clientConsumer.Responses.Count);
     
             for (int idx = 0; idx < total; ++idx) {
-                // Assert.Equal(_clientConsumer.Responses[idx], _serverConsumer.Requests[idx]);
+                Assert.Equal(_clientConsumer.Responses[idx], _serverConsumer.Requests[idx]);
                 // _output.WriteLine($"_clientConsumer.Responses[idx] - ${_clientConsumer.Responses[idx]} | _serverConsumer.Requests[idx] - ${_serverConsumer.Requests[idx]}");
             }
         }
@@ -208,10 +208,6 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 
         public void Dispose()
         {
-            _server.Close();
-            _client.Close();
-            _buffer.Dispose();
-
             try
             {
                 Thread.Sleep(1000);
@@ -220,6 +216,10 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             {
                 // ignore
             }
+            
+            _server.Close();
+            _client.Close();
+            _buffer.Dispose();
             
             _world.Terminate();
         }

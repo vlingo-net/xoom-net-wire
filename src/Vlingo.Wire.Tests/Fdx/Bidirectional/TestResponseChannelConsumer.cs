@@ -28,7 +28,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         
         public void Consume(IConsumerByteBuffer buffer)
         {
-            var bytes = buffer.Array();
+            var bytes = buffer.ToArray();
             buffer.Release();
             Consume(new ReadOnlySequence<byte>(bytes));
         }

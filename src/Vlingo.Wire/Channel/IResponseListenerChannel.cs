@@ -11,6 +11,6 @@ namespace Vlingo.Wire.Channel
 {
     public interface IResponseListenerChannel
     {
-        void ProbeChannelAsync();
+        Task ProbeChannelAsync();
     }
 }

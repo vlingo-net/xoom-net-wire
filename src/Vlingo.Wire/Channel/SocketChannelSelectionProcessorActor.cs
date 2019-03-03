@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using Vlingo.Actors;
 using Vlingo.Wire.Message;
 
@@ -67,13 +68,13 @@ namespace Vlingo.Wire.Channel
         // SocketChannelSelectionProcessor
         //=========================================
         
-        public void ProcessAsync(Socket channel)
+        public async Task ProcessAsync(Socket channel)
         {
             try
             {
                 if (channel.Poll(10000, SelectMode.SelectRead))
                 {
-                    var clientChannel = channel.Accept();
+                    var clientChannel = await channel.AcceptAsync();
                     _context = new Context(this, clientChannel);
                 }
             }
@@ -95,7 +96,7 @@ namespace Vlingo.Wire.Channel
             {
                 // this is invoked in the context of another Thread so even if we can block here
                 // TODO: should be a better way than blocking
-                ProbeChannelAsync();
+                ProbeChannelAsync().Wait();
             }
             catch (AggregateException ae)
             {
@@ -130,7 +131,7 @@ namespace Vlingo.Wire.Channel
         // internal implementation
         //=========================================
 
-        private void ProbeChannelAsync()
+        private async Task ProbeChannelAsync()
         {
             if (IsStopped)
             {
@@ -143,11 +144,11 @@ namespace Vlingo.Wire.Channel
                 {
                     if (_context.Channel.Available > 0)
                     {
-                        ReadAsync(_context);
+                        await ReadAsync(_context);
                     }
                     else
                     {
-                        WriteAsync(_context);
+                        await WriteAsync(_context);
                     }
                 }
             }
@@ -157,7 +158,7 @@ namespace Vlingo.Wire.Channel
             }
         }
         
-        private void ReadAsync(Context readable)
+        private async Task ReadAsync(Context readable)
         {
             var channel = readable.Channel;
             if (!channel.IsSocketConnected())
@@ -173,7 +174,7 @@ namespace Vlingo.Wire.Channel
             var bytesRead = 0;
             do
             {
-                bytesRead = channel.Receive(readBuffer, SocketFlags.None);
+                bytesRead = await channel.ReceiveAsync(readBuffer, SocketFlags.None);
                 buffer.Put(readBuffer, totalBytesRead, bytesRead);
                 totalBytesRead += bytesRead;
             } while (channel.Available > 0);
@@ -194,7 +195,7 @@ namespace Vlingo.Wire.Channel
             }
         }
 
-        private void WriteAsync(Context writable)
+        private async Task WriteAsync(Context writable)
         {
             var channel = writable.Channel;
             if (!channel.IsSocketConnected())
@@ -206,24 +207,24 @@ namespace Vlingo.Wire.Channel
             
             if (writable.HasNextWritable)
             {
-                WriteWithCachedDataAsync(writable, channel);
+                await WriteWithCachedDataAsync(writable, channel);
             }
         }
 
-        private void WriteWithCachedDataAsync(Context context, Socket channel)
+        private async Task WriteWithCachedDataAsync(Context context, Socket channel)
         {
             for (var buffer = context.NextWritable(); buffer != null; buffer = context.NextWritable())
             {
-                WriteWithCachedDataAsync(context, channel, buffer);
+                await WriteWithCachedDataAsync(context, channel, buffer);
             }
         }
 
-        private void WriteWithCachedDataAsync(Context context, Socket clientChannel, IConsumerByteBuffer buffer)
+        private async Task WriteWithCachedDataAsync(Context context, Socket clientChannel, IConsumerByteBuffer buffer)
         {
             try
             {
                 var responseBuffer = buffer.Array();
-                clientChannel.Send(responseBuffer, SocketFlags.None);
+                await clientChannel.SendAsync(new ArraySegment<byte>(responseBuffer), SocketFlags.None);
             }
             catch (Exception e)
             {

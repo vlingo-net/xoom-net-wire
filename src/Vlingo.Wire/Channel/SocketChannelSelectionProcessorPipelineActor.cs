@@ -72,13 +72,13 @@ namespace Vlingo.Wire.Channel
         // SocketChannelSelectionProcessor
         //=========================================
         
-        public void ProcessAsync(Socket channel)
+        public async Task ProcessAsync(Socket channel)
         {
             try
             {
                 if (channel.IsSocketConnected())
                 {
-                    var clientChannel = channel.Accept();
+                    var clientChannel = await channel.AcceptAsync();
                     if (clientChannel != null)
                     {
                         clientChannel.Blocking = false;

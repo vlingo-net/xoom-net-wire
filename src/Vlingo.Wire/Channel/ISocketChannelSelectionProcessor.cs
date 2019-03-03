@@ -13,6 +13,7 @@ namespace Vlingo.Wire.Channel
     public interface ISocketChannelSelectionProcessor
     {
         void Close();
-        void ProcessAsync(Socket channel);
+        
+        Task ProcessAsync(Socket channel);
     }
 }

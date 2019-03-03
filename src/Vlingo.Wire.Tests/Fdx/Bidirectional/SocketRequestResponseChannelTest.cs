@@ -40,7 +40,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             _serverConsumer.CurrentExpectedRequestLength = request.Length;
             _clientConsumer.CurrentExpectedResponseLength = _serverConsumer.CurrentExpectedRequestLength;
-            Request(request);
+            await Request(request);
             
             _serverConsumer.UntilConsume = TestUntil.Happenings(1);
             _clientConsumer.UntilConsume = TestUntil.Happenings(1);
@@ -53,7 +53,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             while (_clientConsumer.UntilConsume.Remaining > 0)
             {
-                _client.ProbeChannelAsync();
+                await _client.ProbeChannelAsync();
             }
             _clientConsumer.UntilConsume.Completes();
             
@@ -105,12 +105,12 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _world.Terminate();
         }
         
-        private void Request(string request)
+        private async Task Request(string request)
         {
             _buffer.Clear();
             _buffer.Write(Converters.TextToBytes(request));
             _buffer.Flip();
-            _client.RequestWithAsync(_buffer);
+            await _client.RequestWithAsync(_buffer);
         }
     }
 }

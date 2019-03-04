@@ -84,7 +84,7 @@ namespace Vlingo.Wire.Message
                 
                 if (availableContentLength == missingRawMessageLength)
                 {
-                  _workBuffer.Clear();
+                  _workBuffer.SetLength(0); // clear
                   SetMode(ScanMode.ReadHeader);
                 }
                 else if (availableContentLength > missingRawMessageLength)
@@ -93,7 +93,7 @@ namespace Vlingo.Wire.Message
                 }
                 else if (availableContentLength < missingRawMessageLength)
                 {
-                  _workBuffer.Clear();
+                  _workBuffer.SetLength(0); // clear
                   SetMode(ScanMode.ReuseHeader);
                 }
             }

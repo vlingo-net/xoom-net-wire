@@ -7,6 +7,7 @@
 
 using System;
 using System.IO;
+using Vlingo.Wire.Channel;
 
 namespace Vlingo.Wire.Message
 {

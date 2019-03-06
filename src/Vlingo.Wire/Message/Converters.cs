@@ -7,6 +7,7 @@
 
 using System.IO;
 using System.Text;
+using Vlingo.Wire.Channel;
 
 namespace Vlingo.Wire.Message
 {
@@ -25,7 +26,7 @@ namespace Vlingo.Wire.Message
 
         public static RawMessage ToRawMessage(this short sendingNodeId, Stream buffer)
         {
-            Flip(buffer);
+            buffer.Flip();
             var message = new RawMessage(buffer.Length);
             message.Put(buffer, false);
             buffer.SetLength(0); // clear
@@ -33,12 +34,6 @@ namespace Vlingo.Wire.Message
             var header = new RawMessageHeader(sendingNodeId, (short)0, message.Length);
             message.Header(header);
             return message;
-        }
-        
-        public static void Flip(this Stream buffer)
-        {
-            buffer.SetLength(buffer.Position);
-            buffer.Position = 0;
         }
     }
 }

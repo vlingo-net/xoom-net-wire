@@ -17,7 +17,7 @@ using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Multicast
 {
-    public class MulticastPublisherReader : ChannelMessageDispatcher, IChannelPublisher
+    public class MulticastPublisherReader : ChannelMessageDispatcher, IChannelPublisher, IDisposable
     {
         private readonly RawMessage _availability;
         private readonly Socket _publisherChannel;
@@ -30,6 +30,7 @@ namespace Vlingo.Wire.Multicast
         private readonly string _name;
         private readonly IPEndPoint _publisherAddress;
         private readonly Socket _readChannel;
+        private bool _disposed;
 
         public MulticastPublisherReader(
             string name,
@@ -62,6 +63,10 @@ namespace Vlingo.Wire.Multicast
             
             _availability = AvailabilityMessage();
         }
+        
+        //====================================
+        // ChannelPublisher
+        //====================================
 
         public void Close()
         {
@@ -75,6 +80,8 @@ namespace Vlingo.Wire.Multicast
             try
             {
                 _publisherChannel.Close();
+                _messageBuffer.Dispose();
+                _readChannel.Dispose();
             }
             catch (Exception e)
             {
@@ -83,7 +90,7 @@ namespace Vlingo.Wire.Multicast
             
             try
             {
-                // TODO: Implement with TCP with _readChannel
+                // TODO: Implementation not finished with TCP with _readChannel
                 // _readChannel.Close();
             }
             catch (Exception e)
@@ -92,7 +99,7 @@ namespace Vlingo.Wire.Multicast
             }
         }
 
-        public async Task ProcessChannel()
+        public async Task ProcessChannelAsync()
         {
             if (_closed)
             {
@@ -101,7 +108,7 @@ namespace Vlingo.Wire.Multicast
 
             try
             {
-                await SendMax();
+                await SendMaxAsync();
             }
             catch (SocketException e)
             {
@@ -127,12 +134,41 @@ namespace Vlingo.Wire.Multicast
             
             _messageQueue.Enqueue(message);
         }
+        
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);  
+        }
+        
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+      
+            if (disposing) 
+            {
+                Close();
+            }
+      
+            _disposed = true;
+        }
+        
+        //====================================
+        // ChannelMessageDispatcher
+        //====================================
 
         public override IChannelReaderConsumer Consumer => _consumer;
 
         public override ILogger Logger => _logger;
 
         public override string Name => _name;
+        
+        //====================================
+        // internal implementation
+        //====================================
         
         private RawMessage AvailabilityMessage()
         {
@@ -161,7 +197,7 @@ namespace Vlingo.Wire.Multicast
             }
         }
 
-        private async Task SendMax()
+        private async Task SendMaxAsync()
         {
             while (true)
             {

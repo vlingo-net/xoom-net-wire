@@ -1,4 +1,4 @@
-﻿// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the
 // Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -6,15 +6,11 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.Threading.Tasks;
-using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Channel
 {
-    public interface IChannelPublisher
+    public interface IResponseListenerChannel
     {
-        void Close();
-        Task ProcessChannelAsync();
-        void SendAvailability();
-        void Send(RawMessage message);
+        Task ProbeChannelAsync();
     }
 }

@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 namespace Vlingo.Wire.Message
 {
-    using Vlingo.Wire.Node;
+    using Node;
     
     public static class MessagePartsBuilder
     {

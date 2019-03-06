@@ -16,7 +16,7 @@ namespace Vlingo.Wire.Message
         void Release();
         string Tag { get; set; }
 
-        byte[] Array();
+        byte[] ToArray();
         
         int ArrayOffset { get; }
         

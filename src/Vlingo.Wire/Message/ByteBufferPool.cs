@@ -49,7 +49,7 @@ namespace Vlingo.Wire.Message
         public PooledByteBuffer AccessFor(string tag, int retries)
         {
             while (true) {
-                for (int idx = 0; idx < _poolSize; ++idx) {
+                for (var idx = 0; idx < _poolSize; ++idx) {
                     var buffer = _pool[idx];
                     if (buffer.ClaimUse(tag)) {
                         return buffer;
@@ -84,7 +84,7 @@ namespace Vlingo.Wire.Message
                 if (_inUse.CompareAndSet(false, true))
                 {
                     Tag = tag;
-                    AsStream().SetLength(0);
+                    Clear();
                     return true;
                 }
 

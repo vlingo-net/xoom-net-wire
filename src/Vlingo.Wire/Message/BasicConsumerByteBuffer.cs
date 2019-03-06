@@ -16,7 +16,7 @@ namespace Vlingo.Wire.Message
         private MemoryStream _buffer;
         private readonly int _id;
         private string _tag;
-        private long _mark = -1;
+        private long _mark = 0;
 
         public BasicConsumerByteBuffer(int id, int maxBufferSize)
         {
@@ -38,7 +38,7 @@ namespace Vlingo.Wire.Message
             set => _tag = value;
         }
 
-        public byte[] Array() => _buffer.ToArray();
+        public byte[] ToArray() => _buffer.ToArray();
 
         // default values because ported from java this has no application here
         public int ArrayOffset => 0;
@@ -75,7 +75,7 @@ namespace Vlingo.Wire.Message
             
             if (_mark > _buffer.Position)
             {
-                _mark = -1;
+                _mark = 0;
             }
             return this;
         }
@@ -98,7 +98,7 @@ namespace Vlingo.Wire.Message
 
             if (_mark > _buffer.Length)
             {
-                _mark = -1;
+                _mark = 0;
             }
             
             return this;
@@ -123,9 +123,9 @@ namespace Vlingo.Wire.Message
 
         public IConsumerByteBuffer Clear()
         {
-            _buffer.SetLength(0);
+            _buffer.SetLength(_buffer.Capacity);
             _buffer.Position = 0;
-            _mark = -1;
+            _mark = 0;
             return this;
         }
 
@@ -133,20 +133,20 @@ namespace Vlingo.Wire.Message
         {
             _buffer.SetLength(_buffer.Position);
             _buffer.Position = 0;
-            _mark = -1;
+            _mark = 0;
             return this;
         }
 
         public IConsumerByteBuffer Rewind()
         {
             _buffer.Position = 0;
-            _mark = -1;
+            _mark = 0;
             return this;
         }
 
-        public long Remaining => _buffer.Capacity - _buffer.Position;
+        public long Remaining => _buffer.Length - _buffer.Position;
 
-        public bool HasRemaining => _buffer.Position < _buffer.Capacity;
+        public bool HasRemaining => _buffer.Position < _buffer.Length;
 
         public bool IsReadOnly => !_buffer.CanWrite;
 

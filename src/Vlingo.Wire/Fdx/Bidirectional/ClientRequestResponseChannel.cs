@@ -68,7 +68,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                     while (stream.HasRemaining())
                     {
                         var buffer = new byte[stream.Length];
-                        stream.Read(buffer, 0, buffer.Length);
+                        await stream.ReadAsync(buffer, 0, buffer.Length);
                         await preparedChannel.SendAsync(new ArraySegment<byte>(buffer), SocketFlags.None);
                     }
                 }

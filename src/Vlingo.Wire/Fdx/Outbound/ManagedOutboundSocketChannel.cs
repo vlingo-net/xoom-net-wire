@@ -38,7 +38,7 @@ namespace Vlingo.Wire.Fdx.Outbound
                 try
                 {
                     _channel.Close();
-                    Dispose(true);
+                    Dispose(false);
                 }
                 catch (Exception e)
                 {

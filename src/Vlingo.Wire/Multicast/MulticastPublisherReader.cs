@@ -90,8 +90,7 @@ namespace Vlingo.Wire.Multicast
             
             try
             {
-                // TODO: Implementation not finished with TCP with _readChannel
-                // _readChannel.Close();
+                _readChannel.Close();
             }
             catch (Exception e)
             {

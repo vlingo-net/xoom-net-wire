@@ -21,6 +21,7 @@ namespace Vlingo.Wire.Message
         {
             _rawMessage = new RawMessage(maxMessageSize);
             _workBuffer = new MemoryStream(maxMessageSize);
+            _workBuffer.SetLength(maxMessageSize);
             _mode = ScanMode.ReadHeader;
         }
       
@@ -84,7 +85,7 @@ namespace Vlingo.Wire.Message
                 
                 if (availableContentLength == missingRawMessageLength)
                 {
-                  _workBuffer.SetLength(0); // clear
+                  _workBuffer.Clear();
                   SetMode(ScanMode.ReadHeader);
                 }
                 else if (availableContentLength > missingRawMessageLength)
@@ -93,12 +94,12 @@ namespace Vlingo.Wire.Message
                 }
                 else if (availableContentLength < missingRawMessageLength)
                 {
-                  _workBuffer.SetLength(0); // clear
+                  _workBuffer.Clear();
                   SetMode(ScanMode.ReuseHeader);
                 }
             }
         }
-      
+
         public Stream WorkBuffer() => _workBuffer;
       
         private void SetMode(ScanMode mode) => _mode = mode;

@@ -100,6 +100,7 @@ namespace Vlingo.Wire.Multicast
 
         public async Task ProcessChannelAsync()
         {
+            // TODO: This part lack Accept and read like in java version
             if (_closed)
             {
                 return;

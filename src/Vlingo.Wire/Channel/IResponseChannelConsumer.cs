@@ -14,7 +14,7 @@ namespace Vlingo.Wire.Channel
     {
         void Consume(IConsumerByteBuffer buffer);
 
-        // TODO: Experimental System.IO.Pipelines
+        // Experimental System.IO.Pipelines
         void Consume(ReadOnlySequence<byte> buffer);
     }
 }

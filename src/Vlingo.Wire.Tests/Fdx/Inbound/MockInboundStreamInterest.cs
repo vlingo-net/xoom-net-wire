@@ -18,7 +18,12 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
 {
     public class MockInboundStreamInterest: AbstractMessageTool, IInboundStreamInterest
     {
-        public TestResults TestResult => new TestResults();
+        public MockInboundStreamInterest()
+        {
+            TestResult = new TestResults();
+        }
+        
+        public readonly TestResults TestResult;
 
         public void HandleInboundStreamMessage(AddressType addressType, RawMessage message)
         {

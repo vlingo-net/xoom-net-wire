@@ -110,10 +110,7 @@ namespace Vlingo.Wire.Message
 
         public override int GetHashCode() => 31 * (_nodeId.GetHashCode() + _type.GetHashCode() + _length.GetHashCode());
 
-        public override string ToString()
-        {
-            return $"RawMessageHeader[headerId={HeaderId} nodeId={_nodeId} type={_type} length={_length}]";
-        }
+        public override string ToString() => $"RawMessageHeader[headerId={HeaderId} nodeId={_nodeId} type={_type} length={_length}]";
 
         protected RawMessageHeader SetAll(short nodeId, short type, long length)
         {

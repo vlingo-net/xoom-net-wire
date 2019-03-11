@@ -17,9 +17,14 @@ namespace Vlingo.Wire.Tests.Channel
     {
         private IChannelReaderConsumer _consumer;
         
+        public MockChannelReader()
+        {
+            ProbeChannelCount = new AtomicInteger(0);
+        }
+        
         public static readonly string MessagePrefix = "Message-";
-            
-        public AtomicInteger ProbeChannelCount => new AtomicInteger(0);
+
+        public AtomicInteger ProbeChannelCount { get; }
         
         public void Close()
         {

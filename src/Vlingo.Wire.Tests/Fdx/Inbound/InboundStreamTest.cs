@@ -23,7 +23,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
         private MockChannelReader _reader;
         private TestWorld _world;
 
-        [Fact(Skip = "WIP")]
+        [Fact]
         public void TestInbound()
         {
             _interest.TestResult.UntilStops = TestUntil.Happenings(1);
@@ -53,7 +53,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             
             _reader = new MockChannelReader();
             
-            var definition = Definition.Has<InboundStreamActor>(Definition.Parameters(_interest, AddressType.Op, _reader, 10000000),"test-inbound");
+            var definition = Definition.Has<InboundStreamActor>(Definition.Parameters(_interest, AddressType.Op, _reader, 10),"test-inbound");
             
             _inboundStream = _world.ActorFor<IInboundStream>(definition);
         }

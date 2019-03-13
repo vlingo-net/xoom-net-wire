@@ -15,7 +15,7 @@ namespace Vlingo.Wire.Channel
         void CloseWith<T>(RequestResponseContext<T> requestResponseContext, object data);
         void Consume<T>(RequestResponseContext<T> context, IConsumerByteBuffer buffer);
         
-        // TODO: Experimental System.IO.Pipelines
+        // Experimental System.IO.Pipelines
         void Consume<T>(RequestResponseContext<T> context, ReadOnlySequence<byte> buffer);
     }
 }

@@ -104,7 +104,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         public void IntervalSignal(IScheduled scheduled, object data)
         {
             // this is invoked in the context of another Thread so even if we can block here
-            // TODO: should be a better way than blocking
             ProbeChannelAsync().Wait();
         }
         

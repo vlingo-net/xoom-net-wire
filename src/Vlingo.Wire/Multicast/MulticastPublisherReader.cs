@@ -90,8 +90,7 @@ namespace Vlingo.Wire.Multicast
             
             try
             {
-                // TODO: Implementation not finished with TCP with _readChannel
-                // _readChannel.Close();
+                _readChannel.Close();
             }
             catch (Exception e)
             {
@@ -101,6 +100,7 @@ namespace Vlingo.Wire.Multicast
 
         public async Task ProcessChannelAsync()
         {
+            // TODO: This part lack Accept and read like in java version
             if (_closed)
             {
                 return;

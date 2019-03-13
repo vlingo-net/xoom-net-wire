@@ -72,7 +72,7 @@ namespace Vlingo.Wire.Message
 
                 var nodeId = binaryReader.ReadInt16();
                 var type = binaryReader.ReadInt16();
-                var length = binaryReader.ReadInt16();
+                var length = binaryReader.ReadInt64();
                 binaryReader.ReadInt16(); // unused1
                 binaryReader.ReadInt16(); // unused2
 
@@ -110,12 +110,9 @@ namespace Vlingo.Wire.Message
 
         public override int GetHashCode() => 31 * (_nodeId.GetHashCode() + _type.GetHashCode() + _length.GetHashCode());
 
-        public override string ToString()
-        {
-            return $"RawMessageHeader[headerId={HeaderId} nodeId={_nodeId} type={_type} length={_length}]";
-        }
+        public override string ToString() => $"RawMessageHeader[headerId={HeaderId} nodeId={_nodeId} type={_type} length={_length}]";
 
-        protected RawMessageHeader SetAll(short nodeId, short type, int length)
+        protected RawMessageHeader SetAll(short nodeId, short type, long length)
         {
             _nodeId = nodeId;
             _type = type;

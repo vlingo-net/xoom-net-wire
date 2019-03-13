@@ -5,16 +5,15 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-using System.Buffers;
-using Vlingo.Wire.Message;
+using System.IO;
+using System.Threading.Tasks;
 
-namespace Vlingo.Wire.Channel
+namespace Vlingo.Wire.Fdx.Outbound
 {
-    public interface IResponseChannelConsumer
+    public interface IManagedOutboundChannel
     {
-        void Consume(IConsumerByteBuffer buffer);
+        void Close();
 
-        // Experimental System.IO.Pipelines
-        void Consume(ReadOnlySequence<byte> buffer);
+        Task WriteAsync(Stream buffer);
     }
 }

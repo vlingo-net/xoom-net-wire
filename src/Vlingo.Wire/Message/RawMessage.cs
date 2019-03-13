@@ -98,21 +98,21 @@ namespace Vlingo.Wire.Message
         public Stream AsStream() => AsStream(new MemoryStream(RawMessageHeader.Bytes + _bytes.Length));
 
         // Java version asByteBuffer
-        public Stream AsStream(Stream buffer)
+        public Stream AsStream(MemoryStream buffer)
         {
-            buffer.SetLength(0);
+            buffer.Clear();
             CopyBytesTo(buffer);
             buffer.Flip();
             return buffer;
         }
 
-        public byte[] AsBuffer(Stream buffer)
+        public byte[] AsBuffer(MemoryStream buffer)
         {
             var s = (MemoryStream)AsStream(buffer);
             return s.GetBuffer();
         }
 
-        public string AsTextMessage() => Converters.BytesToText(_bytes);
+        public string AsTextMessage() => Converters.BytesToText(_bytes, 0, (int)Length);
 
         public void CopyBytesTo(Stream buffer)
         {

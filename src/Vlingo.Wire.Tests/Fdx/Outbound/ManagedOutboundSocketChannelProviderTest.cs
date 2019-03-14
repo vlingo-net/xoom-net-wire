@@ -6,6 +6,7 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
+using Vlingo.Wire.Fdx.Outbound;
 using Vlingo.Wire.Tests.Message;
 
 namespace Vlingo.Wire.Tests.Fdx.Outbound
@@ -15,5 +16,6 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
     public class ManagedOutboundSocketChannelProviderTest : AbstractMessageTool
     {
         private List<Node> _allOtherNodes;
+        private ManagedOutboundSocketChannelProvider _provider;
     }
 }

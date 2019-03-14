@@ -6,32 +6,94 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
-using Vlingo.Wire.Node;
 
 namespace Vlingo.Wire.Fdx.Outbound
 {
+    using Vlingo.Wire.Node;
+    
     public class ManagedOutboundSocketChannelProvider : IManagedOutboundChannelProvider
     {
-        public IReadOnlyDictionary<Id, IManagedOutboundChannel> AllOtherNodeChannels { get; }
+        private readonly IConfiguration _configuration;
+        private readonly Node _node;
+        private readonly Dictionary<Id, IManagedOutboundChannel> _nodeChannels;
+        private readonly AddressType _type;
+
+        public ManagedOutboundSocketChannelProvider(Node node, AddressType type, IConfiguration configuration)
+        {
+            _node = node;
+            _type = type;
+            _configuration = configuration;
+            _nodeChannels = new Dictionary<Id, IManagedOutboundChannel>();
+
+            ConfigureKnownChannels();
+        }
+
+        public IReadOnlyDictionary<Id, IManagedOutboundChannel> AllOtherNodeChannels =>
+            ChannelsFor(_configuration.AllOtherNodes(_node.Id));
         
         public IManagedOutboundChannel ChannelFor(Id id)
         {
-            throw new System.NotImplementedException();
+            if (_nodeChannels.TryGetValue(id, out var channel))
+            {
+                return channel;
+            }
+
+            var unopenedChannel = UnopenedChannelFor(_configuration.NodeMatching(id));
+            _nodeChannels.Add(id, unopenedChannel);
+
+            return unopenedChannel;
         }
 
-        public IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Node.Node> nodes)
+        public IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Node> nodes)
         {
-            throw new System.NotImplementedException();
+            var channels = new Dictionary<Id, IManagedOutboundChannel>();
+
+            foreach (var node in nodes)
+            {
+                if (!_nodeChannels.TryGetValue(node.Id, out var channel))
+                {
+                    channel = UnopenedChannelFor(node);
+                    _nodeChannels.Add(node.Id, channel);
+                }
+                
+                channels.Add(node.Id, channel);
+            }
+
+            return channels;
         }
 
         public void Close()
         {
-            throw new System.NotImplementedException();
+            foreach (var channel in _nodeChannels.Values)
+            {
+                channel.Close();
+            }
+            
+            _nodeChannels.Clear();
         }
 
         public void Close(Id id)
         {
-            throw new System.NotImplementedException();
+            if (_nodeChannels.TryGetValue(id, out var channel))
+            {
+                channel.Close();
+                _nodeChannels.Remove(id);
+            }
+        }
+        
+        private void ConfigureKnownChannels()
+        {
+            foreach (var node in _configuration.AllOtherNodes(_node.Id))
+            {
+                _nodeChannels.Add(_node.Id, UnopenedChannelFor(node));
+            }
+        }
+
+        private IManagedOutboundChannel UnopenedChannelFor(Node node)
+        {
+            var address = _type.Equals(AddressType.Op) ? _node.OperationalAddress : _node.ApplicationAddress;
+
+            return new ManagedOutboundSocketChannel(node, address, _configuration.Logger);
         }
     }
 }

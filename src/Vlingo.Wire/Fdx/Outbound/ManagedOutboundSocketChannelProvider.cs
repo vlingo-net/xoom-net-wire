@@ -85,7 +85,7 @@ namespace Vlingo.Wire.Fdx.Outbound
         {
             foreach (var node in _configuration.AllOtherNodes(_node.Id))
             {
-                _nodeChannels.Add(_node.Id, UnopenedChannelFor(node));
+                _nodeChannels.Add(node.Id, UnopenedChannelFor(node));
             }
         }
 

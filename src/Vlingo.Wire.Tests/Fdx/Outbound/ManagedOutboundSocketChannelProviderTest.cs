@@ -8,6 +8,7 @@
 using System.Collections.Generic;
 using Vlingo.Wire.Fdx.Outbound;
 using Vlingo.Wire.Tests.Message;
+using Xunit;
 
 namespace Vlingo.Wire.Tests.Fdx.Outbound
 {
@@ -15,7 +16,22 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
     
     public class ManagedOutboundSocketChannelProviderTest : AbstractMessageTool
     {
-        private List<Node> _allOtherNodes;
+        private IEnumerable<Node> _allOtherNodes;
         private ManagedOutboundSocketChannelProvider _provider;
+
+        [Fact]
+        public void TestProviderProvides()
+        {
+            Assert.Equal(2, _provider.AllOtherNodeChannels.Count);
+            Assert.NotNull(_provider.ChannelFor(Id.Of(2)));
+            Assert.NotNull(_provider.ChannelFor(Id.Of(3)));
+            Assert.Equal(2, _provider.ChannelsFor(_allOtherNodes).Count);
+        }
+
+        public ManagedOutboundSocketChannelProviderTest()
+        {
+            _allOtherNodes = Config.AllOtherNodes(Id.Of(1));
+            _provider = new ManagedOutboundSocketChannelProvider(Config.NodeMatching(Id.Of(1)), AddressType.Op, Config);
+        }
     }
 }

@@ -27,6 +27,18 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             Assert.NotNull(_provider.ChannelFor(Id.Of(3)));
             Assert.Equal(2, _provider.ChannelsFor(_allOtherNodes).Count);
         }
+        
+        [Fact]
+        public void TestProviderCloseAllReopen()
+        {
+            _provider.Close();
+            
+            Assert.NotNull(_provider.ChannelFor(Id.Of(3)));
+            Assert.NotNull(_provider.ChannelFor(Id.Of(2)));
+            Assert.NotNull(_provider.ChannelFor(Id.Of(1)));
+            
+            Assert.Equal(2, _provider.AllOtherNodeChannels.Count);
+        }
 
         public ManagedOutboundSocketChannelProviderTest()
         {

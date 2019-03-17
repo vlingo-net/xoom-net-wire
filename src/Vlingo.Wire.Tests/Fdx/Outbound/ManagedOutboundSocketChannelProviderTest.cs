@@ -39,6 +39,16 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             
             Assert.Equal(2, _provider.AllOtherNodeChannels.Count);
         }
+        
+        [Fact]
+        public void TestProviderCloseOneChannelReopen()
+        {
+            _provider.Close(Id.Of(3));
+            
+            Assert.NotNull(_provider.ChannelFor(Id.Of(3)));
+            
+            Assert.Equal(2, _provider.AllOtherNodeChannels.Count);
+        }
 
         public ManagedOutboundSocketChannelProviderTest()
         {

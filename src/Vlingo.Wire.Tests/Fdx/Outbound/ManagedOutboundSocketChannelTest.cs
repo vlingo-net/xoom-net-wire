@@ -60,6 +60,35 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             Assert.Equal(2, consumer.ConsumeCount);
             Assert.Equal(message2, consumer.Messages.Last());
         }
+        
+        [Fact]
+        public async Task TestOutboundApplicationChannel()
+        {
+            var consumer = new MockChannelReaderConsumer();
+            
+            _appReader.OpenFor(consumer);
+            
+            var buffer = new MemoryStream(1024);
+            buffer.SetLength(1024);
+            
+            var message1 = AppMessage + 1;
+            var rawMessage1 = RawMessage.From(0, 0, message1);
+            await _appChannel.WriteAsync(rawMessage1.AsStream(buffer));
+            
+            await ProbeUntilConsumedAsync(_appReader, consumer);
+            
+            Assert.Equal(1, consumer.ConsumeCount);
+            Assert.Equal(message1, consumer.Messages.First());
+            
+            var message2 = AppMessage + 2;
+            var rawMessage2 = RawMessage.From(0, 0, message2);
+            await _appChannel.WriteAsync(rawMessage2.AsStream(buffer));
+            
+            await ProbeUntilConsumedAsync(_appReader, consumer);
+            
+            Assert.Equal(2, consumer.ConsumeCount);
+            Assert.Equal(message2, consumer.Messages.Last());
+        }
 
         public ManagedOutboundSocketChannelTest()
         {

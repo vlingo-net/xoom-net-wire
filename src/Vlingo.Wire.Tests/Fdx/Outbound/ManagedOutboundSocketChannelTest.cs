@@ -92,7 +92,7 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
 
         public ManagedOutboundSocketChannelTest()
         {
-            _node = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), 37373, 37374);
+            _node = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), 37375, 37376);
             var logger = ConsoleLogger.TestInstance();
             _opChannel = new ManagedOutboundSocketChannel(_node, _node.OperationalAddress, logger);
             _appChannel = new ManagedOutboundSocketChannel(_node, _node.ApplicationAddress, logger);

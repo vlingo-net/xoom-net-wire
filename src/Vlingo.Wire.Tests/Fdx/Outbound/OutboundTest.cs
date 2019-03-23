@@ -5,8 +5,11 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System.Threading.Tasks;
 using Vlingo.Wire.Message;
+using Vlingo.Wire.Node;
 using Vlingo.Wire.Tests.Message;
+using Xunit;
 
 namespace Vlingo.Wire.Tests.Fdx.Outbound
 {
@@ -21,5 +24,33 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
         private MockManagedOutboundChannelProvider _channelProvider;
         private ByteBufferPool _pool;
         private Outbound _outbound;
+
+        [Fact]
+        public async Task TestBroadcast()
+        {
+            var rawMessage1 = RawMessage.From(0, 0, Message1);
+            var rawMessage2 = RawMessage.From(0, 0, Message2);
+            var rawMessage3 = RawMessage.From(0, 0, Message3);
+
+            await _outbound.BroadcastAsync(rawMessage1);
+            await _outbound.BroadcastAsync(rawMessage2);
+            await _outbound.BroadcastAsync(rawMessage3);
+
+            foreach (var channel in _channelProvider.AllOtherNodeChannels.Values)
+            {
+                var mock = (MockManagedOutboundChannel)channel;
+                
+                Assert.Equal(Message1, mock.Writes[0]);
+                Assert.Equal(Message2, mock.Writes[1]);
+                Assert.Equal(Message3, mock.Writes[2]);
+            }
+        }
+        
+        public OutboundTest()
+        {
+            _pool = new ByteBufferPool(10, 1024);
+            _channelProvider = new MockManagedOutboundChannelProvider(Id.Of(1), Config);
+            _outbound = new Outbound(_channelProvider, new ByteBufferPool(10, 10_000));
+        }
     }
 }

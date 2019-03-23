@@ -37,7 +37,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             await BroadcastAsync(_provider.AllOtherNodeChannels, buffer);
         }
 
-        public async Task Broadcast(IEnumerable<Node> selectNodes, RawMessage message)
+        public async Task BroadcastAsync(IEnumerable<Node> selectNodes, RawMessage message)
         {
             var buffer = _pool.Access();
             await BroadcastAsync(selectNodes, BytesFrom(message, buffer));

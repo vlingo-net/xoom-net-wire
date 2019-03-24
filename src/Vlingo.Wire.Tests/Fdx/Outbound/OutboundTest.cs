@@ -5,6 +5,7 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System.IO;
 using System.Threading.Tasks;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Node;
@@ -36,6 +37,34 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             await _outbound.BroadcastAsync(rawMessage2);
             await _outbound.BroadcastAsync(rawMessage3);
 
+            foreach (var channel in _channelProvider.AllOtherNodeChannels.Values)
+            {
+                var mock = (MockManagedOutboundChannel)channel;
+                
+                Assert.Equal(Message1, mock.Writes[0]);
+                Assert.Equal(Message2, mock.Writes[1]);
+                Assert.Equal(Message3, mock.Writes[2]);
+            }
+        }
+
+        [Fact]
+        public async Task TestBroadcastPooledByteBuffer()
+        {
+            var buffer1 = _pool.Access();
+            var buffer2 = _pool.Access();
+            var buffer3 = _pool.Access();
+            
+            var rawMessage1 = RawMessage.From(0, 0, Message1);
+            rawMessage1.AsBuffer((MemoryStream)buffer1.AsStream());
+            var rawMessage2 = RawMessage.From(0, 0, Message2);
+            rawMessage2.AsBuffer((MemoryStream)buffer2.AsStream());
+            var rawMessage3 = RawMessage.From(0, 0, Message3);
+            rawMessage3.AsBuffer((MemoryStream)buffer3.AsStream());
+            
+            await _outbound.BroadcastAsync(buffer1);
+            await _outbound.BroadcastAsync(buffer2);
+            await _outbound.BroadcastAsync(buffer3);
+            
             foreach (var channel in _channelProvider.AllOtherNodeChannels.Values)
             {
                 var mock = (MockManagedOutboundChannel)channel;

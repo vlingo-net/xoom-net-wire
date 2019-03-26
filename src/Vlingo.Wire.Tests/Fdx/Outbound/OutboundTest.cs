@@ -5,15 +5,16 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Vlingo.Wire.Message;
-using Vlingo.Wire.Node;
 using Vlingo.Wire.Tests.Message;
 using Xunit;
 
 namespace Vlingo.Wire.Tests.Fdx.Outbound
 {
+    using Vlingo.Wire.Node;
     using Wire.Fdx.Outbound;
     
     public class OutboundTest : AbstractMessageTool
@@ -73,6 +74,26 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
                 Assert.Equal(Message2, mock.Writes[1]);
                 Assert.Equal(Message3, mock.Writes[2]);
             }
+        }
+
+        [Fact]
+        public async Task TestBroadcastToSelectNodes()
+        {
+            var rawMessage1 = RawMessage.From(0, 0, Message1);
+            var rawMessage2 = RawMessage.From(0, 0, Message2);
+            var rawMessage3 = RawMessage.From(0, 0, Message3);
+
+            var selectNodes = new List<Node> {Config.NodeMatching(Id.Of(3))};
+            
+            await _outbound.BroadcastAsync(selectNodes, rawMessage1);
+            await _outbound.BroadcastAsync(selectNodes, rawMessage2);
+            await _outbound.BroadcastAsync(selectNodes, rawMessage3);
+            
+            var mock = (MockManagedOutboundChannel) _channelProvider.ChannelFor(Id.Of(3));
+            
+            Assert.Equal(Message1, mock.Writes[0]);
+            Assert.Equal(Message2, mock.Writes[1]);
+            Assert.Equal(Message3, mock.Writes[2]);
         }
         
         public OutboundTest()

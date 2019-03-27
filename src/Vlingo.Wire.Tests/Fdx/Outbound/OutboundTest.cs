@@ -95,6 +95,26 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             Assert.Equal(Message2, mock.Writes[1]);
             Assert.Equal(Message3, mock.Writes[2]);
         }
+
+        [Fact]
+        public async Task TestSendTo()
+        {
+            var rawMessage1 = RawMessage.From(0, 0, Message1);
+            var rawMessage2 = RawMessage.From(0, 0, Message2);
+            var rawMessage3 = RawMessage.From(0, 0, Message3);
+            
+            var id3 = Id.Of(3);
+            
+            await _outbound.SendToAsync(rawMessage1, id3);
+            await _outbound.SendToAsync(rawMessage2, id3);
+            await _outbound.SendToAsync(rawMessage3, id3);
+            
+            var mock = (MockManagedOutboundChannel)_channelProvider.ChannelFor(Id.Of(3));
+            
+            Assert.Equal(Message1, mock.Writes[0]);
+            Assert.Equal(Message2, mock.Writes[1]);
+            Assert.Equal(Message3, mock.Writes[2]);
+        }
         
         public OutboundTest()
         {

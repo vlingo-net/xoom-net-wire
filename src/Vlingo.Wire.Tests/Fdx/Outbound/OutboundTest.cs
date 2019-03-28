@@ -115,6 +115,33 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             Assert.Equal(Message2, mock.Writes[1]);
             Assert.Equal(Message3, mock.Writes[2]);
         }
+
+        [Fact]
+        public async Task TestSendToPooledByteBuffer()
+        {
+            var buffer1 = _pool.Access();
+            var buffer2 = _pool.Access();
+            var buffer3 = _pool.Access();
+            
+            var rawMessage1 = RawMessage.From(0, 0, Message1);
+            rawMessage1.AsBuffer((MemoryStream)buffer1.AsStream());
+            var rawMessage2 = RawMessage.From(0, 0, Message2);
+            rawMessage2.AsBuffer((MemoryStream)buffer2.AsStream());
+            var rawMessage3 = RawMessage.From(0, 0, Message3);
+            rawMessage3.AsBuffer((MemoryStream)buffer3.AsStream());
+            
+            var id3 = Id.Of(3);
+            
+            await _outbound.SendToAsync(buffer1, id3);
+            await _outbound.SendToAsync(buffer2, id3);
+            await _outbound.SendToAsync(buffer3, id3);
+            
+            var mock = (MockManagedOutboundChannel)_channelProvider.ChannelFor(Id.Of(3));
+            
+            Assert.Equal(Message1, mock.Writes[0]);
+            Assert.Equal(Message2, mock.Writes[1]);
+            Assert.Equal(Message3, mock.Writes[2]);
+        }
         
         public OutboundTest()
         {

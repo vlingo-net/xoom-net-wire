@@ -22,7 +22,7 @@ namespace Vlingo.Wire.Channel
     public sealed class SocketChannelSelectionProcessorPipelineActor : Actor,
                                                         ISocketChannelSelectionProcessor,
                                                         IResponseSenderChannel<Socket>,
-                                                        IScheduled
+                                                        IScheduled<object>
     {
         private int _bufferId;
         private readonly ICancellable _cancellable;
@@ -45,7 +45,7 @@ namespace Vlingo.Wire.Channel
             _messageBufferSize = messageBufferSize;
             _contexts = new ConcurrentDictionary<string, Context>();
             _responder = SelfAs<IResponseSenderChannel<Socket>>();
-            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled>(),
+            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled<object>>(),
                 null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(probeInterval));
         }
         
@@ -102,7 +102,7 @@ namespace Vlingo.Wire.Channel
         // Scheduled
         //=========================================
 
-        public void IntervalSignal(IScheduled scheduled, object data)
+        public void IntervalSignal(IScheduled<object> scheduled, object data)
         {
             try
             {

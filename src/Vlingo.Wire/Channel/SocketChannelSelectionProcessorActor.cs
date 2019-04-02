@@ -170,13 +170,23 @@ namespace Vlingo.Wire.Channel
             var buffer = readable.RequestBuffer.Clear();
             var readBuffer = buffer.ToArray();
             var totalBytesRead = 0;
-            var bytesRead = 0;
-            do
+            int bytesRead;
+
+            try
             {
-                bytesRead = await channel.ReceiveAsync(readBuffer, SocketFlags.None);
-                buffer.Put(readBuffer, 0, bytesRead);
-                totalBytesRead += bytesRead;
-            } while (channel.Available > 0);
+                do
+                {
+                    bytesRead = await channel.ReceiveAsync(readBuffer, SocketFlags.None);
+                    buffer.Put(readBuffer, 0, bytesRead);
+                    totalBytesRead += bytesRead;
+                } while (channel.Available > 0);
+            }
+            catch
+            {
+                // likely a forcible close by the client,
+                // so force close and cleanup
+                bytesRead = 0;
+            }
 
             if (bytesRead == 0)
             {

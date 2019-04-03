@@ -130,6 +130,27 @@ namespace Vlingo.Wire.Channel
         // internal implementation
         //=========================================
 
+        private void Close(Socket channel, Context context)
+        {
+            try
+            {
+                channel.Close();
+            }
+            catch
+            {
+                // already closed; ignore
+            }
+            
+            try
+            {
+                context.Close();
+            }
+            catch
+            {
+                // already closed; ignore
+            }
+        }
+
         private async Task ProbeChannelAsync()
         {
             if (IsStopped)
@@ -190,8 +211,7 @@ namespace Vlingo.Wire.Channel
 
             if (bytesRead == 0)
             {
-                readable.Close();
-                readable.Channel.Close();
+                Close(readable.Channel, readable);
             }
             
             if (totalBytesRead > 0)

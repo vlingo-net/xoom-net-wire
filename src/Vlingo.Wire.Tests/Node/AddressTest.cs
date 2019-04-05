@@ -5,8 +5,10 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System;
 using Vlingo.Wire.Node;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Vlingo.Wire.Tests.Node
 {
@@ -32,6 +34,12 @@ namespace Vlingo.Wire.Tests.Node
             Assert.Equal("localhost", address.HostName);
             Assert.Equal(22222, address.Port);
             Assert.Equal(AddressType.App, address.Type);
+        }
+
+        public AddressTest(ITestOutputHelper output)
+        {
+            var converter = new Converter(output);
+            Console.SetOut(converter);
         }
     }
 }

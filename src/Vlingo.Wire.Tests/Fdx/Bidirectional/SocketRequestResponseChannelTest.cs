@@ -180,6 +180,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 
         public SocketRequestResponseChannelTest(ITestOutputHelper output)
         {
+            var converter = new Converter(output);
+            Console.SetOut(converter);
             _output = output;
             _world = World.StartWithDefault("test-request-response-channel");
             

@@ -5,11 +5,13 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System;
 using System.Threading.Tasks;
 using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Multicast;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Vlingo.Wire.Tests.Multicast
 {
@@ -52,6 +54,12 @@ namespace Vlingo.Wire.Tests.Multicast
     
             Assert.Equal(0, publisherConsumer.ConsumeCount);
             Assert.Equal(10, subscriberConsumer.ConsumeCount);
+        }
+
+        public MulticastTest(ITestOutputHelper output)
+        {
+            var converter = new Converter(output);
+            Console.SetOut(converter);
         }
     }
 }

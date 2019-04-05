@@ -5,10 +5,12 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System;
 using System.Collections.Generic;
 using Vlingo.Wire.Fdx.Outbound;
 using Vlingo.Wire.Tests.Message;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Vlingo.Wire.Tests.Fdx.Outbound
 {
@@ -50,8 +52,10 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             Assert.Equal(2, _provider.AllOtherNodeChannels.Count);
         }
 
-        public ManagedOutboundSocketChannelProviderTest()
+        public ManagedOutboundSocketChannelProviderTest(ITestOutputHelper output)
         {
+            var converter = new Converter(output);
+            Console.SetOut(converter);
             _allOtherNodes = Config.AllOtherNodes(Id.Of(1));
             _provider = new ManagedOutboundSocketChannelProvider(Config.NodeMatching(Id.Of(1)), AddressType.Op, Config);
         }

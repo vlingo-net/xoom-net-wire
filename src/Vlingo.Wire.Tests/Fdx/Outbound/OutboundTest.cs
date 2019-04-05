@@ -5,12 +5,14 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Tests.Message;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Vlingo.Wire.Tests.Fdx.Outbound
 {
@@ -143,8 +145,10 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             Assert.Equal(Message3, mock.Writes[2]);
         }
         
-        public OutboundTest()
+        public OutboundTest(ITestOutputHelper output)
         {
+            var converter = new Converter(output);
+            Console.SetOut(converter);
             _pool = new ByteBufferPool(10, 1024);
             _channelProvider = new MockManagedOutboundChannelProvider(Id.Of(1), Config);
             _outbound = new Outbound(_channelProvider, new ByteBufferPool(10, 10_000));

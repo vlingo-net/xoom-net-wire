@@ -16,6 +16,7 @@ using Vlingo.Wire.Fdx.Outbound;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Tests.Message;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Vlingo.Wire.Tests.Fdx.Outbound
 {
@@ -90,8 +91,10 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             Assert.Equal(message2, consumer.Messages.Last());
         }
 
-        public ManagedOutboundSocketChannelTest()
+        public ManagedOutboundSocketChannelTest(ITestOutputHelper output)
         {
+            var converter = new Converter(output);
+            Console.SetOut(converter);
             _node = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), 37375, 37376);
             var logger = ConsoleLogger.TestInstance();
             _opChannel = new ManagedOutboundSocketChannel(_node, _node.OperationalAddress, logger);

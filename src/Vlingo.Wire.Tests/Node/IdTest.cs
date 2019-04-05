@@ -5,8 +5,10 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System;
 using Vlingo.Wire.Node;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Vlingo.Wire.Tests.Node
 {
@@ -31,6 +33,12 @@ namespace Vlingo.Wire.Tests.Node
             Assert.Equal(-1, id1.CompareTo(id2));
             Assert.True(id2.GreaterThan(id1));
             Assert.False(id1.GreaterThan(id2));
+        }
+
+        public IdTest(ITestOutputHelper output)
+        {
+            var converter = new Converter(output);
+            Console.SetOut(converter);
         }
     }
 }

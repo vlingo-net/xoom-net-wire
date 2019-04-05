@@ -5,9 +5,11 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Node;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Vlingo.Wire.Tests.Message
 {
@@ -40,6 +42,12 @@ namespace Vlingo.Wire.Tests.Message
             
             Assert.Equal(Address.From(Host.Of("1.2.3.4"), 111, AddressType.Main), publisherAvailability.ToAddress());
             Assert.Equal(Address.From(Host.Of("1.2.3.4"), 111, AddressType.Op), publisherAvailability.ToAddress(AddressType.Op));
+        }
+
+        public PublisherAvailabilityTest(ITestOutputHelper output)
+        {
+            var converter = new Converter(output);
+            Console.SetOut(converter);
         }
     }
 }

@@ -74,7 +74,9 @@ namespace Vlingo.Wire.Channel
 
             return totalBytesWritten;
         }
-        
+
+        public override string ToString() => $"SocketChannelWriter[address={_address}, channel={_channel}]";
+
         private async Task<Socket> PreparedChannelAsync()
         {
             try

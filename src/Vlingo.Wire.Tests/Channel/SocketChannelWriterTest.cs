@@ -62,7 +62,7 @@ namespace Vlingo.Wire.Tests.Channel
             var converter = new Converter(output);
             Console.SetOut(converter);
             
-            var node = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), 37373, 37374);
+            var node = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), 37377, 37378);
             var logger = ConsoleLogger.TestInstance();
             _channelWriter = new SocketChannelWriter(node.OperationalAddress, logger);
             _channelReader = new SocketChannelInboundReader(node.OperationalAddress.Port, "test-reader", 1024, logger);

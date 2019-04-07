@@ -6,7 +6,7 @@
 
     <!-- NuGet Metadata -->
     <IsPackable>true</IsPackable>
-    <PackageVersion>0.1.0</PackageVersion>
+    <PackageVersion>0.2.0</PackageVersion>
     <PackageId>Vlingo.Wire</PackageId>
     <Authors>Vlingo</Authors>
     <Description>
@@ -15,7 +15,7 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/vlingo-net/vlingo-net-wire</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/vlingo-net/vlingo-net-common/master/vlingo-64x64.png</PackageIconUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/vlingo-net/vlingo-net-wire/master/vlingo-64x64.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/vlingo-net/vlingo-net-wire</RepositoryUrl>
     <PackageTags>vlingo-net-wire;vlingo-net-actors;.net;c#;f#;udp;tcp;reactive-programming;actor-model</PackageTags>
   </PropertyGroup>
@@ -29,7 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.IO.Pipelines" Version="4.5.3" />
-    <PackageReference Include="Vlingo.Actors" Version="0.2.3" />
-    <PackageReference Include="Vlingo.Common" Version="0.4.1" />
+    <PackageReference Include="Vlingo.Actors" Version="0.3.0" />
+    <PackageReference Include="Vlingo.Common" Version="0.4.2" />
   </ItemGroup>
 </Project>

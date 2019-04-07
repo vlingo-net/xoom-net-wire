@@ -5,7 +5,9 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Vlingo.Wire.Tests.Node
 {
@@ -40,6 +42,12 @@ namespace Vlingo.Wire.Tests.Node
             
             Assert.Equal(-1, node1.CompareTo(node2));
             Assert.Equal(1, node2.CompareTo(node1));
+        }
+
+        public NodeTest(ITestOutputHelper output)
+        {
+            var converter = new Converter(output);
+            Console.SetOut(converter);
         }
     }
 }

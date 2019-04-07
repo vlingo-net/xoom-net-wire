@@ -14,26 +14,27 @@ using Vlingo.Wire.Channel;
 using Vlingo.Wire.Fdx.Inbound;
 using Vlingo.Wire.Fdx.Outbound;
 using Vlingo.Wire.Message;
+using Vlingo.Wire.Tests.Message;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Vlingo.Wire.Tests.Fdx.Inbound
+namespace Vlingo.Wire.Tests.Fdx.Outbound
 {
     using Vlingo.Wire.Node;
     
-    public class InboundSocketChannelTest: IDisposable
+    public class ManagedOutboundSocketChannelTest : AbstractMessageTool, IDisposable
     {
-        private static readonly string _appMessage = "APP TEST ";
-        private static readonly string _opMessage = "OP TEST ";
-        
+        private static readonly string AppMessage = "APP TEST ";
+        private static readonly string OpMessage = "OP TEST ";
+
         private ManagedOutboundSocketChannel _appChannel;
         private IChannelReader _appReader;
         private ManagedOutboundSocketChannel _opChannel;
         private IChannelReader _opReader;
         private Node _node;
-
+        
         [Fact]
-        public async Task TestOpInboundChannel()
+        public  async Task TestOutboundOperationsChannel()
         {
             var consumer = new MockChannelReaderConsumer();
             
@@ -42,7 +43,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             var buffer = new MemoryStream(1024);
             buffer.SetLength(1024);
             
-            var message1 = _opMessage + 1;
+            var message1 = OpMessage + 1;
             var rawMessage1 = RawMessage.From(0, 0, message1);
             await _opChannel.WriteAsync(rawMessage1.AsStream(buffer));
             
@@ -51,7 +52,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             Assert.Equal(1, consumer.ConsumeCount);
             Assert.Equal(message1, consumer.Messages.First());
             
-            var message2 = _opMessage + 2;
+            var message2 = OpMessage + 2;
             var rawMessage2 = RawMessage.From(0, 0, message2);
             await _opChannel.WriteAsync(rawMessage2.AsStream(buffer));
             
@@ -60,9 +61,9 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             Assert.Equal(2, consumer.ConsumeCount);
             Assert.Equal(message2, consumer.Messages.Last());
         }
-
+        
         [Fact]
-        public async Task TestAppInboundChannel()
+        public async Task TestOutboundApplicationChannel()
         {
             var consumer = new MockChannelReaderConsumer();
             
@@ -71,7 +72,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             var buffer = new MemoryStream(1024);
             buffer.SetLength(1024);
             
-            var message1 = _appMessage + 1;
+            var message1 = AppMessage + 1;
             var rawMessage1 = RawMessage.From(0, 0, message1);
             await _appChannel.WriteAsync(rawMessage1.AsStream(buffer));
             
@@ -80,7 +81,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             Assert.Equal(1, consumer.ConsumeCount);
             Assert.Equal(message1, consumer.Messages.First());
             
-            var message2 = _appMessage + 2;
+            var message2 = AppMessage + 2;
             var rawMessage2 = RawMessage.From(0, 0, message2);
             await _appChannel.WriteAsync(rawMessage2.AsStream(buffer));
             
@@ -90,11 +91,11 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             Assert.Equal(message2, consumer.Messages.Last());
         }
 
-        public InboundSocketChannelTest(ITestOutputHelper output)
+        public ManagedOutboundSocketChannelTest(ITestOutputHelper output)
         {
             var converter = new Converter(output);
             Console.SetOut(converter);
-            _node = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), 37373, 37374);
+            _node = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), 37375, 37376);
             var logger = ConsoleLogger.TestInstance();
             _opChannel = new ManagedOutboundSocketChannel(_node, _node.OperationalAddress, logger);
             _appChannel = new ManagedOutboundSocketChannel(_node, _node.ApplicationAddress, logger);
@@ -104,12 +105,12 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
 
         public void Dispose()
         {
-            _appChannel.Dispose();
-            _opChannel.Dispose();
-            _appReader.Close();
+            _opChannel.Close();
+            _appChannel.Close();
             _opReader.Close();
+            _appReader.Close();
         }
-
+        
         private async Task ProbeUntilConsumedAsync(IChannelReader reader, MockChannelReaderConsumer consumer)
         {
             var currentConsumedCount = consumer.ConsumeCount;

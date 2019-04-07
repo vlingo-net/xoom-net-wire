@@ -16,7 +16,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 {
     using Common;
     
-    public sealed class ServerRequestResponseChannelActor : Actor, IServerRequestResponseChannel, IScheduled
+    public sealed class ServerRequestResponseChannelActor : Actor, IServerRequestResponseChannel, IScheduled<object>
     {
         private readonly ICancellable _cancellable;
         private readonly Socket _channel;
@@ -49,7 +49,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 throw;
             }
 
-            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled>(),
+            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled<object>>(),
                 null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(probeInterval));
         }
         
@@ -101,7 +101,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         // Scheduled
         //=========================================
         
-        public void IntervalSignal(IScheduled scheduled, object data)
+        public void IntervalSignal(IScheduled<object> scheduled, object data)
         {
             // this is invoked in the context of another Thread so even if we can block here
             ProbeChannelAsync().Wait();

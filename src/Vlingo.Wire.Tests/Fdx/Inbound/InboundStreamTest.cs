@@ -13,6 +13,7 @@ using Vlingo.Wire.Fdx.Inbound;
 using Vlingo.Wire.Node;
 using Vlingo.Wire.Tests.Channel;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Vlingo.Wire.Tests.Fdx.Inbound
 {
@@ -45,8 +46,11 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             Assert.Equal(count, _reader.ProbeChannelCount.Get());
         }
 
-        public InboundStreamTest()
+        public InboundStreamTest(ITestOutputHelper output)
         {
+            var converter = new Converter(output);
+            Console.SetOut(converter);
+            
             _world = TestWorld.Start("test-inbound-stream");
             
             _interest = new MockInboundStreamInterest();

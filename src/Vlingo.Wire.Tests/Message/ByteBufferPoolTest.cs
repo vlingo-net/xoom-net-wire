@@ -6,11 +6,11 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Vlingo.Common;
 using Vlingo.Wire.Message;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Vlingo.Wire.Tests.Message
 {
@@ -87,6 +87,12 @@ namespace Vlingo.Wire.Tests.Message
             await Task.WhenAll(t1, t2);
 
             Assert.Equal(2, count.Get());
+        }
+
+        public ByteBufferPoolTest(ITestOutputHelper output)
+        {
+            var converter = new Converter(output);
+            Console.SetOut(converter);
         }
     }
 }

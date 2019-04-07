@@ -19,7 +19,7 @@ namespace Vlingo.Wire.Channel
     public sealed class SocketChannelSelectionProcessorActor : Actor,
                                                         ISocketChannelSelectionProcessor,
                                                         IResponseSenderChannel<Socket>,
-                                                        IScheduled
+                                                        IScheduled<object>
     {
         private int _bufferId;
         private readonly ICancellable _cancellable;
@@ -41,7 +41,7 @@ namespace Vlingo.Wire.Channel
             _name = name;
             _messageBufferSize = messageBufferSize;
             _responder = SelfAs<IResponseSenderChannel<Socket>>();
-            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled>(),
+            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled<object>>(),
                 null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(probeInterval));
         }
         
@@ -90,7 +90,7 @@ namespace Vlingo.Wire.Channel
         // Scheduled
         //=========================================
 
-        public void IntervalSignal(IScheduled scheduled, object data)
+        public void IntervalSignal(IScheduled<object> scheduled, object data)
         {
             try
             {
@@ -129,6 +129,27 @@ namespace Vlingo.Wire.Channel
         //=========================================
         // internal implementation
         //=========================================
+
+        private void Close(Socket channel, Context context)
+        {
+            try
+            {
+                channel.Close();
+            }
+            catch
+            {
+                // already closed; ignore
+            }
+            
+            try
+            {
+                context.Close();
+            }
+            catch
+            {
+                // already closed; ignore
+            }
+        }
 
         private async Task ProbeChannelAsync()
         {
@@ -170,18 +191,27 @@ namespace Vlingo.Wire.Channel
             var buffer = readable.RequestBuffer.Clear();
             var readBuffer = buffer.ToArray();
             var totalBytesRead = 0;
-            var bytesRead = 0;
-            do
+            int bytesRead;
+
+            try
             {
-                bytesRead = await channel.ReceiveAsync(readBuffer, SocketFlags.None);
-                buffer.Put(readBuffer, 0, bytesRead);
-                totalBytesRead += bytesRead;
-            } while (channel.Available > 0);
+                do
+                {
+                    bytesRead = await channel.ReceiveAsync(readBuffer, SocketFlags.None);
+                    buffer.Put(readBuffer, 0, bytesRead);
+                    totalBytesRead += bytesRead;
+                } while (channel.Available > 0);
+            }
+            catch
+            {
+                // likely a forcible close by the client,
+                // so force close and cleanup
+                bytesRead = 0;
+            }
 
             if (bytesRead == 0)
             {
-                readable.Close();
-                readable.Channel.Close();
+                Close(readable.Channel, readable);
             }
             
             if (totalBytesRead > 0)

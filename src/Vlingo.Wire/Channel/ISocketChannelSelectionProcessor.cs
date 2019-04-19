@@ -14,6 +14,6 @@ namespace Vlingo.Wire.Channel
     {
         void Close();
         
-        Task ProcessAsync(Socket channel);
+        Task Process(Socket channel);
     }
 }

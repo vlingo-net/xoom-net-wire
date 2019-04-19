@@ -36,9 +36,9 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             var rawMessage2 = RawMessage.From(0, 0, Message2);
             var rawMessage3 = RawMessage.From(0, 0, Message3);
 
-            await _outbound.BroadcastAsync(rawMessage1);
-            await _outbound.BroadcastAsync(rawMessage2);
-            await _outbound.BroadcastAsync(rawMessage3);
+            await _outbound.Broadcast(rawMessage1);
+            await _outbound.Broadcast(rawMessage2);
+            await _outbound.Broadcast(rawMessage3);
 
             foreach (var channel in _channelProvider.AllOtherNodeChannels.Values)
             {
@@ -64,9 +64,9 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             var rawMessage3 = RawMessage.From(0, 0, Message3);
             rawMessage3.AsBuffer((MemoryStream)buffer3.AsStream());
             
-            await _outbound.BroadcastAsync(buffer1);
-            await _outbound.BroadcastAsync(buffer2);
-            await _outbound.BroadcastAsync(buffer3);
+            await _outbound.Broadcast(buffer1);
+            await _outbound.Broadcast(buffer2);
+            await _outbound.Broadcast(buffer3);
             
             foreach (var channel in _channelProvider.AllOtherNodeChannels.Values)
             {
@@ -87,9 +87,9 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
 
             var selectNodes = new List<Node> {Config.NodeMatching(Id.Of(3))};
             
-            await _outbound.BroadcastAsync(selectNodes, rawMessage1);
-            await _outbound.BroadcastAsync(selectNodes, rawMessage2);
-            await _outbound.BroadcastAsync(selectNodes, rawMessage3);
+            await _outbound.Broadcast(selectNodes, rawMessage1);
+            await _outbound.Broadcast(selectNodes, rawMessage2);
+            await _outbound.Broadcast(selectNodes, rawMessage3);
             
             var mock = (MockManagedOutboundChannel) _channelProvider.ChannelFor(Id.Of(3));
             
@@ -107,9 +107,9 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             
             var id3 = Id.Of(3);
             
-            await _outbound.SendToAsync(rawMessage1, id3);
-            await _outbound.SendToAsync(rawMessage2, id3);
-            await _outbound.SendToAsync(rawMessage3, id3);
+            await _outbound.SendTo(rawMessage1, id3);
+            await _outbound.SendTo(rawMessage2, id3);
+            await _outbound.SendTo(rawMessage3, id3);
             
             var mock = (MockManagedOutboundChannel)_channelProvider.ChannelFor(Id.Of(3));
             
@@ -134,9 +134,9 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             
             var id3 = Id.Of(3);
             
-            await _outbound.SendToAsync(buffer1, id3);
-            await _outbound.SendToAsync(buffer2, id3);
-            await _outbound.SendToAsync(buffer3, id3);
+            await _outbound.SendTo(buffer1, id3);
+            await _outbound.SendTo(buffer2, id3);
+            await _outbound.SendTo(buffer3, id3);
             
             var mock = (MockManagedOutboundChannel)_channelProvider.ChannelFor(Id.Of(3));
             

@@ -14,6 +14,6 @@ namespace Vlingo.Wire.Channel
     {
         void Close();
         
-        Task RequestWithAsync(Stream stream);
+        Task RequestWith(Stream stream);
     }
 }

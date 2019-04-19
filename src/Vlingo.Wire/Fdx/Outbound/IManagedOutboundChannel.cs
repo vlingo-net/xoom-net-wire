@@ -14,6 +14,6 @@ namespace Vlingo.Wire.Fdx.Outbound
     {
         void Close();
 
-        Task WriteAsync(Stream buffer);
+        Task Write(Stream buffer);
     }
 }

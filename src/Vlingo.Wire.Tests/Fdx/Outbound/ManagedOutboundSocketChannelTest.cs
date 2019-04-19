@@ -45,18 +45,18 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             
             var message1 = OpMessage + 1;
             var rawMessage1 = RawMessage.From(0, 0, message1);
-            await _opChannel.WriteAsync(rawMessage1.AsStream(buffer));
+            await _opChannel.Write(rawMessage1.AsStream(buffer));
             
-            await ProbeUntilConsumedAsync(_opReader, consumer);
+            await ProbeUntilConsumed(_opReader, consumer);
             
             Assert.Equal(1, consumer.ConsumeCount);
             Assert.Equal(message1, consumer.Messages.First());
             
             var message2 = OpMessage + 2;
             var rawMessage2 = RawMessage.From(0, 0, message2);
-            await _opChannel.WriteAsync(rawMessage2.AsStream(buffer));
+            await _opChannel.Write(rawMessage2.AsStream(buffer));
             
-            await ProbeUntilConsumedAsync(_opReader, consumer);
+            await ProbeUntilConsumed(_opReader, consumer);
             
             Assert.Equal(2, consumer.ConsumeCount);
             Assert.Equal(message2, consumer.Messages.Last());
@@ -74,18 +74,18 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             
             var message1 = AppMessage + 1;
             var rawMessage1 = RawMessage.From(0, 0, message1);
-            await _appChannel.WriteAsync(rawMessage1.AsStream(buffer));
+            await _appChannel.Write(rawMessage1.AsStream(buffer));
             
-            await ProbeUntilConsumedAsync(_appReader, consumer);
+            await ProbeUntilConsumed(_appReader, consumer);
             
             Assert.Equal(1, consumer.ConsumeCount);
             Assert.Equal(message1, consumer.Messages.First());
             
             var message2 = AppMessage + 2;
             var rawMessage2 = RawMessage.From(0, 0, message2);
-            await _appChannel.WriteAsync(rawMessage2.AsStream(buffer));
+            await _appChannel.Write(rawMessage2.AsStream(buffer));
             
-            await ProbeUntilConsumedAsync(_appReader, consumer);
+            await ProbeUntilConsumed(_appReader, consumer);
             
             Assert.Equal(2, consumer.ConsumeCount);
             Assert.Equal(message2, consumer.Messages.Last());
@@ -111,13 +111,13 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             _appReader.Close();
         }
         
-        private async Task ProbeUntilConsumedAsync(IChannelReader reader, MockChannelReaderConsumer consumer)
+        private async Task ProbeUntilConsumed(IChannelReader reader, MockChannelReaderConsumer consumer)
         {
             var currentConsumedCount = consumer.ConsumeCount;
     
             for (int idx = 0; idx < 100; ++idx)
             {
-                await reader.ProbeChannelAsync();
+                await reader.ProbeChannel();
 
                 if (consumer.ConsumeCount > currentConsumedCount)
                 {

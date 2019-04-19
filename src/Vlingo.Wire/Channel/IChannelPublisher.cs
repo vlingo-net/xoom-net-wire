@@ -13,7 +13,7 @@ namespace Vlingo.Wire.Channel
     public interface IChannelPublisher
     {
         void Close();
-        Task ProcessChannelAsync();
+        Task ProcessChannel();
         void SendAvailability();
         void Send(RawMessage message);
     }

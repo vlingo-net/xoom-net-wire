@@ -118,7 +118,7 @@ namespace Vlingo.Wire.Multicast
             _consumer = consumer;
         }
 
-        public async Task ProbeChannelAsync()
+        public async Task ProbeChannel()
         {
             if (_closed)
             {

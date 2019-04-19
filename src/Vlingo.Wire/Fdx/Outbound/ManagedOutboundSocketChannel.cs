@@ -47,9 +47,9 @@ namespace Vlingo.Wire.Fdx.Outbound
             }
         }
 
-        public async Task WriteAsync(Stream buffer)
+        public async Task Write(Stream buffer)
         {
-            var preparedChannel = await PreparedChannelAsync();
+            var preparedChannel = await PreparedChannel();
             try
             {
                 while (buffer.HasRemaining())
@@ -87,7 +87,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             _disposed = true;
         }
         
-        private async Task<Socket> PreparedChannelAsync()
+        private async Task<Socket> PreparedChannel()
         {
             try
             {

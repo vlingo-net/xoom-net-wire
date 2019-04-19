@@ -68,7 +68,7 @@ namespace Vlingo.Wire.Channel
         // SocketChannelSelectionProcessor
         //=========================================
         
-        public async Task ProcessAsync(Socket channel)
+        public async Task Process(Socket channel)
         {
             try
             {
@@ -95,13 +95,13 @@ namespace Vlingo.Wire.Channel
             try
             {
                 // this is invoked in the context of another Thread so even if we can block here
-                ProbeChannelAsync().Wait();
+                ProbeChannel().Wait();
             }
             catch (AggregateException ae)
             {
                 foreach (var e in ae.InnerExceptions)
                 {
-                    Logger.Log($"Failed to ProbeChannelAsync for {_name} because: {e.Message}", e);
+                    Logger.Log($"Failed to ProbeChannel for {_name} because: {e.Message}", e);
                 }
                 
                 throw ae.Flatten();
@@ -151,7 +151,7 @@ namespace Vlingo.Wire.Channel
             }
         }
 
-        private async Task ProbeChannelAsync()
+        private async Task ProbeChannel()
         {
             if (IsStopped)
             {
@@ -164,11 +164,11 @@ namespace Vlingo.Wire.Channel
                 {
                     if (_context.Channel.Available > 0)
                     {
-                        await ReadAsync(_context);
+                        await Read(_context);
                     }
                     else
                     {
-                        await WriteAsync(_context);
+                        await Write(_context);
                     }
                 }
             }
@@ -178,7 +178,7 @@ namespace Vlingo.Wire.Channel
             }
         }
         
-        private async Task ReadAsync(Context readable)
+        private async Task Read(Context readable)
         {
             var channel = readable.Channel;
             if (!channel.IsSocketConnected())
@@ -224,7 +224,7 @@ namespace Vlingo.Wire.Channel
             }
         }
 
-        private async Task WriteAsync(Context writable)
+        private async Task Write(Context writable)
         {
             var channel = writable.Channel;
             if (!channel.IsSocketConnected())
@@ -236,19 +236,19 @@ namespace Vlingo.Wire.Channel
             
             if (writable.HasNextWritable)
             {
-                await WriteWithCachedDataAsync(writable, channel);
+                await WriteWithCachedData(writable, channel);
             }
         }
 
-        private async Task WriteWithCachedDataAsync(Context context, Socket channel)
+        private async Task WriteWithCachedData(Context context, Socket channel)
         {
             for (var buffer = context.NextWritable(); buffer != null; buffer = context.NextWritable())
             {
-                await WriteWithCachedDataAsync(context, channel, buffer);
+                await WriteWithCachedData(context, channel, buffer);
             }
         }
 
-        private async Task WriteWithCachedDataAsync(Context context, Socket clientChannel, IConsumerByteBuffer buffer)
+        private async Task WriteWithCachedData(Context context, Socket clientChannel, IConsumerByteBuffer buffer)
         {
             try
             {

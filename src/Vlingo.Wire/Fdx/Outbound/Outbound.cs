@@ -24,28 +24,28 @@ namespace Vlingo.Wire.Fdx.Outbound
             _pool = byteBufferPool;
         }
 
-        public async Task BroadcastAsync(RawMessage message)
+        public async Task Broadcast(RawMessage message)
         {
             var buffer = _pool.Access();
-            await BroadcastAsync(BytesFrom(message, buffer));
+            await Broadcast(BytesFrom(message, buffer));
         }
 
-        public async Task BroadcastAsync(IConsumerByteBuffer buffer)
+        public async Task Broadcast(IConsumerByteBuffer buffer)
         {
             // currently based on configured nodes,
             // but eventually could be live-node based
-            await BroadcastAsync(_provider.AllOtherNodeChannels, buffer);
+            await Broadcast(_provider.AllOtherNodeChannels, buffer);
         }
 
-        public async Task BroadcastAsync(IEnumerable<Node> selectNodes, RawMessage message)
+        public async Task Broadcast(IEnumerable<Node> selectNodes, RawMessage message)
         {
             var buffer = _pool.Access();
-            await BroadcastAsync(selectNodes, BytesFrom(message, buffer));
+            await Broadcast(selectNodes, BytesFrom(message, buffer));
         }
 
-        public async Task BroadcastAsync(IEnumerable<Node> selectNodes, IConsumerByteBuffer buffer)
+        public async Task Broadcast(IEnumerable<Node> selectNodes, IConsumerByteBuffer buffer)
         {
-            await BroadcastAsync(_provider.ChannelsFor(selectNodes), buffer);
+            await Broadcast(_provider.ChannelsFor(selectNodes), buffer);
         }
 
         public IConsumerByteBuffer BytesFrom(RawMessage message, IConsumerByteBuffer buffer)
@@ -62,18 +62,18 @@ namespace Vlingo.Wire.Fdx.Outbound
 
         public ByteBufferPool.PooledByteBuffer PooledByteBuffer() => _pool.Access();
 
-        public async Task SendToAsync(RawMessage message, Id id)
+        public async Task SendTo(RawMessage message, Id id)
         {
             var buffer = _pool.Access();
-            await SendToAsync(BytesFrom(message, buffer), id);
+            await SendTo(BytesFrom(message, buffer), id);
         }
 
-        public async Task SendToAsync(IConsumerByteBuffer buffer, Id id)
+        public async Task SendTo(IConsumerByteBuffer buffer, Id id)
         {
             try 
             {
                 Open(id);
-                await _provider.ChannelFor(id).WriteAsync(buffer.AsStream());
+                await _provider.ChannelFor(id).Write(buffer.AsStream());
             }
             finally
             {
@@ -81,7 +81,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             }
         }
 
-        private async Task BroadcastAsync(IReadOnlyDictionary<Id, IManagedOutboundChannel> channels, IConsumerByteBuffer buffer)
+        private async Task Broadcast(IReadOnlyDictionary<Id, IManagedOutboundChannel> channels, IConsumerByteBuffer buffer)
         {
             try
             {
@@ -89,7 +89,7 @@ namespace Vlingo.Wire.Fdx.Outbound
                 foreach (var channel in channels.Values)
                 {
                     bufferToWrite.Position = 0;
-                    await channel.WriteAsync(bufferToWrite);
+                    await channel.Write(bufferToWrite);
                 }
             }
             finally

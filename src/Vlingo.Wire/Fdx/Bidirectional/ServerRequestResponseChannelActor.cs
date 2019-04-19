@@ -104,7 +104,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         public void IntervalSignal(IScheduled<object> scheduled, object data)
         {
             // this is invoked in the context of another Thread so even if we can block here
-            ProbeChannelAsync().Wait();
+            ProbeChannel().Wait();
         }
         
         //=========================================
@@ -135,7 +135,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         //=========================================
         // internal implementation
         //=========================================
-        private async Task ProbeChannelAsync()
+        private async Task ProbeChannel()
         {
             if (IsStopped)
             {
@@ -144,7 +144,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
             try
             {
-                await AcceptAsync(_channel);
+                await Accept(_channel);
             }
             catch (Exception e)
             {
@@ -152,9 +152,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             }
         }
 
-        private async Task AcceptAsync(Socket channel)
+        private async Task Accept(Socket channel)
         {
-            await PooledProcessor().ProcessAsync(channel);
+            await PooledProcessor().Process(channel);
         }
 
         private ISocketChannelSelectionProcessor PooledProcessor()

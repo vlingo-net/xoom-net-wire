@@ -76,19 +76,19 @@ namespace Vlingo.Wire.Fdx.Inbound
             _channel.Listen(120);
         }
 
-        public async Task ProbeChannelAsync()
+        public async Task ProbeChannel()
         {
             try
             {
                 if (_clientChannel == null)
                 {
-                    _clientChannel = await AcceptAsync(_channel);
+                    _clientChannel = await Accept(_channel);
                 }
                 else
                 {
                     if (_clientChannel.Available > 0)
                     {
-                        await new SocketChannelSelectionReader(this).ReadAsync(_clientChannel, new RawMessageBuilder(_maxMessageSize));
+                        await new SocketChannelSelectionReader(this).Read(_clientChannel, new RawMessageBuilder(_maxMessageSize));
                     }
                 }
             }
@@ -131,7 +131,7 @@ namespace Vlingo.Wire.Fdx.Inbound
         // internal implementation
         //=========================================
         
-        private async Task<Socket> AcceptAsync(Socket channel)
+        private async Task<Socket> Accept(Socket channel)
         {
             try
             {

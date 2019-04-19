@@ -37,7 +37,7 @@ namespace Vlingo.Wire.Tests.Channel
             _consumer = consumer;
         }
 
-        public Task ProbeChannelAsync()
+        public Task ProbeChannel()
         {
             ProbeChannelCount.IncrementAndGet();
             

@@ -45,11 +45,11 @@ namespace Vlingo.Wire.Tests.Multicast
                 publisher.SendAvailability();
             }
             
-            await publisher.ProcessChannelAsync();
+            await publisher.ProcessChannel();
     
             for (int i = 0; i < 2; ++i)
             {
-                await subscriber.ProbeChannelAsync();
+                await subscriber.ProbeChannel();
             }
     
             Assert.Equal(0, publisherConsumer.ConsumeCount);

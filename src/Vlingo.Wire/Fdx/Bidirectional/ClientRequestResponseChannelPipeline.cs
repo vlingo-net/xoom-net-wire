@@ -55,9 +55,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             CloseChannel();
         }
 
-        public async Task RequestWithAsync(Stream stream)
+        public async Task RequestWith(Stream stream)
         {
-            var preparedChannel = await PreparedChannelAsync();
+            var preparedChannel = await PreparedChannel();
             if (preparedChannel != null)
             {
                 try
@@ -82,7 +82,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         // ResponseListenerChannel
         //=========================================
 
-        public async Task ProbeChannelAsync()
+        public async Task ProbeChannel()
         {
             if (_closed)
             {
@@ -91,12 +91,12 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
             try
             {
-                var channel = await PreparedChannelAsync();
+                var channel = await PreparedChannel();
                 if (channel != null)
                 {
                     var pipe = new Pipe();
-                    var input = ReadConsumeAsync(channel, pipe.Writer);
-                    var output = WriteConsumeAsync(pipe.Reader);
+                    var input = ReadConsume(channel, pipe.Writer);
+                    var output = WriteConsume(pipe.Reader);
                     await Task.WhenAll(input, output);
                 }
             }
@@ -127,7 +127,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _channel = null;
         }
 
-        private async Task<Socket> PreparedChannelAsync()
+        private async Task<Socket> PreparedChannel()
         {
             try
             {
@@ -167,7 +167,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             return null;
         }
 
-        private async Task ReadConsumeAsync(Socket channel, PipeWriter writer)
+        private async Task ReadConsume(Socket channel, PipeWriter writer)
         {
             const int minimumBufferSize = 512;
             while (true)
@@ -203,7 +203,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             writer.Complete();
         }
 
-        private async Task WriteConsumeAsync(PipeReader reader)
+        private async Task WriteConsume(PipeReader reader)
         {
             while (true)
             {

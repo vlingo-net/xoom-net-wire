@@ -17,7 +17,7 @@ namespace Vlingo.Wire.Channel
         {
         }
 
-        public override async Task ReadAsync(Socket channel, RawMessageBuilder builder)
+        public override async Task Read(Socket channel, RawMessageBuilder builder)
         {
             var bytesRead = 0;
             var totalBytesRead = 0;

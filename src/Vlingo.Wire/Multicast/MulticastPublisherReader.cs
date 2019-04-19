@@ -98,7 +98,7 @@ namespace Vlingo.Wire.Multicast
             }
         }
 
-        public async Task ProcessChannelAsync()
+        public async Task ProcessChannel()
         {
             // TODO: This part lack Accept and read like in java version
             if (_closed)
@@ -108,7 +108,7 @@ namespace Vlingo.Wire.Multicast
 
             try
             {
-                await SendMaxAsync();
+                await SendMax();
             }
             catch (SocketException e)
             {
@@ -197,7 +197,7 @@ namespace Vlingo.Wire.Multicast
             }
         }
 
-        private async Task SendMaxAsync()
+        private async Task SendMax()
         {
             while (true)
             {

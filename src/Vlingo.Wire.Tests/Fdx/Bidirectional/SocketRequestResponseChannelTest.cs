@@ -57,7 +57,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             while (_clientConsumer.UntilConsume.Remaining > 0)
             {
-                await _client.ProbeChannelAsync();
+                await _client.ProbeChannel();
             }
             _clientConsumer.UntilConsume.Completes();
             
@@ -92,7 +92,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             while (_clientConsumer.UntilConsume.Remaining > 0)
             {
                 await Task.Delay(10);
-                await _client.ProbeChannelAsync();
+                await _client.ProbeChannel();
             }
             _clientConsumer.UntilConsume.Completes();
             
@@ -123,7 +123,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             }
             
             while (_clientConsumer.UntilConsume.Remaining > 0) {
-                await _client.ProbeChannelAsync();
+                await _client.ProbeChannel();
             }
             
             _serverConsumer.UntilConsume.Completes();
@@ -159,7 +159,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             }
     
             while (_clientConsumer.UntilConsume.Remaining > 0) {
-                await _client.ProbeChannelAsync();
+                await _client.ProbeChannel();
             }
             _serverConsumer.UntilConsume.Completes();
             _clientConsumer.UntilConsume.Completes();
@@ -231,7 +231,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _buffer.Clear();
             _buffer.Write(Converters.TextToBytes(request));
             _buffer.Flip();
-            await _client.RequestWithAsync(_buffer);
+            await _client.RequestWith(_buffer);
         }
     }
 }

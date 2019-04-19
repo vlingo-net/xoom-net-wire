@@ -8,7 +8,7 @@ namespace Vlingo.Wire.Channel
     public class SocketChannelSelectionProcessor__Proxy : ISocketChannelSelectionProcessor
     {
         private const string CloseRepresentation1 = "Close()";
-        private const string ProcessAsyncRepresentation2 = "ProcessAsync(Socket)";
+        private const string ProcessRepresentation2 = "Process(Socket)";
 
         private readonly Actor actor;
         private readonly IMailbox mailbox;
@@ -40,25 +40,25 @@ namespace Vlingo.Wire.Channel
             }
         }
 
-        public Task ProcessAsync(Socket channel)
+        public Task Process(Socket channel)
         {
             if (!actor.IsStopped)
             {
-                Action<ISocketChannelSelectionProcessor> consumer = x => x.ProcessAsync(channel).Wait();
+                Action<ISocketChannelSelectionProcessor> consumer = x => x.Process(channel).Wait();
                 if (mailbox.IsPreallocated)
                 {
-                    mailbox.Send(actor, consumer, null, ProcessAsyncRepresentation2);
+                    mailbox.Send(actor, consumer, null, ProcessRepresentation2);
                 }
                 else
                 {
                     mailbox.Send(
                         new LocalMessage<ISocketChannelSelectionProcessor>(actor, consumer,
-                            ProcessAsyncRepresentation2));
+                            ProcessRepresentation2));
                 }
             }
             else
             {
-                actor.DeadLetters.FailedDelivery(new DeadLetter(actor, ProcessAsyncRepresentation2));
+                actor.DeadLetters.FailedDelivery(new DeadLetter(actor, ProcessRepresentation2));
             }
 
             return Task.CompletedTask;

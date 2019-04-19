@@ -30,7 +30,7 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             Writes.Clear();
         }
 
-        public Task WriteAsync(Stream buffer)
+        public Task Write(Stream buffer)
         {
             var message = RawMessage.ReadFromWithHeader(buffer);
             Writes.Add(message.AsTextMessage());

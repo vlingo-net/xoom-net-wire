@@ -45,17 +45,17 @@ namespace Vlingo.Wire.Channel
             _channel = null;
         }
 
-        public async Task<int> WriteAsync(RawMessage message, MemoryStream buffer)
+        public async Task<int> Write(RawMessage message, MemoryStream buffer)
         {
             buffer.Clear();
             message.CopyBytesTo(buffer);
             buffer.Flip();
-            return await WriteAsync(buffer);
+            return await Write(buffer);
         }
 
-        public async Task<int> WriteAsync(MemoryStream buffer)
+        public async Task<int> Write(MemoryStream buffer)
         {
-            var preparedChannel = await PreparedChannelAsync();
+            var preparedChannel = await PreparedChannel();
             var totalBytesWritten = 0;
             try
             {
@@ -77,7 +77,7 @@ namespace Vlingo.Wire.Channel
 
         public override string ToString() => $"SocketChannelWriter[address={_address}, channel={_channel}]";
 
-        private async Task<Socket> PreparedChannelAsync()
+        private async Task<Socket> PreparedChannel()
         {
             try
             {

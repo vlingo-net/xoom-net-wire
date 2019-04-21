@@ -91,7 +91,7 @@ namespace Vlingo.Wire.Fdx.Outbound
 
         private IManagedOutboundChannel UnopenedChannelFor(Node node)
         {
-            var address = _type.Equals(AddressType.Op) ? _node.OperationalAddress : _node.ApplicationAddress;
+            var address = _type.IsOperational ? _node.OperationalAddress : _node.ApplicationAddress;
 
             return new ManagedOutboundSocketChannel(node, address, _configuration.Logger);
         }

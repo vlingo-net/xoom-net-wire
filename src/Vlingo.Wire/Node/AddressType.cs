@@ -19,6 +19,10 @@ namespace Vlingo.Wire.Node
         private AddressType(string field, bool application, bool operational, bool main, bool none)
         {
             Field = field;
+            IsApplication = application;
+            IsOperational = operational;
+            IsMain = main;
+            IsNone = none;
         }
         
         public string Field { get; }

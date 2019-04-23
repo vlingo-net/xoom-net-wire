@@ -11,17 +11,29 @@ namespace Vlingo.Wire.Node
 {
     public sealed class AddressType : IComparable<AddressType>
     {
-        public static readonly AddressType Main = new AddressType("addr=");
-        public static readonly AddressType Op = new AddressType("op=");
-        public static readonly AddressType App = new AddressType("app=");
-        public static readonly AddressType None = new AddressType("");
+        public static readonly AddressType Main = new AddressType("addr=", false, false, true, false);
+        public static readonly AddressType Op = new AddressType("op=", false, true, false, false);
+        public static readonly AddressType App = new AddressType("app=", true, false, false, false);
+        public static readonly AddressType None = new AddressType("", false, false, false, true);
 
-        private AddressType(string field)
+        private AddressType(string field, bool application, bool operational, bool main, bool none)
         {
             Field = field;
+            IsApplication = application;
+            IsOperational = operational;
+            IsMain = main;
+            IsNone = none;
         }
         
         public string Field { get; }
+        
+        public bool IsApplication { get; }
+        
+        public bool IsOperational { get; }
+        
+        public bool IsMain { get; }
+        
+        public bool IsNone { get; }
         
         public int CompareTo(AddressType other)
         {

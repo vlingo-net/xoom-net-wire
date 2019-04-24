@@ -55,5 +55,7 @@ namespace Vlingo.Wire.Node
         }
 
         public override int GetHashCode() => 31 * Field.GetHashCode();
+
+        public override string ToString() => $"AddressType[{Field}]";
     }
 }

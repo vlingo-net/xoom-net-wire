@@ -6,10 +6,7 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
-using System.Collections.Generic;
 using Vlingo.Actors;
-using Vlingo.Common;
-using Vlingo.Wire.Channel;
 using System.Net.Sockets;
 using Vlingo.Wire.Message;
 

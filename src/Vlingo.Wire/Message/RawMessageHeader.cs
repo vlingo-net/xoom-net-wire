@@ -20,7 +20,7 @@ namespace Vlingo.Wire.Message
 
         public static int Bytes { get; } = ShortBytes * ShortFields + IntBytes * IntFields;
 
-        private long _length;
+        private int _length;
         private short _nodeId;
         private short _type;
 
@@ -28,11 +28,11 @@ namespace Vlingo.Wire.Message
         {
         }
         
-        public RawMessageHeader(int nodeId, int type, long length) : this((short)nodeId, (short)type, length)
+        public RawMessageHeader(int nodeId, int type, int length) : this((short)nodeId, (short)type, length)
         {
         }
 
-        public RawMessageHeader(short nodeId, short type, long length)
+        public RawMessageHeader(short nodeId, short type, int length)
         {
             _nodeId = nodeId;
             _type = type;
@@ -46,15 +46,15 @@ namespace Vlingo.Wire.Message
             return header.Read(buffer);
         }
 
-        public static RawMessageHeader From(short nodeId, short type, long length) => new RawMessageHeader(nodeId, type, length);
+        public static RawMessageHeader From(short nodeId, short type, long length) => new RawMessageHeader(nodeId, type, (int) length);
         
-        public static RawMessageHeader From(short nodeId, int type, long length) => new RawMessageHeader(nodeId, (short)type, length);
+        public static RawMessageHeader From(short nodeId, int type, long length) => new RawMessageHeader(nodeId, (short)type, (int) length);
         
-        public static RawMessageHeader From(int nodeId, int type, long length) => new RawMessageHeader((short)nodeId, (short)type, length);
+        public static RawMessageHeader From(int nodeId, int type, long length) => new RawMessageHeader((short)nodeId, (short)type, (int) length);
 
         public static RawMessageHeader From(RawMessageHeader copy) => From(copy._nodeId, copy._type, copy._length);
 
-        public long Length => _length;
+        public int Length => _length;
 
         public short NodeId => _nodeId;
 
@@ -72,7 +72,7 @@ namespace Vlingo.Wire.Message
 
                 var nodeId = binaryReader.ReadInt16();
                 var type = binaryReader.ReadInt16();
-                var length = binaryReader.ReadInt64();
+                var length = binaryReader.ReadInt32();
                 binaryReader.ReadInt16(); // unused1
                 binaryReader.ReadInt16(); // unused2
 
@@ -112,7 +112,7 @@ namespace Vlingo.Wire.Message
 
         public override string ToString() => $"RawMessageHeader[headerId={HeaderId} nodeId={_nodeId} type={_type} length={_length}]";
 
-        protected RawMessageHeader SetAll(short nodeId, short type, long length)
+        protected RawMessageHeader SetAll(short nodeId, short type, int length)
         {
             _nodeId = nodeId;
             _type = type;

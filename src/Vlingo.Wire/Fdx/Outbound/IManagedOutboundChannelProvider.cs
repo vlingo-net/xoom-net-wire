@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace Vlingo.Wire.Fdx.Outbound
 {
-    using Vlingo.Wire.Node;
+    using Node;
     
     public interface IManagedOutboundChannelProvider
     {

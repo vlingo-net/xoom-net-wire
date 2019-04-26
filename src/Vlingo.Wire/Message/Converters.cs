@@ -31,7 +31,7 @@ namespace Vlingo.Wire.Message
             message.Put(buffer, false);
             buffer.SetLength(0); // clear
             
-            var header = new RawMessageHeader(sendingNodeId, (short)0, message.Length);
+            var header = new RawMessageHeader(sendingNodeId, (short)0, (int) message.Length);
             message.Header(header);
             return message;
         }

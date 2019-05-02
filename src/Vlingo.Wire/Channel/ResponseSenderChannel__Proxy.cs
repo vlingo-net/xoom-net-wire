@@ -1,21 +1,16 @@
-// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
-//
-// This Source Code Form is subject to the terms of the
-// Mozilla Public License, v. 2.0. If a copy of the MPL
-// was not distributed with this file, You can obtain
-// one at https://mozilla.org/MPL/2.0/.
-
 using System;
+using System.Collections.Generic;
 using Vlingo.Actors;
-using System.Net.Sockets;
+using Vlingo.Common;
+using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Channel
 {
-    public class ResponseSenderChannel__Proxy : IResponseSenderChannel<Socket>
+    public class ResponseSenderChannel__Proxy<T> : IResponseSenderChannel<T>
     {
-        private const string AbandonRepresentation1 = "Abandon(RequestResponseContext<Socket>)";
-        private const string RespondWithRepresentation2 = "RespondWith(RequestResponseContext<Socket>, IConsumerByteBuffer)";
+        private const string AbandonRepresentation1 = "Abandon(RequestResponseContext<T>)";
+        private const string RespondWithRepresentation2 = "RespondWith(RequestResponseContext<T>, IConsumerByteBuffer)";
 
         private readonly Actor actor;
         private readonly IMailbox mailbox;
@@ -26,44 +21,46 @@ namespace Vlingo.Wire.Channel
             this.mailbox = mailbox;
         }
 
-        public void Abandon(RequestResponseContext<Socket> context)
+        public void Abandon(RequestResponseContext<T> context)
         {
-            if(!actor.IsStopped)
+            if (!this.actor.IsStopped)
             {
-                Action<IResponseSenderChannel<Socket>> consumer = x => x.Abandon(context);
-                if(mailbox.IsPreallocated)
+                Action<IResponseSenderChannel<T>> consumer = __ => __.Abandon(context);
+                if (this.mailbox.IsPreallocated)
                 {
-                    mailbox.Send(actor, consumer, null, AbandonRepresentation1);
+                    this.mailbox.Send(this.actor, consumer, null, AbandonRepresentation1);
                 }
                 else
                 {
-                    mailbox.Send(new LocalMessage<IResponseSenderChannel<Socket>>(actor, consumer, AbandonRepresentation1));
+                    this.mailbox.Send(
+                        new LocalMessage<IResponseSenderChannel<T>>(this.actor, consumer, AbandonRepresentation1));
                 }
             }
             else
             {
-                actor.DeadLetters.FailedDelivery(new DeadLetter(actor, AbandonRepresentation1));
-            }
-        }
-        public void RespondWith(RequestResponseContext<Socket> context, IConsumerByteBuffer buffer)
-        {
-            if(!actor.IsStopped)
-            {
-                Action<IResponseSenderChannel<Socket>> consumer = x => x.RespondWith(context, buffer);
-                if(mailbox.IsPreallocated)
-                {
-                    mailbox.Send(actor, consumer, null, RespondWithRepresentation2);
-                }
-                else
-                {
-                    mailbox.Send(new LocalMessage<IResponseSenderChannel<Socket>>(actor, consumer, RespondWithRepresentation2));
-                }
-            }
-            else
-            {
-                actor.DeadLetters.FailedDelivery(new DeadLetter(actor, RespondWithRepresentation2));
+                this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, AbandonRepresentation1));
             }
         }
 
+        public void RespondWith(RequestResponseContext<T> context, IConsumerByteBuffer buffer)
+        {
+            if (!this.actor.IsStopped)
+            {
+                Action<IResponseSenderChannel<T>> consumer = __ => __.RespondWith(context, buffer);
+                if (this.mailbox.IsPreallocated)
+                {
+                    this.mailbox.Send(this.actor, consumer, null, RespondWithRepresentation2);
+                }
+                else
+                {
+                    this.mailbox.Send(new LocalMessage<IResponseSenderChannel<T>>(this.actor, consumer,
+                        RespondWithRepresentation2));
+                }
+            }
+            else
+            {
+                this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, RespondWithRepresentation2));
+            }
+        }
     }
 }

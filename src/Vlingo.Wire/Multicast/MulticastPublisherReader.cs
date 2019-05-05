@@ -193,6 +193,11 @@ namespace Vlingo.Wire.Multicast
             }
             catch
             {
+                if (publisherAddress.ToString().StartsWith("::"))
+                {
+                    return "localhost";
+                }
+                
                 return publisherAddress.ToString();
             }
         }

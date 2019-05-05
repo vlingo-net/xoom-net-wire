@@ -145,7 +145,7 @@ namespace Vlingo.Wire.Multicast
                         
                         if (received.ReceivedBytes > 0)
                         {
-                            _buffer.Write(bytes, 0, bytes.Length);
+                            _buffer.Write(bytes, 0, received.ReceivedBytes);
                             _buffer.Flip();
                             _message.From(_buffer);
                         

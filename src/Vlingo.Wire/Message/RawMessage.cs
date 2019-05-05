@@ -109,7 +109,7 @@ namespace Vlingo.Wire.Message
         public byte[] AsBuffer(MemoryStream buffer)
         {
             var s = (MemoryStream)AsStream(buffer);
-            return s.GetBuffer();
+            return s.ToArray();
         }
 
         public string AsTextMessage() => Converters.BytesToText(_bytes, 0, (int)Length);

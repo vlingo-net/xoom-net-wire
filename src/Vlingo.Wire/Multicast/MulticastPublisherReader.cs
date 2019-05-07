@@ -181,7 +181,7 @@ namespace Vlingo.Wire.Multicast
                     _clientReadChannel = await Accept(_readChannel);
                 }
                 
-                if (_clientReadChannel.Available > 0)
+                if (_clientReadChannel != null && _clientReadChannel.Available > 0)
                 {
                     await new SocketChannelSelectionReader(this).Read(_clientReadChannel, new RawMessageBuilder(_messageBuffer.Capacity));
                 }

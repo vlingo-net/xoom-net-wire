@@ -55,7 +55,7 @@ namespace Vlingo.Wire.Channel
 
         public async Task<int> Write(MemoryStream buffer)
         {
-            var preparedChannel = await PreparedChannel();
+            _channel = await PreparedChannel();
             var totalBytesWritten = 0;
             try
             {
@@ -63,7 +63,7 @@ namespace Vlingo.Wire.Channel
                 {
                     var bytes = new byte[buffer.Length];
                     await buffer.ReadAsync(bytes, 0, bytes.Length);
-                    totalBytesWritten += await preparedChannel.SendAsync(new ArraySegment<byte>(bytes), SocketFlags.None);
+                    totalBytesWritten += await _channel.SendAsync(new ArraySegment<byte>(bytes), SocketFlags.None);
                 }
             }
             catch (Exception e)
@@ -92,9 +92,9 @@ namespace Vlingo.Wire.Channel
                 }
                 else
                 {
-                    _channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    await _channel.ConnectAsync(_address.HostName, _address.Port);
-                    return _channel;
+                    var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    await channel.ConnectAsync(_address.HostName, _address.Port);
+                    return channel;
                 }
             }
             catch (Exception e)

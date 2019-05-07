@@ -30,6 +30,7 @@ namespace Vlingo.Wire.Multicast
         private readonly string _name;
         private readonly IPEndPoint _publisherAddress;
         private readonly Socket _readChannel;
+        private Socket _clientReadChannel;
         private bool _disposed;
 
         public MulticastPublisherReader(
@@ -54,10 +55,11 @@ namespace Vlingo.Wire.Multicast
             // published as my availabilityMessage
             _publisherChannel.Bind(new IPEndPoint(IPAddress.Any, 0));
             
-            _readChannel = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            _readChannel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _readChannel.Blocking = false;
             _readChannel.ExclusiveAddressUse = false;
             _readChannel.Bind(new IPEndPoint(IPAddress.Any, incomingSocketPort));
+            _readChannel.Listen(120);
             
             _publisherAddress = (IPEndPoint)_readChannel.LocalEndPoint;
             
@@ -100,7 +102,6 @@ namespace Vlingo.Wire.Multicast
 
         public async Task ProcessChannel()
         {
-            // TODO: This part lack Accept and read like in java version
             if (_closed)
             {
                 return;
@@ -108,6 +109,7 @@ namespace Vlingo.Wire.Multicast
 
             try
             {
+                await ProbeChannel();
                 await SendMax();
             }
             catch (SocketException e)
@@ -169,6 +171,45 @@ namespace Vlingo.Wire.Multicast
         //====================================
         // internal implementation
         //====================================
+        
+        public async Task ProbeChannel()
+        {
+            try
+            {
+                if (_clientReadChannel == null)
+                {
+                    _clientReadChannel = await Accept(_readChannel);
+                }
+                
+                if (_clientReadChannel.Available > 0)
+                {
+                    await new SocketChannelSelectionReader(this).Read(_clientReadChannel, new RawMessageBuilder(_messageBuffer.Capacity));
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Failed to read channel selector for: '{_name}' because: {e.Message}", e);
+            }
+        }
+        
+        private async Task<Socket> Accept(Socket channel)
+        {
+            try
+            {
+                if (channel.Poll(10000, SelectMode.SelectRead))
+                {
+                    return await channel.AcceptAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                var message = $"Failed to accept client socket for {_name} because: {e.Message}";
+                Logger.Log(message, e);
+                throw;
+            }
+
+            return null;
+        }
         
         private RawMessage AvailabilityMessage()
         {

@@ -6,10 +6,13 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Wire.Channel;
+using Vlingo.Wire.Message;
 using Vlingo.Wire.Multicast;
+using Vlingo.Wire.Node;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -54,6 +57,33 @@ namespace Vlingo.Wire.Tests.Multicast
     
             Assert.Equal(0, publisherConsumer.ConsumeCount);
             Assert.Equal(10, subscriberConsumer.ConsumeCount);
+        }
+
+        [Fact]
+        public async Task TestPublisherChannelReader()
+        {
+            var publisherConsumer = new MockChannelReaderConsumer();
+
+            var publisher = new MulticastPublisherReader(
+                "test-publisher",
+                new Group("237.37.37.2", 37381),
+                37389,
+                1024,
+                publisherConsumer,
+                ConsoleLogger.TestInstance());
+            
+            var socketWriter = new SocketChannelWriter(
+                Address.From(
+                    Host.Of("localhost"), 
+                    37389, 
+                    AddressType.Main),
+                ConsoleLogger.TestInstance());
+
+            await socketWriter.Write(RawMessage.From(1, 1, "test-response"), new MemoryStream());
+            
+            await publisher.ProcessChannel();
+            
+            Assert.Equal(1, publisherConsumer.ConsumeCount);
         }
 
         public MulticastTest(ITestOutputHelper output)

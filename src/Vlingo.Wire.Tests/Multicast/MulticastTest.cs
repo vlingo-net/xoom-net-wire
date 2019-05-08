@@ -123,12 +123,14 @@ namespace Vlingo.Wire.Tests.Multicast
             await client1.Write(RawMessage.From(1, 1, "test-response1"), new MemoryStream());
             await client2.Write(RawMessage.From(1, 1, "test-response2"), new MemoryStream());
             await client3.Write(RawMessage.From(1, 1, "test-response3"), new MemoryStream());
+            await client1.Write(RawMessage.From(1, 1, "test-response1"), new MemoryStream());
             
             await publisher.ProbeChannel();
             await publisher.ProbeChannel();
             await publisher.ProbeChannel();
+            await publisher.ProbeChannel();
 
-            Assert.Equal(3, publisherConsumer.ConsumeCount);
+            Assert.Equal(4, publisherConsumer.ConsumeCount);
         }
 
         public MulticastTest(ITestOutputHelper output)

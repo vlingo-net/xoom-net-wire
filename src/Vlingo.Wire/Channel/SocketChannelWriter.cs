@@ -89,13 +89,10 @@ namespace Vlingo.Wire.Channel
                     }
                     
                     Close();
+                    return await Open();
                 }
-                else
-                {
-                    var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    await channel.ConnectAsync(_address.HostName, _address.Port);
-                    return channel;
-                }
+
+                return await Open();
             }
             catch (Exception e)
             {
@@ -104,6 +101,14 @@ namespace Vlingo.Wire.Channel
             }
 
             return null;
+        }
+
+        private async Task<Socket> Open()
+        {
+            var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            channel.Blocking = false;
+            await channel.ConnectAsync(_address.HostName, _address.Port);
+            return channel;
         }
     }
 }

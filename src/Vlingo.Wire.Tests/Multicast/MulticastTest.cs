@@ -85,6 +85,51 @@ namespace Vlingo.Wire.Tests.Multicast
             
             Assert.Equal(1, publisherConsumer.ConsumeCount);
         }
+        
+        [Fact]
+        public async Task TestPublisherChannelReaderWithMultipleClients()
+        {
+            var publisherConsumer = new MockChannelReaderConsumer();
+
+            var publisher = new MulticastPublisherReader(
+                "test-publisher",
+                new Group("237.37.37.2", 37391),
+                37399,
+                1024,
+                publisherConsumer,
+                ConsoleLogger.TestInstance());
+            
+            var client1 = new SocketChannelWriter(
+                Address.From(
+                    Host.Of("localhost"), 
+                    37399, 
+                    AddressType.Main),
+                ConsoleLogger.TestInstance());
+            
+            var client2 = new SocketChannelWriter(
+                Address.From(
+                    Host.Of("localhost"), 
+                    37399, 
+                    AddressType.Main),
+                ConsoleLogger.TestInstance());
+            
+            var client3 = new SocketChannelWriter(
+                Address.From(
+                    Host.Of("localhost"), 
+                    37399, 
+                    AddressType.Main),
+                ConsoleLogger.TestInstance());
+
+            await client1.Write(RawMessage.From(1, 1, "test-response1"), new MemoryStream());
+            await client2.Write(RawMessage.From(1, 1, "test-response2"), new MemoryStream());
+            await client3.Write(RawMessage.From(1, 1, "test-response3"), new MemoryStream());
+            
+            await publisher.ProbeChannel();
+            await publisher.ProbeChannel();
+            await publisher.ProbeChannel();
+
+            Assert.Equal(3, publisherConsumer.ConsumeCount);
+        }
 
         public MulticastTest(ITestOutputHelper output)
         {

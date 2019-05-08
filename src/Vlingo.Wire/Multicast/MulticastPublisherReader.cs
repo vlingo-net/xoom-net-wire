@@ -30,7 +30,6 @@ namespace Vlingo.Wire.Multicast
         private readonly string _name;
         private readonly IPEndPoint _publisherAddress;
         private readonly Socket _readChannel;
-        private Socket _clientReadChannel;
         private bool _disposed;
 
         public MulticastPublisherReader(
@@ -176,14 +175,11 @@ namespace Vlingo.Wire.Multicast
         {
             try
             {
-                if (_clientReadChannel == null)
+                var clientReadChannel = await Accept(_readChannel);
+
+                if (clientReadChannel != null && clientReadChannel.Available > 0)
                 {
-                    _clientReadChannel = await Accept(_readChannel);
-                }
-                
-                if (_clientReadChannel != null && _clientReadChannel.Available > 0)
-                {
-                    await new SocketChannelSelectionReader(this).Read(_clientReadChannel, new RawMessageBuilder(_messageBuffer.Capacity));
+                    await new SocketChannelSelectionReader(this).Read(clientReadChannel, new RawMessageBuilder(_messageBuffer.Capacity));
                 }
             }
             catch (Exception e)

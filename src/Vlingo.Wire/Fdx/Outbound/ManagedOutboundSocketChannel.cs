@@ -49,14 +49,18 @@ namespace Vlingo.Wire.Fdx.Outbound
 
         public async Task Write(Stream buffer)
         {
-            var preparedChannel = await PreparedChannel();
+            _channel = await PreparedChannel();
+            if (_channel == null)
+            {
+                return;
+            }
             try
             {
                 while (buffer.HasRemaining())
                 {
                     var bytes = new byte[buffer.Length];
                     await buffer.ReadAsync(bytes, 0, bytes.Length);
-                    await preparedChannel.SendAsync(new ArraySegment<byte>(bytes), SocketFlags.None);
+                    await _channel.SendAsync(new ArraySegment<byte>(bytes), SocketFlags.None);
                 }
             }
             catch (Exception e)
@@ -93,19 +97,17 @@ namespace Vlingo.Wire.Fdx.Outbound
             {
                 if (_channel != null)
                 {
-                    if (_channel.IsSocketConnected())
+                    if (_channel.Poll(10000, SelectMode.SelectWrite))
                     {
                         return _channel;
                     }
                     
                     Close();
                 }
-                else
-                {
-                    _channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    await _channel.ConnectAsync(_address.HostName, _address.Port);
-                    return _channel;
-                }
+                
+                var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                await channel.ConnectAsync(_address.HostName, _address.Port);
+                return channel;
             }
             catch
             {

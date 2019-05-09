@@ -45,18 +45,24 @@ namespace Vlingo.Wire.Channel
             _channel = null;
         }
 
-        public async Task<int> Write(RawMessage message, MemoryStream buffer)
+        public Task<int> Write(RawMessage message, MemoryStream buffer)
         {
             buffer.Clear();
             message.CopyBytesTo(buffer);
             buffer.Flip();
-            return await Write(buffer);
+            return Write(buffer);
         }
 
         public async Task<int> Write(MemoryStream buffer)
         {
             _channel = await PreparedChannel();
+            
             var totalBytesWritten = 0;
+            if (_channel == null)
+            {
+                return totalBytesWritten;
+            }
+            
             try
             {
                 while (buffer.HasRemaining())
@@ -83,16 +89,17 @@ namespace Vlingo.Wire.Channel
             {
                 if (_channel != null)
                 {
-                    if (_channel.IsSocketConnected())
+                    if (_channel.Poll(10000, SelectMode.SelectWrite))
                     {
                         return _channel;
                     }
                     
                     Close();
-                    return await Open();
                 }
-
-                return await Open();
+                
+                var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                await channel.ConnectAsync(_address.HostName, _address.Port);
+                return channel;
             }
             catch (Exception e)
             {
@@ -101,14 +108,6 @@ namespace Vlingo.Wire.Channel
             }
 
             return null;
-        }
-
-        private async Task<Socket> Open()
-        {
-            var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            channel.Blocking = false;
-            await channel.ConnectAsync(_address.HostName, _address.Port);
-            return channel;
         }
     }
 }

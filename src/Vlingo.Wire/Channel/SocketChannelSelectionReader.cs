@@ -33,7 +33,8 @@ namespace Vlingo.Wire.Channel
 
             Dispatcher.DispatchMessageFor(builder);
     
-            if (bytesRead == 0) {
+            if (bytesRead == 0)
+            {
                 CloseClientResources(channel);
             }
         }

@@ -25,11 +25,12 @@ namespace Vlingo.Wire.Multicast
         private readonly IChannelReaderConsumer _consumer;
         private readonly EndPoint _groupAddress;
         private readonly ILogger _logger;
-        private readonly MemoryStream _messageBuffer;
         private readonly Queue<RawMessage> _messageQueue;
         private readonly string _name;
+        private readonly int _maxMessageSize;
         private readonly IPEndPoint _publisherAddress;
         private readonly Socket _readChannel;
+        private readonly List<Socket> _clientReadChannels;
         private bool _disposed;
 
         public MulticastPublisherReader(
@@ -41,10 +42,10 @@ namespace Vlingo.Wire.Multicast
             ILogger logger)
         {
             _name = name;
+            _maxMessageSize = maxMessageSize;
             _consumer = consumer;
             _logger = logger;
             _groupAddress = new IPEndPoint(IPAddress.Parse(group.Address), group.Port);
-            _messageBuffer = new MemoryStream(maxMessageSize);
             _messageQueue = new Queue<RawMessage>();
             
             _publisherChannel = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -61,6 +62,8 @@ namespace Vlingo.Wire.Multicast
             _readChannel.Listen(120);
             
             _publisherAddress = (IPEndPoint)_readChannel.LocalEndPoint;
+            
+            _clientReadChannels = new List<Socket>();
             
             _availability = AvailabilityMessage();
         }
@@ -81,8 +84,11 @@ namespace Vlingo.Wire.Multicast
             try
             {
                 _publisherChannel.Close();
-                _messageBuffer.Dispose();
                 _readChannel.Dispose();
+                foreach (var clientReadChannel in _clientReadChannels)
+                {
+                    clientReadChannel.Close();
+                }
             }
             catch (Exception e)
             {
@@ -108,8 +114,7 @@ namespace Vlingo.Wire.Multicast
 
             try
             {
-                await ProbeChannel();
-                await SendMax();
+                await Task.WhenAll(ProbeChannel(), SendMax());
             }
             catch (SocketException e)
             {
@@ -128,9 +133,9 @@ namespace Vlingo.Wire.Multicast
                 throw new ArgumentException("The message length must be greater than zero.");
             }
 
-            if (length > _messageBuffer.Capacity)
+            if (length > _maxMessageSize)
             {
-                throw new ArgumentException($"The message length is greater than {_messageBuffer.Capacity}");
+                throw new ArgumentException($"The message length is greater than {_maxMessageSize}");
             }
             
             _messageQueue.Enqueue(message);
@@ -175,11 +180,20 @@ namespace Vlingo.Wire.Multicast
         {
             try
             {
-                var clientReadChannel = await Accept(_readChannel);
+                await Accept();
 
-                if (clientReadChannel != null && clientReadChannel.Available > 0)
+                foreach (var clientReadChannel in _clientReadChannels.ToArray())
                 {
-                    await new SocketChannelSelectionReader(this).Read(clientReadChannel, new RawMessageBuilder(_messageBuffer.Capacity));
+                    if (clientReadChannel.Available > 0)
+                    {
+                        await new SocketChannelSelectionReader(this).Read(clientReadChannel, new RawMessageBuilder(_maxMessageSize));
+                    }
+                    
+                    if (!clientReadChannel.IsSocketConnected())
+                    {
+                        clientReadChannel.Close();
+                        _clientReadChannels.Remove(clientReadChannel);
+                    }
                 }
             }
             catch (Exception e)
@@ -188,13 +202,13 @@ namespace Vlingo.Wire.Multicast
             }
         }
         
-        private async Task<Socket> Accept(Socket channel)
+        private async Task Accept()
         {
             try
             {
-                if (channel.Poll(10000, SelectMode.SelectRead))
+                if (_readChannel.Poll(10000, SelectMode.SelectRead))
                 {
-                    return await channel.AcceptAsync();
+                    _clientReadChannels.Add(await _readChannel.AcceptAsync());
                 }
             }
             catch (Exception e)
@@ -203,8 +217,6 @@ namespace Vlingo.Wire.Multicast
                 Logger.Log(message, e);
                 throw;
             }
-
-            return null;
         }
         
         private RawMessage AvailabilityMessage()
@@ -250,7 +262,7 @@ namespace Vlingo.Wire.Multicast
                 
                 var message = _messageQueue.Peek();
                 
-                var sent = await _publisherChannel.SendToAsync(new ArraySegment<byte>(message.AsBuffer(_messageBuffer)),
+                var sent = await _publisherChannel.SendToAsync(new ArraySegment<byte>(message.AsBuffer(new MemoryStream(_maxMessageSize))),
                                     SocketFlags.None, _groupAddress);
 
                 if (sent > 0)

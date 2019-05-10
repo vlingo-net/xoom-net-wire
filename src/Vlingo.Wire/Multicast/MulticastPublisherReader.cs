@@ -84,11 +84,7 @@ namespace Vlingo.Wire.Multicast
             try
             {
                 _publisherChannel.Close();
-                _readChannel.Dispose();
-                foreach (var clientReadChannel in _clientReadChannels)
-                {
-                    clientReadChannel.Close();
-                }
+                _messageQueue.Clear(); // messages are lost anyway
             }
             catch (Exception e)
             {
@@ -98,6 +94,10 @@ namespace Vlingo.Wire.Multicast
             try
             {
                 _readChannel.Close();
+                foreach (var clientReadChannel in _clientReadChannels.ToArray())
+                {
+                    clientReadChannel.Close();
+                }
             }
             catch (Exception e)
             {
@@ -126,6 +126,11 @@ namespace Vlingo.Wire.Multicast
 
         public void Send(RawMessage message)
         {
+            if (_closed)
+            {
+                return;
+            }
+            
             var length = message.Length;
 
             if (length <= 0)

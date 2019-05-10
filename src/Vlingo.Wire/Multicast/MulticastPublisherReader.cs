@@ -83,8 +83,8 @@ namespace Vlingo.Wire.Multicast
 
             try
             {
-                _publisherChannel.Close();
                 _messageQueue.Clear(); // messages are lost anyway
+                _publisherChannel.Close();
             }
             catch (Exception e)
             {

@@ -6,6 +6,7 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ namespace Vlingo.Wire.Fdx.Inbound
     public class SocketChannelInboundReader: ChannelMessageDispatcher, IChannelReader, IDisposable
     {
         private readonly Socket _channel;
+        private readonly List<Socket> _clientChannels;
         private bool _closed;
         private IChannelReaderConsumer _consumer;
         private readonly ILogger _logger;
@@ -25,7 +27,6 @@ namespace Vlingo.Wire.Fdx.Inbound
         private readonly string _name;
         private readonly int _port;
         private bool _disposed;
-        private Socket _clientChannel;
 
         public SocketChannelInboundReader(int port, string name, int maxMessageSize, ILogger logger)
         {
@@ -34,6 +35,7 @@ namespace Vlingo.Wire.Fdx.Inbound
             _maxMessageSize = maxMessageSize;
             _logger = logger;
             _channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            _clientChannels = new List<Socket>();
         }
         
         //=========================================
@@ -52,6 +54,10 @@ namespace Vlingo.Wire.Fdx.Inbound
             try
             {
                 _channel.Close();
+                foreach (var clientChannel in _clientChannels)
+                {
+                    clientChannel.Close();
+                }
                 Dispose(true);
             }
             catch (Exception e)
@@ -80,15 +86,19 @@ namespace Vlingo.Wire.Fdx.Inbound
         {
             try
             {
-                if (_clientChannel == null)
+                await Accept();
+
+                foreach (var clientChannel in _clientChannels.ToArray())
                 {
-                    _clientChannel = await Accept(_channel);
-                }
-                else
-                {
-                    if (_clientChannel.Available > 0)
+                    if (clientChannel.Available > 0)
                     {
-                        await new SocketChannelSelectionReader(this).Read(_clientChannel, new RawMessageBuilder(_maxMessageSize));
+                        await new SocketChannelSelectionReader(this).Read(clientChannel, new RawMessageBuilder(_maxMessageSize));
+                    }
+                    
+                    if (!clientChannel.IsSocketConnected())
+                    {
+                        clientChannel.Close();
+                        _clientChannels.Remove(clientChannel);
                     }
                 }
             }
@@ -131,13 +141,13 @@ namespace Vlingo.Wire.Fdx.Inbound
         // internal implementation
         //=========================================
         
-        private async Task<Socket> Accept(Socket channel)
+        private async Task Accept()
         {
             try
             {
-                if (channel.Poll(10000, SelectMode.SelectRead))
+                if (_channel.Poll(10000, SelectMode.SelectRead))
                 {
-                    return await channel.AcceptAsync();
+                    _clientChannels.Add(await _channel.AcceptAsync());
                 }
             }
             catch (Exception e)
@@ -146,8 +156,6 @@ namespace Vlingo.Wire.Fdx.Inbound
                 Logger.Log(message, e);
                 throw;
             }
-
-            return null;
         }
     }
 }

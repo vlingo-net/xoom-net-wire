@@ -54,7 +54,7 @@ namespace Vlingo.Wire.Fdx.Inbound
             try
             {
                 _channel.Close();
-                foreach (var clientChannel in _clientChannels)
+                foreach (var clientChannel in _clientChannels.ToArray())
                 {
                     clientChannel.Close();
                 }

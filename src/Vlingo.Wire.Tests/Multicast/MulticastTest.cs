@@ -52,7 +52,7 @@ namespace Vlingo.Wire.Tests.Multicast
     
             for (int i = 0; i < 2; ++i)
             {
-                await subscriber.ProbeChannel();
+                subscriber.ProbeChannel();
             }
     
             Assert.Equal(0, publisherConsumer.ConsumeCount);

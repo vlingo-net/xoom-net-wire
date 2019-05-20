@@ -41,7 +41,7 @@ namespace Vlingo.Wire.Tests.Channel
             var rawMessage1 = RawMessage.From(0, 0, message1);
             await _channelWriter.Write(rawMessage1, buffer);
             
-            await ProbeUntilConsumed(_channelReader, consumer);
+            ProbeUntilConsumed(_channelReader, consumer);
             
             Assert.Equal(1, consumer.ConsumeCount);
             Assert.Equal(message1, consumer.Messages.First());
@@ -50,7 +50,7 @@ namespace Vlingo.Wire.Tests.Channel
             var rawMessage2 = RawMessage.From(0, 0, message2);
             await _channelWriter.Write(rawMessage2, buffer);
             
-            await ProbeUntilConsumed(_channelReader, consumer);
+            ProbeUntilConsumed(_channelReader, consumer);
             
             Assert.Equal(2, consumer.ConsumeCount);
             Assert.Equal(message2, consumer.Messages.Last());
@@ -74,13 +74,13 @@ namespace Vlingo.Wire.Tests.Channel
             _channelReader.Close();
         }
         
-        private async Task ProbeUntilConsumed(IChannelReader reader, MockChannelReaderConsumer consumer)
+        private void ProbeUntilConsumed(IChannelReader reader, MockChannelReaderConsumer consumer)
         {
             var currentConsumedCount = consumer.ConsumeCount;
     
             for (int idx = 0; idx < 100; ++idx)
             {
-                await reader.ProbeChannel();
+                reader.ProbeChannel();
 
                 if (consumer.ConsumeCount > currentConsumedCount)
                 {

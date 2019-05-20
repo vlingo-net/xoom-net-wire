@@ -41,7 +41,7 @@ namespace Vlingo.Wire.Fdx.Inbound
         
         public void IntervalSignal(IScheduled<object> scheduled, object data)
         {
-            _reader.ProbeChannel().Wait();
+            _reader.ProbeChannel();
         }
         
         //=========================================

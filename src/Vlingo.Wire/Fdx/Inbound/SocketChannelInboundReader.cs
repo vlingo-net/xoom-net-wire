@@ -82,7 +82,7 @@ namespace Vlingo.Wire.Fdx.Inbound
             _channel.Listen(120);
         }
 
-        public async Task ProbeChannel()
+        public async void ProbeChannel()
         {
             try
             {

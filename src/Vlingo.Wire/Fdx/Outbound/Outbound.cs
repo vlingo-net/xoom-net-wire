@@ -24,28 +24,28 @@ namespace Vlingo.Wire.Fdx.Outbound
             _pool = byteBufferPool;
         }
 
-        public async Task Broadcast(RawMessage message)
+        public void Broadcast(RawMessage message)
         {
             var buffer = _pool.Access();
-            await Broadcast(BytesFrom(message, buffer));
+            Broadcast(BytesFrom(message, buffer));
         }
 
-        public async Task Broadcast(IConsumerByteBuffer buffer)
+        public void Broadcast(IConsumerByteBuffer buffer)
         {
             // currently based on configured nodes,
             // but eventually could be live-node based
-            await Broadcast(_provider.AllOtherNodeChannels, buffer);
+            Broadcast(_provider.AllOtherNodeChannels, buffer);
         }
 
-        public async Task Broadcast(IEnumerable<Node> selectNodes, RawMessage message)
+        public void Broadcast(IEnumerable<Node> selectNodes, RawMessage message)
         {
             var buffer = _pool.Access();
-            await Broadcast(selectNodes, BytesFrom(message, buffer));
+            Broadcast(selectNodes, BytesFrom(message, buffer));
         }
 
-        public async Task Broadcast(IEnumerable<Node> selectNodes, IConsumerByteBuffer buffer)
+        public void Broadcast(IEnumerable<Node> selectNodes, IConsumerByteBuffer buffer)
         {
-            await Broadcast(_provider.ChannelsFor(selectNodes), buffer);
+            Broadcast(_provider.ChannelsFor(selectNodes), buffer);
         }
 
         public IConsumerByteBuffer BytesFrom(RawMessage message, IConsumerByteBuffer buffer)
@@ -62,13 +62,13 @@ namespace Vlingo.Wire.Fdx.Outbound
 
         public ByteBufferPool.PooledByteBuffer PooledByteBuffer() => _pool.Access();
 
-        public async Task SendTo(RawMessage message, Id id)
+        public void SendTo(RawMessage message, Id id)
         {
             var buffer = _pool.Access();
-            await SendTo(BytesFrom(message, buffer), id);
+            SendTo(BytesFrom(message, buffer), id);
         }
 
-        public async Task SendTo(IConsumerByteBuffer buffer, Id id)
+        public async void SendTo(IConsumerByteBuffer buffer, Id id)
         {
             try 
             {
@@ -81,7 +81,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             }
         }
 
-        private async Task Broadcast(IReadOnlyDictionary<Id, IManagedOutboundChannel> channels, IConsumerByteBuffer buffer)
+        private async void Broadcast(IReadOnlyDictionary<Id, IManagedOutboundChannel> channels, IConsumerByteBuffer buffer)
         {
             try
             {

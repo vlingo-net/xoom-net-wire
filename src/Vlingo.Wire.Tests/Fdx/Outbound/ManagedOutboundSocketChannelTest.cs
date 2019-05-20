@@ -47,7 +47,7 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             var rawMessage1 = RawMessage.From(0, 0, message1);
             await _opChannel.Write(rawMessage1.AsStream(buffer));
             
-            await ProbeUntilConsumed(_opReader, consumer);
+            ProbeUntilConsumed(_opReader, consumer);
             
             Assert.Equal(1, consumer.ConsumeCount);
             Assert.Equal(message1, consumer.Messages.First());
@@ -56,7 +56,7 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             var rawMessage2 = RawMessage.From(0, 0, message2);
             await _opChannel.Write(rawMessage2.AsStream(buffer));
             
-            await ProbeUntilConsumed(_opReader, consumer);
+            ProbeUntilConsumed(_opReader, consumer);
             
             Assert.Equal(2, consumer.ConsumeCount);
             Assert.Equal(message2, consumer.Messages.Last());
@@ -76,7 +76,7 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             var rawMessage1 = RawMessage.From(0, 0, message1);
             await _appChannel.Write(rawMessage1.AsStream(buffer));
             
-            await ProbeUntilConsumed(_appReader, consumer);
+            ProbeUntilConsumed(_appReader, consumer);
             
             Assert.Equal(1, consumer.ConsumeCount);
             Assert.Equal(message1, consumer.Messages.First());
@@ -85,7 +85,7 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             var rawMessage2 = RawMessage.From(0, 0, message2);
             await _appChannel.Write(rawMessage2.AsStream(buffer));
             
-            await ProbeUntilConsumed(_appReader, consumer);
+            ProbeUntilConsumed(_appReader, consumer);
             
             Assert.Equal(2, consumer.ConsumeCount);
             Assert.Equal(message2, consumer.Messages.Last());
@@ -111,13 +111,13 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             _appReader.Close();
         }
         
-        private async Task ProbeUntilConsumed(IChannelReader reader, MockChannelReaderConsumer consumer)
+        private void ProbeUntilConsumed(IChannelReader reader, MockChannelReaderConsumer consumer)
         {
             var currentConsumedCount = consumer.ConsumeCount;
     
             for (int idx = 0; idx < 100; ++idx)
             {
-                await reader.ProbeChannel();
+                reader.ProbeChannel();
 
                 if (consumer.ConsumeCount > currentConsumedCount)
                 {

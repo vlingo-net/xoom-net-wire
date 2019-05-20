@@ -5,7 +5,6 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-using System.Threading.Tasks;
 using Vlingo.Common;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
@@ -37,15 +36,13 @@ namespace Vlingo.Wire.Tests.Channel
             _consumer = consumer;
         }
 
-        public Task ProbeChannel()
+        public void ProbeChannel()
         {
             ProbeChannelCount.IncrementAndGet();
             
             var message = RawMessage.From(0, 0, MessagePrefix + ProbeChannelCount.Get());
             
             _consumer.Consume(message);
-
-            return Task.CompletedTask;
         }
     }
 }

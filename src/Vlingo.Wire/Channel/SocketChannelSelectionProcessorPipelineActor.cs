@@ -72,7 +72,7 @@ namespace Vlingo.Wire.Channel
         // SocketChannelSelectionProcessor
         //=========================================
         
-        public async Task Process(Socket channel)
+        public async void Process(Socket channel)
         {
             try
             {

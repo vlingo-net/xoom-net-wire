@@ -68,7 +68,7 @@ namespace Vlingo.Wire.Channel
         // SocketChannelSelectionProcessor
         //=========================================
         
-        public async Task Process(Socket channel)
+        public async void Process(Socket channel)
         {
             try
             {
@@ -77,6 +77,10 @@ namespace Vlingo.Wire.Channel
                     var clientChannel = await channel.AcceptAsync();
                     _context = new Context(this, clientChannel);
                 }
+            }
+            catch (ObjectDisposedException e)
+            {
+                Logger.Log($"The underlying channel for {_name} is closed. This is certainly because Actor was stopped.", e);
             }
             catch (Exception e)
             {
@@ -90,12 +94,11 @@ namespace Vlingo.Wire.Channel
         // Scheduled
         //=========================================
 
-        public void IntervalSignal(IScheduled<object> scheduled, object data)
+        public async void IntervalSignal(IScheduled<object> scheduled, object data)
         {
             try
             {
-                // this is invoked in the context of another Thread so even if we can block here
-                ProbeChannel().Wait();
+                await ProbeChannel();
             }
             catch (AggregateException ae)
             {

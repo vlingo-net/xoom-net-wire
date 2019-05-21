@@ -114,7 +114,8 @@ namespace Vlingo.Wire.Multicast
 
             try
             {
-                await Task.WhenAll(ProbeChannel(), SendMax());
+                ProbeChannel();
+                await SendMax();
             }
             catch (SocketException e)
             {
@@ -181,7 +182,7 @@ namespace Vlingo.Wire.Multicast
         // internal implementation
         //====================================
         
-        public async Task ProbeChannel()
+        public async void ProbeChannel()
         {
             try
             {

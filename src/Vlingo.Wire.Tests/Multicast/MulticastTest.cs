@@ -125,10 +125,10 @@ namespace Vlingo.Wire.Tests.Multicast
             await client3.Write(RawMessage.From(1, 1, "test-response3"), new MemoryStream());
             await client1.Write(RawMessage.From(1, 1, "test-response1"), new MemoryStream());
             
-            await publisher.ProbeChannel();
-            await publisher.ProbeChannel();
-            await publisher.ProbeChannel();
-            await publisher.ProbeChannel();
+            publisher.ProbeChannel();
+            publisher.ProbeChannel();
+            publisher.ProbeChannel();
+            publisher.ProbeChannel();
 
             Assert.Equal(4, publisherConsumer.ConsumeCount);
         }

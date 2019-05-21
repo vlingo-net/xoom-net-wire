@@ -8,7 +8,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Fdx.Inbound;
@@ -33,7 +32,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
         private Node _node;
 
         [Fact]
-        public async Task TestOpInboundChannel()
+        public void TestOpInboundChannel()
         {
             var consumer = new MockChannelReaderConsumer();
             
@@ -44,7 +43,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             
             var message1 = _opMessage + 1;
             var rawMessage1 = RawMessage.From(0, 0, message1);
-            await _opChannel.Write(rawMessage1.AsStream(buffer));
+            _opChannel.Write(rawMessage1.AsStream(buffer));
             
             ProbeUntilConsumed(_opReader, consumer);
             
@@ -53,7 +52,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             
             var message2 = _opMessage + 2;
             var rawMessage2 = RawMessage.From(0, 0, message2);
-            await _opChannel.Write(rawMessage2.AsStream(buffer));
+            _opChannel.Write(rawMessage2.AsStream(buffer));
             
             ProbeUntilConsumed(_opReader, consumer);
             
@@ -62,7 +61,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
         }
 
         [Fact]
-        public async Task TestAppInboundChannel()
+        public void TestAppInboundChannel()
         {
             var consumer = new MockChannelReaderConsumer();
             
@@ -73,7 +72,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             
             var message1 = _appMessage + 1;
             var rawMessage1 = RawMessage.From(0, 0, message1);
-            await _appChannel.Write(rawMessage1.AsStream(buffer));
+            _appChannel.Write(rawMessage1.AsStream(buffer));
             
             ProbeUntilConsumed(_appReader, consumer);
             
@@ -82,7 +81,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             
             var message2 = _appMessage + 2;
             var rawMessage2 = RawMessage.From(0, 0, message2);
-            await _appChannel.Write(rawMessage2.AsStream(buffer));
+            _appChannel.Write(rawMessage2.AsStream(buffer));
             
             ProbeUntilConsumed(_appReader, consumer);
             

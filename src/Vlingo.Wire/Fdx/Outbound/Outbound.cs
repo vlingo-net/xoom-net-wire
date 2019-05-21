@@ -6,7 +6,6 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Fdx.Outbound
@@ -68,12 +67,12 @@ namespace Vlingo.Wire.Fdx.Outbound
             SendTo(BytesFrom(message, buffer), id);
         }
 
-        public async void SendTo(IConsumerByteBuffer buffer, Id id)
+        public void SendTo(IConsumerByteBuffer buffer, Id id)
         {
             try 
             {
                 Open(id);
-                await _provider.ChannelFor(id).Write(buffer.AsStream());
+                _provider.ChannelFor(id).Write(buffer.AsStream());
             }
             finally
             {
@@ -81,7 +80,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             }
         }
 
-        private async void Broadcast(IReadOnlyDictionary<Id, IManagedOutboundChannel> channels, IConsumerByteBuffer buffer)
+        private void Broadcast(IReadOnlyDictionary<Id, IManagedOutboundChannel> channels, IConsumerByteBuffer buffer)
         {
             try
             {
@@ -89,7 +88,7 @@ namespace Vlingo.Wire.Fdx.Outbound
                 foreach (var channel in channels.Values)
                 {
                     bufferToWrite.Position = 0;
-                    await channel.Write(bufferToWrite);
+                    channel.Write(bufferToWrite);
                 }
             }
             finally

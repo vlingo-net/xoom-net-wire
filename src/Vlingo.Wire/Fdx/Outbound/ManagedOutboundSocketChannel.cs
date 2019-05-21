@@ -47,7 +47,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             }
         }
 
-        public async Task Write(Stream buffer)
+        public async void Write(Stream buffer)
         {
             _channel = await PreparedChannel();
             if (_channel == null)

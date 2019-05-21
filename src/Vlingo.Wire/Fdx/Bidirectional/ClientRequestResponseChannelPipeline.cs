@@ -82,7 +82,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         // ResponseListenerChannel
         //=========================================
 
-        public async Task ProbeChannel()
+        public async void ProbeChannel()
         {
             if (_closed)
             {

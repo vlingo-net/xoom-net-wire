@@ -57,7 +57,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             while (_clientConsumer.UntilConsume.Remaining > 0)
             {
-                await _client.ProbeChannel();
+                _client.ProbeChannel();
             }
             _clientConsumer.UntilConsume.Completes();
             
@@ -92,7 +92,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             while (_clientConsumer.UntilConsume.Remaining > 0)
             {
                 await Task.Delay(10);
-                await _client.ProbeChannel();
+                _client.ProbeChannel();
             }
             _clientConsumer.UntilConsume.Completes();
             
@@ -108,7 +108,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         }
 
         [Fact]
-        public async Task Test10RequestResponse()
+        public void Test10RequestResponse()
         {
             var request = "Hello, Request-Response";
             
@@ -124,7 +124,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             }
             
             while (_clientConsumer.UntilConsume.Remaining > 0) {
-                await _client.ProbeChannel();
+                _client.ProbeChannel();
+                Thread.Sleep(30);
             }
             
             _serverConsumer.UntilConsume.Completes();
@@ -144,7 +145,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         }
         
         [Fact]
-        public async Task TestThatRequestResponsePoolLimitsNotExceeded()
+        public void TestThatRequestResponsePoolLimitsNotExceeded()
         {
             var total = PoolSize * 2;
             var request = "Hello, Request-Response";
@@ -161,7 +162,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             }
     
             while (_clientConsumer.UntilConsume.Remaining > 0) {
-                await _client.ProbeChannel();
+                _client.ProbeChannel();
+                Thread.Sleep(30);
             }
             _serverConsumer.UntilConsume.Completes();
             _clientConsumer.UntilConsume.Completes();

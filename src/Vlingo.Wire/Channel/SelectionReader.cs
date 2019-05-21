@@ -20,7 +20,7 @@ namespace Vlingo.Wire.Channel
             Dispatcher = dispatcher;
         }
 
-        public abstract Task Read(Socket channel, RawMessageBuilder builder);
+        public abstract void Read(Socket channel, RawMessageBuilder builder);
 
         protected void CloseClientResources(Socket socket)
         {

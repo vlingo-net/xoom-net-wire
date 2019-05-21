@@ -92,7 +92,7 @@ namespace Vlingo.Wire.Fdx.Inbound
                 {
                     if (clientChannel.Available > 0)
                     {
-                        await new SocketChannelSelectionReader(this).Read(clientChannel, new RawMessageBuilder(_maxMessageSize));
+                        new SocketChannelSelectionReader(this).Read(clientChannel, new RawMessageBuilder(_maxMessageSize));
                     }
                     
                     if (!clientChannel.IsSocketConnected())

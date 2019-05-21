@@ -21,7 +21,7 @@ namespace Vlingo.Wire.Tests.Multicast
     public class MulticastTest
     {
         [Fact]
-        public async Task TestMulticastPublishSubscribe()
+        public void TestMulticastPublishSubscribe()
         {
             var publisherConsumer = new MockChannelReaderConsumer();
 
@@ -48,7 +48,7 @@ namespace Vlingo.Wire.Tests.Multicast
                 publisher.SendAvailability();
             }
             
-            await publisher.ProcessChannel();
+            publisher.ProcessChannel();
     
             for (int i = 0; i < 2; ++i)
             {
@@ -81,7 +81,7 @@ namespace Vlingo.Wire.Tests.Multicast
 
             await socketWriter.Write(RawMessage.From(1, 1, "test-response"), new MemoryStream());
             
-            await publisher.ProcessChannel();
+            publisher.ProcessChannel();
             
             Assert.Equal(1, publisherConsumer.ConsumeCount);
         }

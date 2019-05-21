@@ -44,7 +44,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             _serverConsumer.CurrentExpectedRequestLength = request.Length;
             _clientConsumer.CurrentExpectedResponseLength = _serverConsumer.CurrentExpectedRequestLength;
-            await Request(request);
+            Request(request);
             
             _serverConsumer.UntilConsume = TestUntil.Happenings(1);
             _clientConsumer.UntilConsume = TestUntil.Happenings(1);
@@ -76,11 +76,11 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _clientConsumer.CurrentExpectedResponseLength = _serverConsumer.CurrentExpectedRequestLength;
             
             // simulate network latency for parts of single request
-            await Request(requestPart1);
+            Request(requestPart1);
             await Task.Delay(100);
-            await Request(requestPart2);
+            Request(requestPart2);
             await Task.Delay(200);
-            await Request(requestPart3);
+            Request(requestPart3);
             _serverConsumer.UntilConsume = TestUntil.Happenings(1);
             while (_serverConsumer.UntilConsume.Remaining > 0)
             {
@@ -119,7 +119,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _clientConsumer.UntilConsume = TestUntil.Happenings(10);
             
             for (int idx = 0; idx < 10; ++idx) {
-                await Request(request + idx);
+                Request(request + idx);
+                Thread.Sleep(10);
             }
             
             while (_clientConsumer.UntilConsume.Remaining > 0) {
@@ -155,7 +156,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _clientConsumer.UntilConsume = TestUntil.Happenings(total);
     
             for (int idx = 0; idx < total; ++idx) {
-                await Request(request + idx.ToString("D3"));
+                Request(request + idx.ToString("D3"));
+                Thread.Sleep(10);
             }
     
             while (_clientConsumer.UntilConsume.Remaining > 0) {
@@ -174,7 +176,6 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
     
             for (int idx = 0; idx < total; ++idx) {
                 Assert.Equal(_clientConsumer.Responses[idx], _serverConsumer.Requests[idx]);
-                // _output.WriteLine($"_clientConsumer.Responses[idx] - ${_clientConsumer.Responses[idx]} | _serverConsumer.Requests[idx] - ${_serverConsumer.Requests[idx]}");
             }
         }
 
@@ -226,12 +227,12 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _world.Terminate();
         }
         
-        private async Task Request(string request)
+        private void Request(string request)
         {
             _buffer.Clear();
             _buffer.Write(Converters.TextToBytes(request));
             _buffer.Flip();
-            await _client.RequestWith(_buffer);
+            _client.RequestWith(_buffer);
         }
     }
 }

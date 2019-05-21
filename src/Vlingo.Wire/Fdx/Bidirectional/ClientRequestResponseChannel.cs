@@ -58,7 +58,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             CloseChannel();
         }
 
-        public async Task RequestWith(Stream stream)
+        public async void RequestWith(Stream stream)
         {
             var preparedChannel = await PreparedChannel();
             if (preparedChannel != null)

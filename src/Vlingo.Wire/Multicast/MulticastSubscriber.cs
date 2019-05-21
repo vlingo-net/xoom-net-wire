@@ -11,7 +11,6 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 using Vlingo.Actors;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
@@ -24,12 +23,10 @@ namespace Vlingo.Wire.Multicast
         private bool _closed;
         private readonly Socket _channel;
         private IChannelReaderConsumer _consumer;
-        private readonly IPAddress _groupAddress;
         private readonly ILogger _logger;
         private readonly int _maxReceives;
         private readonly RawMessage _message;
         private readonly string _name;
-        private NetworkInterface _networkInterface;
         private readonly EndPoint _ipEndPoint;
         private bool _disposed;
 
@@ -59,18 +56,18 @@ namespace Vlingo.Wire.Multicast
             _channel.Blocking = false;
             _ipEndPoint = new IPEndPoint(IPAddress.Any, group.Port);
             _channel.Bind(_ipEndPoint);
-            _networkInterface = AssignNetworkInterfaceTo(_channel, networkInterfaceName);
-            _groupAddress = IPAddress.Parse(group.Address);
+            var networkInterface = AssignNetworkInterfaceTo(_channel, networkInterfaceName);
+            var groupAddress = IPAddress.Parse(@group.Address);
 
-            var p = _networkInterface.GetIPProperties().GetIPv4Properties();
-            var mcastOption = new MulticastOption(_groupAddress, p.Index);
+            var p = networkInterface.GetIPProperties().GetIPv4Properties();
+            var mcastOption = new MulticastOption(groupAddress, p.Index);
             _channel.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, mcastOption);
             _channel.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 50);
             
             _buffer = new MemoryStream(maxMessageSize);
             _message = new RawMessage(maxMessageSize);
             
-            logger.Log($"MulticastSubscriber joined: {_networkInterface.Id}");
+            logger.Log($"MulticastSubscriber joined: {networkInterface.Id}");
         }
         
         //=========================================

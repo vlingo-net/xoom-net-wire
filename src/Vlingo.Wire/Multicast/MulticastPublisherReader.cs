@@ -105,7 +105,7 @@ namespace Vlingo.Wire.Multicast
             }
         }
 
-        public async Task ProcessChannel()
+        public async void ProcessChannel()
         {
             if (_closed)
             {

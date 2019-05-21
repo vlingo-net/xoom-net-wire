@@ -8,7 +8,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Fdx.Inbound;
@@ -28,7 +27,7 @@ namespace Vlingo.Wire.Tests.Channel
         private IChannelReader _channelReader;
         
         [Fact]
-        public async Task TestChannelWriter()
+        public void TestChannelWriter()
         {
             var consumer = new MockChannelReaderConsumer();
             
@@ -39,7 +38,7 @@ namespace Vlingo.Wire.Tests.Channel
             
             var message1 = TestMessage + 1;
             var rawMessage1 = RawMessage.From(0, 0, message1);
-            await _channelWriter.Write(rawMessage1, buffer);
+            _channelWriter.Write(rawMessage1, buffer);
             
             ProbeUntilConsumed(_channelReader, consumer);
             
@@ -48,7 +47,7 @@ namespace Vlingo.Wire.Tests.Channel
             
             var message2 = TestMessage + 2;
             var rawMessage2 = RawMessage.From(0, 0, message2);
-            await _channelWriter.Write(rawMessage2, buffer);
+            _channelWriter.Write(rawMessage2, buffer);
             
             ProbeUntilConsumed(_channelReader, consumer);
             

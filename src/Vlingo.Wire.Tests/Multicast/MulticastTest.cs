@@ -7,7 +7,6 @@
 
 using System;
 using System.IO;
-using System.Threading.Tasks;
 using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
@@ -60,7 +59,7 @@ namespace Vlingo.Wire.Tests.Multicast
         }
 
         [Fact]
-        public async Task TestPublisherChannelReader()
+        public void TestPublisherChannelReader()
         {
             var publisherConsumer = new MockChannelReaderConsumer();
 
@@ -79,7 +78,7 @@ namespace Vlingo.Wire.Tests.Multicast
                     AddressType.Main),
                 ConsoleLogger.TestInstance());
 
-            await socketWriter.Write(RawMessage.From(1, 1, "test-response"), new MemoryStream());
+            socketWriter.Write(RawMessage.From(1, 1, "test-response"), new MemoryStream());
             
             publisher.ProcessChannel();
             
@@ -87,7 +86,7 @@ namespace Vlingo.Wire.Tests.Multicast
         }
         
         [Fact]
-        public async Task TestPublisherChannelReaderWithMultipleClients()
+        public void TestPublisherChannelReaderWithMultipleClients()
         {
             var publisherConsumer = new MockChannelReaderConsumer();
 
@@ -120,10 +119,10 @@ namespace Vlingo.Wire.Tests.Multicast
                     AddressType.Main),
                 ConsoleLogger.TestInstance());
 
-            await client1.Write(RawMessage.From(1, 1, "test-response1"), new MemoryStream());
-            await client2.Write(RawMessage.From(1, 1, "test-response2"), new MemoryStream());
-            await client3.Write(RawMessage.From(1, 1, "test-response3"), new MemoryStream());
-            await client1.Write(RawMessage.From(1, 1, "test-response1"), new MemoryStream());
+            client1.Write(RawMessage.From(1, 1, "test-response1"), new MemoryStream());
+            client2.Write(RawMessage.From(1, 1, "test-response2"), new MemoryStream());
+            client3.Write(RawMessage.From(1, 1, "test-response3"), new MemoryStream());
+            client1.Write(RawMessage.From(1, 1, "test-response1"), new MemoryStream());
             
             publisher.ProbeChannel();
             publisher.ProbeChannel();

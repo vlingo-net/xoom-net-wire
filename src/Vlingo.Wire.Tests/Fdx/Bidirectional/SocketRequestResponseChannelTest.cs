@@ -118,15 +118,17 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _serverConsumer.UntilConsume = TestUntil.Happenings(10);
             _clientConsumer.UntilConsume = TestUntil.Happenings(10);
             
-            for (int idx = 0; idx < 10; ++idx) {
+            for (var idx = 0; idx < 10; ++idx) {
                 Request(request + idx);
-                Thread.Sleep(10);
+                Thread.Sleep(1000);
             }
             
             while (_clientConsumer.UntilConsume.Remaining > 0) {
                 _client.ProbeChannel();
-                Thread.Sleep(30);
+                Thread.Sleep(1000);
             }
+            
+            
             
             _serverConsumer.UntilConsume.Completes();
             _clientConsumer.UntilConsume.Completes();

@@ -120,16 +120,14 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             for (var idx = 0; idx < 10; ++idx) {
                 Request(request + idx);
-                Thread.Sleep(1000);
             }
             
+            Thread.Sleep(200);
+
             while (_clientConsumer.UntilConsume.Remaining > 0) {
                 _client.ProbeChannel();
-                Thread.Sleep(1000);
             }
-            
-            
-            
+
             _serverConsumer.UntilConsume.Completes();
             _clientConsumer.UntilConsume.Completes();
             
@@ -187,6 +185,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         {
             var converter = new Converter(output);
             Console.SetOut(converter);
+            
             _output = output;
             _world = World.StartWithDefault("test-request-response-channel");
             
@@ -236,7 +235,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _buffer.Clear();
             _buffer.Write(Converters.TextToBytes(request));
             _buffer.Flip();
-            _client.RequestWith(_buffer);
+            _client.RequestWith(_buffer.ToArray());
         }
     }
 }

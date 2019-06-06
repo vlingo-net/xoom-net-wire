@@ -13,6 +13,6 @@ namespace Vlingo.Wire.Channel
     {
         void Close();
         
-        void RequestWith(Stream stream);
+        void RequestWith(byte[] buffer);
     }
 }

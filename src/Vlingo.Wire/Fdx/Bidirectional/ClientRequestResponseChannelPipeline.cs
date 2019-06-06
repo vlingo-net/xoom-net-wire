@@ -55,20 +55,15 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             CloseChannel();
         }
 
-        public async void RequestWith(Stream stream)
+        public async void RequestWith(byte[] buffer)
         {
             var preparedChannel = await PreparedChannel();
             if (preparedChannel != null)
             {
                 try
                 {
-                    while (stream.HasRemaining())
-                    {
-                        var buffer = ArrayPool<byte>.Shared.Rent(1024);
-                        await stream.ReadAsync(buffer, 0, buffer.Length);
-                        await preparedChannel.SendAsync(new ArraySegment<byte>(buffer), SocketFlags.None);
-                        ArrayPool<byte>.Shared.Return(buffer);
-                    }
+                    await preparedChannel.SendAsync(new ArraySegment<byte>(buffer), SocketFlags.None);
+                    ArrayPool<byte>.Shared.Return(buffer);
                 }
                 catch (Exception e)
                 {

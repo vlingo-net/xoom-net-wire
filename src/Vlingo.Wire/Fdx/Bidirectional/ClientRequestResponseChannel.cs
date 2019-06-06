@@ -6,7 +6,6 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
-using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Vlingo.Actors;
@@ -58,19 +57,19 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             CloseChannel();
         }
 
-        public async void RequestWith(Stream stream)
+        public async void RequestWith(byte[] buffer)
         {
-            var preparedChannel = await PreparedChannel();
+            Socket preparedChannel = null;
+            while (preparedChannel == null && _previousPrepareFailures < 10)
+            {
+                preparedChannel = await PreparedChannel();
+            }
+
             if (preparedChannel != null)
             {
                 try
                 {
-                    while (stream.HasRemaining())
-                    {
-                        var buffer = new byte[stream.Length];
-                        await stream.ReadAsync(buffer, 0, buffer.Length);
-                        await preparedChannel.SendAsync(new ArraySegment<byte>(buffer), SocketFlags.None);
-                    }
+                    await preparedChannel.SendAsync(new ArraySegment<byte>(buffer), SocketFlags.None);
                 }
                 catch (Exception e)
                 {
@@ -138,7 +137,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                         return _channel;
                     }
                     
-                    CloseChannel();
+                    // CloseChannel();
                 }
                 else
                 {
@@ -189,7 +188,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                     pooledBuffer.Release();
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 pooledBuffer.Release();
                 throw;

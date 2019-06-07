@@ -122,7 +122,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 Request(request + idx);
             }
             
-            Thread.Sleep(200);
+            Thread.Sleep(300);
 
             while (_clientConsumer.UntilConsume.Remaining > 0) {
                 _client.ProbeChannel();

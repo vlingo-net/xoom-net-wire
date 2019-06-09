@@ -108,7 +108,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         }
 
         [Fact]
-        public void Test10RequestResponse()
+        public async Task Test10RequestResponse()
         {
             var request = "Hello, Request-Response";
             
@@ -121,8 +121,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             for (var idx = 0; idx < 10; ++idx) {
                 Request(request + idx);
             }
-            
-            Thread.Sleep(1000);
+
+            await Task.Delay(300);
 
             while (_clientConsumer.UntilConsume.Remaining > 0) {
                 _client.ProbeChannel();

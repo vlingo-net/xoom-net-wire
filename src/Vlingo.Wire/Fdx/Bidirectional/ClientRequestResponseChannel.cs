@@ -188,7 +188,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                     pooledBuffer.Release();
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 pooledBuffer.Release();
                 throw;

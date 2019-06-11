@@ -92,7 +92,11 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
             try
             {
-                var channel = await PreparedChannel();
+                Socket channel = null;
+                while (channel == null && _previousPrepareFailures < 10)
+                {
+                    channel = await PreparedChannel();
+                }
                 if (channel != null)
                 {
                     await ReadConsume(channel);

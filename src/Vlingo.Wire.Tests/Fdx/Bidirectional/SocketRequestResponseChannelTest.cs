@@ -122,7 +122,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 Request(request + idx);
             }
 
-            // await Task.Delay(900);
+            await Task.Delay(200);
 
             while (_clientConsumer.UntilConsume.Remaining > 0) {
                 _client.ProbeChannel();
@@ -145,7 +145,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         }
         
         [Fact]
-        public void TestThatRequestResponsePoolLimitsNotExceeded()
+        public async Task TestThatRequestResponsePoolLimitsNotExceeded()
         {
             var total = PoolSize * 2;
             var request = "Hello, Request-Response";
@@ -158,13 +158,14 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
     
             for (int idx = 0; idx < total; ++idx) {
                 Request(request + idx.ToString("D3"));
-                Thread.Sleep(10);
             }
+            
+            await Task.Delay(200);
     
             while (_clientConsumer.UntilConsume.Remaining > 0) {
                 _client.ProbeChannel();
-                Thread.Sleep(30);
             }
+            
             _serverConsumer.UntilConsume.Completes();
             _clientConsumer.UntilConsume.Completes();
 

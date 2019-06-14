@@ -91,7 +91,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _clientConsumer.UntilConsume = TestUntil.Happenings(1);
             while (_clientConsumer.UntilConsume.Remaining > 0)
             {
-                await Task.Delay(10);
+                await Task.Delay(1);
                 _client.ProbeChannel();
             }
             _clientConsumer.UntilConsume.Completes();
@@ -118,13 +118,14 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _serverConsumer.UntilConsume = TestUntil.Happenings(10);
             _clientConsumer.UntilConsume = TestUntil.Happenings(10);
             
-            for (var idx = 0; idx < 10; ++idx) {
+            for (var idx = 0; idx < 10; ++idx)
+            {
                 Request(request + idx);
             }
 
-            await Task.Delay(200);
-
-            while (_clientConsumer.UntilConsume.Remaining > 0) {
+            while (_clientConsumer.UntilConsume.Remaining > 0)
+            {
+                await Task.Delay(1);
                 _client.ProbeChannel();
             }
 
@@ -139,7 +140,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             Assert.Equal(10, _clientConsumer.ConsumeCount);
             Assert.Equal(_clientConsumer.ConsumeCount, _clientConsumer.Responses.Count);
     
-            for (int idx = 0; idx < 10; ++idx) {
+            for (int idx = 0; idx < 10; ++idx)
+            {
                 Assert.Equal(_clientConsumer.Responses[idx], _serverConsumer.Requests[idx]);
             }
         }
@@ -156,13 +158,16 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _serverConsumer.UntilConsume = TestUntil.Happenings(total);
             _clientConsumer.UntilConsume = TestUntil.Happenings(total);
     
-            for (int idx = 0; idx < total; ++idx) {
+            for (int idx = 0; idx < total; ++idx)
+            {
                 Request(request + idx.ToString("D3"));
             }
             
-            await Task.Delay(200);
+            await Task.Delay(100);
     
-            while (_clientConsumer.UntilConsume.Remaining > 0) {
+            while (_clientConsumer.UntilConsume.Remaining > 0)
+            {
+                await Task.Delay(1);
                 _client.ProbeChannel();
             }
             
@@ -177,7 +182,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             Assert.Equal(total, _clientConsumer.ConsumeCount);
             Assert.Equal(_clientConsumer.ConsumeCount, _clientConsumer.Responses.Count);
     
-            for (int idx = 0; idx < total; ++idx) {
+            for (int idx = 0; idx < total; ++idx) 
+            {
                 Assert.Equal(_clientConsumer.Responses[idx], _serverConsumer.Requests[idx]);
             }
         }

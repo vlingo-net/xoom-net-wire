@@ -163,7 +163,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 Request(request + idx.ToString("D3"));
             }
             
-            await Task.Delay(300);
+            await Task.Delay(500);
     
             while (_clientConsumer.UntilConsume.Remaining > 0)
             {

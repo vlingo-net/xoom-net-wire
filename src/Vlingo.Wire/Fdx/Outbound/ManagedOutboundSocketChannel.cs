@@ -102,16 +102,17 @@ namespace Vlingo.Wire.Fdx.Outbound
                         return _channel;
                     }
                     
-                    Close();
+                    // Close();
                 }
                 
                 var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 await channel.ConnectAsync(_address.HostName, _address.Port);
                 return channel;
             }
-            catch
+            catch (Exception e)
             {
                 Close();
+                _logger.Log($"{GetType().Name}: Cannot prepare/open channel because: {e.Message}");
             }
 
             return null;

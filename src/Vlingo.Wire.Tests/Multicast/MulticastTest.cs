@@ -7,6 +7,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
@@ -59,7 +60,7 @@ namespace Vlingo.Wire.Tests.Multicast
         }
 
         [Fact]
-        public void TestPublisherChannelReader()
+        public async Task TestPublisherChannelReader()
         {
             var publisherConsumer = new MockChannelReaderConsumer();
 
@@ -79,6 +80,8 @@ namespace Vlingo.Wire.Tests.Multicast
                 ConsoleLogger.TestInstance());
 
             socketWriter.Write(RawMessage.From(1, 1, "test-response"), new MemoryStream());
+
+            await Task.Delay(10);
             
             publisher.ProcessChannel();
             

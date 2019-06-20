@@ -81,15 +81,15 @@ namespace Vlingo.Wire.Tests.Multicast
 
             socketWriter.Write(RawMessage.From(1, 1, "test-response"), new MemoryStream());
 
-            await Task.Delay(10);
-            
             publisher.ProcessChannel();
+            
+            await Task.Delay(10);
             
             Assert.Equal(1, publisherConsumer.ConsumeCount);
         }
         
         [Fact]
-        public void TestPublisherChannelReaderWithMultipleClients()
+        public async Task TestPublisherChannelReaderWithMultipleClients()
         {
             var publisherConsumer = new MockChannelReaderConsumer();
 
@@ -131,6 +131,8 @@ namespace Vlingo.Wire.Tests.Multicast
             publisher.ProbeChannel();
             publisher.ProbeChannel();
             publisher.ProbeChannel();
+            
+            await Task.Delay(10);
 
             Assert.Equal(4, publisherConsumer.ConsumeCount);
         }

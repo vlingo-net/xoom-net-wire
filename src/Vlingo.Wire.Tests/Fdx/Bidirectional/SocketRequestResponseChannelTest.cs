@@ -160,10 +160,11 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
     
             for (int idx = 0; idx < total; ++idx)
             {
+                await Task.Delay(1);
                 Request(request + idx.ToString("D3"));
             }
             
-            await Task.Delay(500);
+            await Task.Delay(100);
     
             while (_clientConsumer.UntilConsume.Remaining > 0)
             {

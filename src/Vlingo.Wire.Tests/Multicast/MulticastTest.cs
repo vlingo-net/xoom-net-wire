@@ -127,15 +127,12 @@ namespace Vlingo.Wire.Tests.Multicast
             client3.Write(RawMessage.From(1, 1, "test-response3"), new MemoryStream());
             client1.Write(RawMessage.From(1, 1, "test-response1"), new MemoryStream());
             
-            await Task.Delay(10);
             publisher.ProbeChannel();
-            await Task.Delay(10);
             publisher.ProbeChannel();
-            await Task.Delay(10);
             publisher.ProbeChannel();
-            await Task.Delay(10);
             publisher.ProbeChannel();
 
+            await Task.Delay(10);
             Assert.Equal(4, publisherConsumer.ConsumeCount);
         }
 

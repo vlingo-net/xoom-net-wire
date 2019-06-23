@@ -47,8 +47,6 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             var rawMessage1 = RawMessage.From(0, 0, message1);
             _opChannel.Write(rawMessage1.AsStream(buffer));
 
-            await Task.Delay(100);
-            
             ProbeUntilConsumed(_opReader, consumer);
             
             Assert.Equal(1, consumer.ConsumeCount);
@@ -57,8 +55,6 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             var message2 = OpMessage + 2;
             var rawMessage2 = RawMessage.From(0, 0, message2);
             _opChannel.Write(rawMessage2.AsStream(buffer));
-            
-            await Task.Delay(100);
             
             ProbeUntilConsumed(_opReader, consumer);
             

@@ -83,8 +83,6 @@ namespace Vlingo.Wire.Tests.Multicast
 
             publisher.ProcessChannel();
             
-            await Task.Delay(10);
-            
             Assert.Equal(1, publisherConsumer.ConsumeCount);
         }
         
@@ -132,7 +130,6 @@ namespace Vlingo.Wire.Tests.Multicast
             publisher.ProbeChannel();
             publisher.ProbeChannel();
 
-            await Task.Delay(100);
             Assert.Equal(4, publisherConsumer.ConsumeCount);
         }
 

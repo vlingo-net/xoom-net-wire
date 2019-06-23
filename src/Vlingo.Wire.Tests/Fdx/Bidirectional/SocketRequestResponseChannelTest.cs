@@ -123,8 +123,6 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 Request(request + idx);
             }
             
-            await Task.Delay(100);
-
             while (_clientConsumer.UntilConsume.Remaining > 0)
             {
                 await Task.Delay(1);
@@ -166,8 +164,6 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 Request(request + idx.ToString("D3"));
             }
             
-            await Task.Delay(100);
-    
             while (_clientConsumer.UntilConsume.Remaining > 0)
             {
                 await Task.Delay(1);

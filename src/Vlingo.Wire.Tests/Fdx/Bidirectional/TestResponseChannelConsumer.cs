@@ -20,11 +20,9 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         
         public int CurrentExpectedResponseLength { get; set; }
         
-        public int ConsumeCount { get; private set; }
-        
         public IList<string> Responses { get; } = new List<string>();
         
-        public TestUntil UntilConsume { get; set; }
+        public AccessSafely UntilConsume { get; set; }
         
         public void Consume(IConsumerByteBuffer buffer)
         {
@@ -54,11 +52,10 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                     startIndex += CurrentExpectedResponseLength;
         
                     Responses.Add(request);
-                    ++ConsumeCount;
         
                     last = startIndex == combinedLength;
         
-                    UntilConsume.Happened();
+                    UntilConsume.WriteUsing("clientConsume", 1);
                 }
             }
         }

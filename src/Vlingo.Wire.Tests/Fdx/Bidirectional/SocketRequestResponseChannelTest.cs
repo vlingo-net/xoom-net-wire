@@ -172,7 +172,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < total)
             {
-                await Task.Delay(10);
+                await Task.Delay(1);
                 _client.ProbeChannel();
             }
 

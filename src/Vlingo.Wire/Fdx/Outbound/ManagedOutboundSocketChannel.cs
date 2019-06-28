@@ -102,7 +102,7 @@ namespace Vlingo.Wire.Fdx.Outbound
                         return _channel;
                     }
                     
-                    // Close();
+                    Close();
                 }
                 
                 var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);

@@ -141,7 +141,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                         return _channel;
                     }
                     
-                    CloseChannel();
+                    // CloseChannel();
                 }
                 else
                 {

@@ -8,7 +8,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Actors.TestKit;
 using Vlingo.Wire.Channel;

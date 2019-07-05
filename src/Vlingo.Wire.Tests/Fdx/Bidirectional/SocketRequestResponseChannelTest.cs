@@ -139,6 +139,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             for (var idx = 0; idx < 10; ++idx)
             {
+                await Task.Delay(10);
                 Request(request + idx);
             }
             

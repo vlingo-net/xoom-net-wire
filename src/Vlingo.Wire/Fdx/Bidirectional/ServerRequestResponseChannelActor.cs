@@ -22,7 +22,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private readonly string _name;
         private readonly ISocketChannelSelectionProcessor[] _processors;
         private int _processorPoolIndex;
-        
+
         public ServerRequestResponseChannelActor(
             IRequestChannelConsumerProvider provider,
             int port,

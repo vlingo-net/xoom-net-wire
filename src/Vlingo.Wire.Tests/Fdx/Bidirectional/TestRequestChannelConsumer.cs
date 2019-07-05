@@ -79,7 +79,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 
                     UntilConsume.WriteUsing("serverConsume", 1);
 
-                    if (this._count >= 10)
+                    if (this._count >= 1)
                     {
                         Reset.Set();
                     }

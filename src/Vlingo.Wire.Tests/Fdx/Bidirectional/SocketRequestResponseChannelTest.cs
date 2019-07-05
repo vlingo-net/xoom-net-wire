@@ -142,13 +142,13 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _serverConsumer.Reset = reset1;
             _clientConsumer.Reset = reset2;
             
-            for (var idx = 0; idx < 10; ++idx)
+            for (var idx = 0; idx < 1; ++idx)
             {
                 Request(request + idx);
             }
 
             var count = 0;
-            while (count < 10)
+            while (count < 1)
             {
                 _client.ProbeChannel();
                 count++;
@@ -161,13 +161,13 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             //Assert.Equal(10, _serverConsumer.UntilConsume.ReadFrom<int>("serverConsume"));
             //Assert.Equal(10, serverConsumeCount);
-            Assert.Equal(10, _serverConsumer.Requests.Count);
+            Assert.Equal(1, _serverConsumer.Requests.Count);
 
             //Assert.Equal(10, _clientConsumer.UntilConsume.ReadFrom<int>("clientConsume"));
             //Assert.Equal(10, clientConsumeCount);
-            Assert.Equal(10, _clientConsumer.Responses.Count);
+            Assert.Equal(1, _clientConsumer.Responses.Count);
     
-            for (int idx = 0; idx < 10; ++idx)
+            for (int idx = 0; idx < 1; ++idx)
             {
                 Assert.Equal(_clientConsumer.Responses[idx], _serverConsumer.Requests[idx]);
             }

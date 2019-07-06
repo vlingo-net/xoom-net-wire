@@ -33,7 +33,7 @@ namespace Vlingo.Wire.Tests.Channel
         {
             var consumer = new MockChannelReaderConsumer();
             var consumeCount = 0;
-            var accessSafely = AccessSafely.Immediately()
+            var accessSafely = AccessSafely.AfterCompleting(1)
                 .WritingWith<int>("consume", (value) => consumeCount += value)
                 .ReadingWith("consume", () => consumeCount);
             consumer.UntilConsume = accessSafely;
@@ -47,8 +47,6 @@ namespace Vlingo.Wire.Tests.Channel
             var rawMessage1 = RawMessage.From(0, 0, message1);
             _channelWriter.Write(rawMessage1, buffer);
             
-            Thread.Sleep(100);
-            
             ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("consume") < 1, _channelReader);
             
             Assert.Equal(1, consumer.UntilConsume.ReadFrom<int>("consume"));
@@ -57,8 +55,6 @@ namespace Vlingo.Wire.Tests.Channel
             var message2 = TestMessage + 2;
             var rawMessage2 = RawMessage.From(0, 0, message2);
             _channelWriter.Write(rawMessage2, buffer);
-            
-            Thread.Sleep(100);
             
             ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("consume") < 2, _channelReader);
             

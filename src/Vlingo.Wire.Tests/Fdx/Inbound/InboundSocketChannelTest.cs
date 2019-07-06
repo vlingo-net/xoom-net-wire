@@ -66,7 +66,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
         {
             var consumer = new MockChannelReaderConsumer();
             var consumeCount = 0;
-            var accessSafely = AccessSafely.Immediately()
+            var accessSafely = AccessSafely.AfterCompleting(1)
                 .WritingWith<int>("consume", (value) => consumeCount += value)
                 .ReadingWith("consume", () => consumeCount);
             consumer.UntilConsume = accessSafely;

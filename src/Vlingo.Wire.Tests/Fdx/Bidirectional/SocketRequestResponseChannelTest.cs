@@ -140,6 +140,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             for (var idx = 0; idx < 10; ++idx)
             {
+                Thread.Sleep(10);
                 Request(request + idx);
             }
             

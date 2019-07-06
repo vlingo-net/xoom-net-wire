@@ -33,7 +33,7 @@ namespace Vlingo.Wire.Tests.Channel
         {
             var consumer = new MockChannelReaderConsumer();
             var consumeCount = 0;
-            var accessSafely = AccessSafely.AfterCompleting(1)
+            var accessSafely = AccessSafely.Immediately()
                 .WritingWith<int>("consume", (value) => consumeCount += value)
                 .ReadingWith("consume", () => consumeCount);
             consumer.UntilConsume = accessSafely;

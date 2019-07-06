@@ -61,12 +61,12 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             Assert.Equal(message2, consumer.Messages.Last());*/
         }
 
-        [Fact(Timeout = 6 * 1000)]
+        [Fact]
         public void TestAppInboundChannel()
         {
             var consumer = new MockChannelReaderConsumer();
             var consumeCount = 0;
-            var accessSafely = AccessSafely.AfterCompleting(1)
+            var accessSafely = AccessSafely.Immediately()
                 .WritingWith<int>("consume", (value) => consumeCount += value)
                 .ReadingWith("consume", () => consumeCount);
             consumer.UntilConsume = accessSafely;

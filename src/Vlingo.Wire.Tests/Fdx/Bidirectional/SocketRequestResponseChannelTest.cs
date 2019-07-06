@@ -120,7 +120,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             Assert.Equal(_clientConsumer.Responses[0], _serverConsumer.Requests[0]);
         }
 
-        [Fact(Timeout = 6 * 1000)]
+        [Fact]
         public void Test10RequestResponse()
         {
             var request = "Hello, Request-Response";
@@ -143,7 +143,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 Request(request + idx);
             }
             
-            Thread.Sleep(300);
+            Thread.Sleep(1000);
             
             while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < 10)
             {

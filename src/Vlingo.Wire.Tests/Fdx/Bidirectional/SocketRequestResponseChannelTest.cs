@@ -144,6 +144,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 Request(request + idx);
             }
             
+            Thread.Sleep(200);
+            
             while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < 10)
             {
                 Thread.Sleep(10);

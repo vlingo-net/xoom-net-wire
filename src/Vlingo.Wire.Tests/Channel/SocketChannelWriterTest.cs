@@ -8,6 +8,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Actors.TestKit;
 using Vlingo.Wire.Channel;
@@ -46,6 +47,8 @@ namespace Vlingo.Wire.Tests.Channel
             var rawMessage1 = RawMessage.From(0, 0, message1);
             _channelWriter.Write(rawMessage1, buffer);
             
+            Thread.Sleep(100);
+            
             ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("consume") < 1, _channelReader);
             
             Assert.Equal(1, consumer.UntilConsume.ReadFrom<int>("consume"));
@@ -54,6 +57,8 @@ namespace Vlingo.Wire.Tests.Channel
             var message2 = TestMessage + 2;
             var rawMessage2 = RawMessage.From(0, 0, message2);
             _channelWriter.Write(rawMessage2, buffer);
+            
+            Thread.Sleep(100);
             
             ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("consume") < 2, _channelReader);
             

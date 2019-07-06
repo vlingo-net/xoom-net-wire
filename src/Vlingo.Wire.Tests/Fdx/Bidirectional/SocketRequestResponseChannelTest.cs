@@ -140,13 +140,13 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             for (var idx = 0; idx < 10; ++idx)
             {
+                Thread.Sleep(10);
                 Request(request + idx);
             }
             
-            Thread.Sleep(1000);
-            
             while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < 10)
             {
+                Thread.Sleep(10);
                 _client.ProbeChannel();
             }
 

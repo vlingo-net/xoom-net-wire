@@ -61,7 +61,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             Assert.Equal(message2, consumer.Messages.Last());*/
         }
 
-        [Fact]
+        [Fact(Timeout = 6 * 1000)]
         public void TestAppInboundChannel()
         {
             var consumer = new MockChannelReaderConsumer();

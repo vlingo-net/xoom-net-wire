@@ -120,7 +120,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             Assert.Equal(_clientConsumer.Responses[0], _serverConsumer.Requests[0]);
         }
 
-        [Fact]
+        [Fact(Timeout = 6 * 1000)]
         public void Test10RequestResponse()
         {
             var request = "Hello, Request-Response";

@@ -54,7 +54,7 @@ namespace Vlingo.Wire.Tests.Message
         }
 
         // TODO : This yields poor performance compared to java. Has to be investigated.
-        [Fact(Timeout = 60 * 1000)]
+        [Fact(Timeout = 6 * 1000)]
         public async Task TestAlwaysAccessible()
         {
             var pool = new ByteBufferPool(1, 100);

@@ -34,7 +34,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         private readonly World _world;
 
         [Fact]
-        public async Task TestBasicRequestResponse()
+        public void TestBasicRequestResponse()
         {
             var request = "Hello, Request-Response";
             
@@ -54,9 +54,10 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 
             while (_serverConsumer.UntilConsume.ReadFrom<int>("serverConsume") < 1)
             {
-                await Task.Delay(1);
+                Thread.Sleep(1);
             }
             _serverConsumer.UntilConsume.ReadFromExpecting("serverConsume", 1);
+            Thread.Sleep(100);
             
             while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < 1)
             {
@@ -68,7 +69,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         }
 
         [Fact]
-        public async Task TestGappyRequestResponse()
+        public void TestGappyRequestResponse()
         {
             var requestPart1 = "Request Part-1";
             var requestPart2 = "Request Part-2";
@@ -90,9 +91,9 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             // simulate network latency for parts of single request
             Request(requestPart1);
-            await Task.Delay(100);
+            Thread.Sleep(100);
             Request(requestPart2);
-            await Task.Delay(200);
+            Thread.Sleep(200);
             Request(requestPart3);
             while (_serverConsumer.UntilConsume.ReadFrom<int>("serverConsume") < 1)
             {
@@ -100,9 +101,10 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             }
             _serverConsumer.UntilConsume.ReadFromExpecting("serverConsume", 1);
             
+            Thread.Sleep(100);
+            
             while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < 1)
             {
-                await Task.Delay(1);
                 _client.ProbeChannel();
             }
             
@@ -120,7 +122,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         }
 
         [Fact]
-        public async Task Test10RequestResponse()
+        public void Test10RequestResponse()
         {
             var request = "Hello, Request-Response";
             
@@ -139,13 +141,13 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             for (var idx = 0; idx < 10; ++idx)
             {
-                await Task.Delay(10);
                 Request(request + idx);
             }
             
+            Thread.Sleep(200);
+            
             while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < 10)
             {
-                await Task.Delay(10);
                 _client.ProbeChannel();
             }
 
@@ -167,7 +169,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         }
         
         [Fact]
-        public async Task TestThatRequestResponsePoolLimitsNotExceeded()
+        public void TestThatRequestResponsePoolLimitsNotExceeded()
         {
             var total = PoolSize * 2;
             var request = "Hello, Request-Response";
@@ -190,9 +192,10 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 Request(request + idx.ToString("D3"));
             }
             
+            Thread.Sleep(200);
+            
             while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < total)
             {
-                await Task.Delay(1);
                 _client.ProbeChannel();
             }
 

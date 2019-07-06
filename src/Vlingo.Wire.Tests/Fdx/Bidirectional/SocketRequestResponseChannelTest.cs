@@ -23,7 +23,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
     public class SocketRequestResponseChannelTest : IDisposable
     {
         private static readonly int PoolSize = 100;
-        private static int _testPort = 37371;
+        private static int _testPort = 37471;
 
         private readonly MemoryStream _buffer;
         private readonly ClientRequestResponseChannel _client;

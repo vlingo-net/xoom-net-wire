@@ -61,7 +61,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             Assert.Equal(message2, consumer.Messages.Last());*/
         }
 
-        [Fact(Skip = "freezing")]
+        [Fact]
         public void TestAppInboundChannel()
         {
             var consumer = new MockChannelReaderConsumer();

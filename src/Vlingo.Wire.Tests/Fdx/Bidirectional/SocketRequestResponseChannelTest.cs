@@ -8,7 +8,6 @@
 using System;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using Vlingo.Actors;
 using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Actors.TestKit;
@@ -122,7 +121,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         }
 
         [Fact]
-        public async Task Test10RequestResponse()
+        public void Test10RequestResponse()
         {
             var request = "Hello, Request-Response";
             
@@ -146,7 +145,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             while (clientConsumeCount < 10)
             {
-                await Task.Delay(10);
+                Thread.Sleep(10);
                 _client.ProbeChannel();
             }
             

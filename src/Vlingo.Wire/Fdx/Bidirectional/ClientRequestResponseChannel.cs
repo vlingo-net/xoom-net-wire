@@ -7,6 +7,7 @@
 
 using System;
 using System.Net.Sockets;
+using System.Threading;
 using Vlingo.Actors;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
@@ -14,12 +15,7 @@ using Vlingo.Wire.Node;
 
 namespace Vlingo.Wire.Fdx.Bidirectional
 {
-    using System.Text;
-    using System.Threading;
-
-    using Vlingo.Common.Message;
-
-    public class ClientRequestResponseChannel : IRequestSenderChannel, IResponseListenerChannel //, IMessageQueueListener
+    public class ClientRequestResponseChannel : IRequestSenderChannel, IResponseListenerChannel, IDisposable
     {
         private readonly Address _address;
         private Socket _channel;
@@ -28,8 +24,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private readonly ILogger _logger;
         private int _previousPrepareFailures;
         private readonly ByteBufferPool _readBufferPool;
-        private readonly AsyncMessageQueue _consumerQueue;
-        private readonly AsyncMessageQueue _sendQueue;
+        private bool _disposed;
 
         // ManualResetEvent instances signal completion.  
         private ManualResetEvent connectDone = new ManualResetEvent(false);
@@ -50,11 +45,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _channel = null;
             _previousPrepareFailures = 0;
             _readBufferPool = new ByteBufferPool(maxBufferPoolSize, maxMessageSize);
-            // _consumerQueue = new AsyncMessageQueue();
-            // _consumerQueue.RegisterListener(new ConsumerBufferListener(consumer));
-            // _sendQueue = new AsyncMessageQueue();
-            // _sendQueue.RegisterListener(this);
-
         }
         
         //=========================================
@@ -71,6 +61,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _closed = true;
 
             CloseChannel();
+            Dispose(true);
         }
 
         public void RequestWith(byte[] buffer)
@@ -211,9 +202,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 {
                     _logger.Log("CLOSING Client Channel");
                     _channel.Close();
-                    connectDone.Dispose();
-                    receiveDone.Dispose();
-                    sendDone.Dispose();
                 }
                 catch (Exception e)
                 {
@@ -465,6 +453,30 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         //        }
         //    }
         //}
+        
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);  
+        }
+        
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+      
+            if (disposing) 
+            {
+                Close();
+            }
+      
+            _disposed = true;
+            connectDone.Dispose();
+            receiveDone.Dispose();
+            sendDone.Dispose();
+        }
     }
 
     // State object for receiving data from remote device.  

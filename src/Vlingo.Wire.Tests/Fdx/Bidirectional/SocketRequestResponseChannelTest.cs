@@ -142,16 +142,20 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             {
                 Request(request + idx);
             }
-            
-            while (clientConsumeCount < 10)
+
+            var count = 0;
+            while (count < 10)
             {
-                Thread.Sleep(10);
                 _client.ProbeChannel();
+                count++;
             }
             
             Assert.Equal(serverConsumeCount, _serverConsumer.Requests.Count);
             Assert.Equal(clientConsumeCount, _clientConsumer.Responses.Count);
-
+            
+            _serverConsumer.UntilConsume.ReadFromExpecting("serverConsume", 10);
+            _clientConsumer.UntilConsume.ReadFromExpecting("clientConsume", 10, 10);
+            
             Assert.Equal(10, _serverConsumer.UntilConsume.ReadFrom<int>("serverConsume"));
             Assert.Equal(10, serverConsumeCount);
             Assert.Equal(serverConsumeCount, _serverConsumer.Requests.Count);

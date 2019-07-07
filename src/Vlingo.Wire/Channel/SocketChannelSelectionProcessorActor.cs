@@ -219,6 +219,7 @@ namespace Vlingo.Wire.Channel
             
             if (totalBytesRead > 0)
             {
+                Logger.Log("RECEIVED on SERVER: " + totalBytesRead);
                 readable.Consumer.Consume(readable, buffer.Flip());
             } 
             else 
@@ -256,6 +257,7 @@ namespace Vlingo.Wire.Channel
             try
             {
                 var responseBuffer = buffer.ToArray();
+                Logger.Log("SENDING FROM SERVER: " + responseBuffer.Length);
                 await clientChannel.SendAsync(new ArraySegment<byte>(responseBuffer), SocketFlags.None);
             }
             catch (Exception e)

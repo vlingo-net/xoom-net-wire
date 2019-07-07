@@ -69,6 +69,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             {
                 try
                 {
+                    _logger.Log("SENDING from client: " + buffer.Length);
                     await preparedChannel.SendAsync(new ArraySegment<byte>(buffer), SocketFlags.None);
                 }
                 catch (Exception e)
@@ -118,6 +119,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             {
                 try
                 {
+                    _logger.Log("CLOSING Client Channel");
                     _channel.Close();
                 }
                 catch (Exception e)
@@ -145,6 +147,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 }
                 else
                 {
+                    _logger.Log("CONNECTING");
                     _channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                     await _channel.ConnectAsync(_address.HostName, _address.Port);
                     _previousPrepareFailures = 0;
@@ -185,6 +188,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
                 if (totalBytesRead > 0)
                 {
+                    _logger.Log("RECEIVED on CLIENT: " + totalBytesRead);
                     _consumer.Consume(pooledBuffer.Flip());
                 }
                 else

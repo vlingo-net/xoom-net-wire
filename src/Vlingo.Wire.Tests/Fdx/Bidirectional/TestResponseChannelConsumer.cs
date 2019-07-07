@@ -5,6 +5,7 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
@@ -54,7 +55,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                     Responses.Add(request);
         
                     last = startIndex == combinedLength;
-        
+                    Console.WriteLine("CONSUMING CLIENT");
                     UntilConsume.WriteUsing("clientConsume", 1);
                 }
             }

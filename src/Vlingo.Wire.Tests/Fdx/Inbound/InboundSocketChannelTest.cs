@@ -35,7 +35,12 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
         [Fact]
         public void TestOpInboundChannel()
         {
-            /*var consumer = new MockChannelReaderConsumer();
+            var consumer = new MockChannelReaderConsumer();
+            var consumeCount = 0;
+            var accessSafely = AccessSafely.Immediately()
+                .WritingWith<int>("consume", (value) => consumeCount += value)
+                .ReadingWith("consume", () => consumeCount);
+            consumer.UntilConsume = accessSafely;
             
             _opReader.OpenFor(consumer);
             
@@ -46,19 +51,19 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             var rawMessage1 = RawMessage.From(0, 0, message1);
             _opChannel.Write(rawMessage1.AsStream(buffer));
             
-            ProbeUntilConsumed(_opReader, consumer);
+            ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("consume") < 1, _opReader);
             
-            Assert.Equal(1, consumer.ConsumeCount);
+            Assert.Equal(1, consumer.UntilConsume.ReadFrom<int>("consume"));
             Assert.Equal(message1, consumer.Messages.First());
             
             var message2 = _opMessage + 2;
             var rawMessage2 = RawMessage.From(0, 0, message2);
             _opChannel.Write(rawMessage2.AsStream(buffer));
             
-            ProbeUntilConsumed(_opReader, consumer);
+            ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("consume") < 2, _opReader);
             
-            Assert.Equal(2, consumer.ConsumeCount);
-            Assert.Equal(message2, consumer.Messages.Last());*/
+            Assert.Equal(2, consumer.UntilConsume.ReadFrom<int>("consume"));
+            Assert.Equal(message2, consumer.Messages.Last());
         }
 
         [Fact]

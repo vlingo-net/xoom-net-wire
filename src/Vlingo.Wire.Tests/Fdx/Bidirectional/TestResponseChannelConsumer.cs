@@ -15,8 +15,14 @@ using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 {
+    using System.Threading;
+
+    using Vlingo.Actors;
+
     public class TestResponseChannelConsumer : IResponseChannelConsumer
     {
+        private int _count = 0;
+
         private readonly StringBuilder _responseBuilder = new StringBuilder();
         
         public int CurrentExpectedResponseLength { get; set; }
@@ -24,7 +30,9 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         public IList<string> Responses { get; } = new List<string>();
         
         public AccessSafely UntilConsume { get; set; }
-        
+
+        public ManualResetEvent Reset { get; set; }
+
         public void Consume(IConsumerByteBuffer buffer)
         {
             var bytes = buffer.ToArray();
@@ -35,6 +43,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         public void Consume(ReadOnlySequence<byte> buffer)
         {
             var responsePart = buffer.ToArray().BytesToText(0, (int)buffer.Length);
+            Console.WriteLine("RESPONSE: " + responsePart);
             _responseBuilder.Append(responsePart);
             
             if (_responseBuilder.Length >= CurrentExpectedResponseLength)
@@ -55,8 +64,13 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                     Responses.Add(request);
         
                     last = startIndex == combinedLength;
-                    Console.WriteLine("CONSUMING CLIENT");
+                    _count++;
+                    Console.WriteLine("CONSUMING CLIENT " + request + " : " + _count);
                     UntilConsume.WriteUsing("clientConsume", 1);
+                    if (_count >= 10)
+                    {
+                        Reset.Set();
+                    }
                 }
             }
         }

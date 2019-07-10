@@ -124,7 +124,9 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         public void Test10RequestResponse()
         {
             var request = "Hello, Request-Response";
-            
+            var reset1 = new ManualResetEvent(false);
+            var reset2 = new ManualResetEvent(false);
+
             _serverConsumer.CurrentExpectedRequestLength = request.Length + 1; // digits 0 - 9
             _clientConsumer.CurrentExpectedResponseLength = _serverConsumer.CurrentExpectedRequestLength;
             
@@ -137,6 +139,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 .ReadingWith("clientConsume", () => clientConsumeCount);
             _serverConsumer.UntilConsume = accessSafely;
             _clientConsumer.UntilConsume = accessSafely;
+            _serverConsumer.Reset = reset1;
+            _clientConsumer.Reset = reset2;
             
             for (var idx = 0; idx < 10; ++idx)
             {
@@ -149,20 +153,19 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 _client.ProbeChannel();
                 count++;
             }
-            
-            Assert.Equal(serverConsumeCount, _serverConsumer.Requests.Count);
-            Assert.Equal(clientConsumeCount, _clientConsumer.Responses.Count);
-            
-            _serverConsumer.UntilConsume.ReadFromExpecting("serverConsume", 10);
-            _clientConsumer.UntilConsume.ReadFromExpecting("clientConsume", 10, 10);
-            
-            Assert.Equal(10, _serverConsumer.UntilConsume.ReadFrom<int>("serverConsume"));
-            Assert.Equal(10, serverConsumeCount);
-            Assert.Equal(serverConsumeCount, _serverConsumer.Requests.Count);
 
-            Assert.Equal(10, _clientConsumer.UntilConsume.ReadFrom<int>("clientConsume"));
-            Assert.Equal(10, clientConsumeCount);
-            Assert.Equal(clientConsumeCount, _clientConsumer.Responses.Count);
+            //_serverConsumer.UntilConsume.ReadFromExpecting("serverConsume", 10);
+            // _clientConsumer.UntilConsume.ReadFromExpecting("clientConsume", 10, 10);
+            reset1.WaitOne(10000);
+            reset2.WaitOne(10000);
+            
+            //Assert.Equal(10, _serverConsumer.UntilConsume.ReadFrom<int>("serverConsume"));
+            //Assert.Equal(10, serverConsumeCount);
+            Assert.Equal(10, _serverConsumer.Requests.Count);
+
+            //Assert.Equal(10, _clientConsumer.UntilConsume.ReadFrom<int>("clientConsume"));
+            //Assert.Equal(10, clientConsumeCount);
+            Assert.Equal(10, _clientConsumer.Responses.Count);
     
             for (int idx = 0; idx < 10; ++idx)
             {
@@ -193,8 +196,6 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             {
                 Request(request + idx.ToString("D3"));
             }
-            
-            Thread.Sleep(200);
             
             while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < total)
             {

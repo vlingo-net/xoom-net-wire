@@ -78,11 +78,6 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                     _count++;
 
                     UntilConsume.WriteUsing("serverConsume", 1);
-
-                    if (this._count >= 1)
-                    {
-                        Reset.Set();
-                    }
                 }
             }
         }

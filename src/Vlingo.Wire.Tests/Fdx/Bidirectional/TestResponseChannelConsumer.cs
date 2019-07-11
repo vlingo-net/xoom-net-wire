@@ -67,10 +67,6 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                     _count++;
                     Console.WriteLine("CONSUMING CLIENT " + request + " : " + _count);
                     UntilConsume.WriteUsing("clientConsume", 1);
-                    if (_count >= 1)
-                    {
-                        Reset.Set();
-                    }
                 }
             }
         }

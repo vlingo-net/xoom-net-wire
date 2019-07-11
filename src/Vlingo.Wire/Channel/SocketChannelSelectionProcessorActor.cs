@@ -8,7 +8,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
-using System.Threading;
 using Vlingo.Actors;
 using Vlingo.Wire.Message;
 
@@ -29,7 +28,6 @@ namespace Vlingo.Wire.Channel
         private readonly IRequestChannelConsumerProvider _provider;
         private readonly IResponseSenderChannel<Socket> _responder;
         private Context _context;
-        private ManualResetEvent _allDone = new ManualResetEvent(false);  
         
         public SocketChannelSelectionProcessorActor(
             IRequestChannelConsumerProvider provider,
@@ -98,7 +96,7 @@ namespace Vlingo.Wire.Channel
             //_allDone.Set();  
   
             // Get the socket that handles the client request.  
-            Socket listener = (Socket) ar.AsyncState;  
+            Socket listener = (Socket)ar.AsyncState;  
             Socket clientChannel = listener.EndAccept(ar);  
             _context = new Context(this, clientChannel);
         }  
@@ -204,7 +202,8 @@ namespace Vlingo.Wire.Channel
             state.workSocket = channel;
             state.Context = readable;
             state.buffer = new byte[_messageBufferSize];
-            channel.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,  
+            state.ByteBuffer = readable.RequestBuffer.Clear();
+            channel.BeginReceive(state.buffer, 0, _messageBufferSize, 0,  
                 new AsyncCallback(ReadCallback), state);
         }
 
@@ -215,10 +214,9 @@ namespace Vlingo.Wire.Channel
             StateObject state = (StateObject) ar.AsyncState;  
             Socket channel = state.workSocket;
             Context readable = state.Context;
-            
-            var buffer = readable.RequestBuffer.Clear();
-            var readBuffer = buffer.ToArray();
-            var totalBytesRead = 0;
+
+            var buffer = state.ByteBuffer;
+            var readBuffer = state.buffer;
             int bytesRead;
 
             try
@@ -243,14 +241,14 @@ namespace Vlingo.Wire.Channel
                     channel.BeginReceive(
                         readBuffer,
                         0,
-                        StateObject.BufferSize,
+                        readBuffer.Length,
                         0,
                         new AsyncCallback(ReadCallback),
                         state);
                 }
                 else
                 {
-                    Logger.Log("RECEIVED on SERVER: " + readBuffer.BytesToText(0, totalBytesRead) + " | " + totalBytesRead);
+                    Logger.Log("RECEIVED on SERVER: " + readBuffer.BytesToText(0, bytesRead) + " | " + bytesRead);
                     // All the data has arrived; put it in response.  
                     if (buffer.Limit() >= 1)
                     {
@@ -369,14 +367,15 @@ namespace Vlingo.Wire.Channel
         {  
             try {  
                 // Retrieve the socket from the state object.  
-                Socket handler = (Socket) ar.AsyncState;  
-  
+                var state = (StateObject)ar.AsyncState;
+                var channel = state.workSocket;
+
                 // Complete sending the data to the remote device.  
-                int bytesSent = handler.EndSend(ar);  
-                Logger.Log($"Sent {bytesSent} bytes to client.");  
-  
-                handler.Shutdown(SocketShutdown.Both);  
-                handler.Close();  
+                int bytesSent = channel.EndSend(ar);  
+                Logger.Log($"Sent {bytesSent} bytes to client.");
+
+                // channel.Shutdown(SocketShutdown.Both);
+                // channel.Close();  
   
             } catch (Exception e)
             {

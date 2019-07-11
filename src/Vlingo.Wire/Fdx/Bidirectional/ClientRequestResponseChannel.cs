@@ -111,7 +111,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
                 // Complete sending the data to the remote device.  
                 int bytesSent = client.EndSend(ar);
-                _logger.Log($"Sent {bytesSent} bytes to server.");
+                //_logger.Log($"Sent {bytesSent} bytes to server.");
 
                 // Signal that all bytes have been sent.  
                 sendDone.Set();
@@ -367,8 +367,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         {
             var pooledBuffer = _readBufferPool.AccessFor("client-response", 25);
             var readBuffer = pooledBuffer.ToArray();
-            var totalBytesRead = 0;
-            var bytesRead = 0;
             try
             {
                 // Create the state object.  
@@ -377,7 +375,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 state.PooledByteBuffer = pooledBuffer;
                 state.buffer = readBuffer;
 
-                channel.BeginReceive(readBuffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallback), state);
+                channel.BeginReceive(readBuffer, 0, readBuffer.Length, 0, new AsyncCallback(ReceiveCallback), state);
                 receiveDone.WaitOne();
             }
             catch (Exception e)
@@ -414,7 +412,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                     client.BeginReceive(
                         readBuffer,
                         0,
-                        StateObject.BufferSize,
+                        readBuffer.Length,
                         0,
                         new AsyncCallback(ReceiveCallback),
                         state);

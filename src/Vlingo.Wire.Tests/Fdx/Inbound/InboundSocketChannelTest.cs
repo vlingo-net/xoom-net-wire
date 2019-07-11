@@ -23,14 +23,15 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
     
     public class InboundSocketChannelTest: IDisposable
     {
-        private static readonly string _appMessage = "APP TEST ";
-        private static readonly string _opMessage = "OP TEST ";
-        
-        private ManagedOutboundSocketChannel _appChannel;
-        private IChannelReader _appReader;
-        private ManagedOutboundSocketChannel _opChannel;
-        private IChannelReader _opReader;
-        private Node _node;
+        private const string AppMessage = "APP TEST ";
+        private const string OpMessage = "OP TEST ";
+
+        private static int TestPort = 37373;
+
+        private readonly ManagedOutboundSocketChannel _appChannel;
+        private readonly IChannelReader _appReader;
+        private readonly ManagedOutboundSocketChannel _opChannel;
+        private readonly IChannelReader _opReader;
 
         [Fact]
         public void TestOpInboundChannel()
@@ -47,7 +48,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             var buffer = new MemoryStream(1024);
             buffer.SetLength(1024);
             
-            var message1 = _opMessage + 1;
+            var message1 = OpMessage + 1;
             var rawMessage1 = RawMessage.From(0, 0, message1);
             _opChannel.Write(rawMessage1.AsStream(buffer));
             
@@ -56,7 +57,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             Assert.Equal(1, consumer.UntilConsume.ReadFrom<int>("consume"));
             Assert.Equal(message1, consumer.Messages.First());
             
-            var message2 = _opMessage + 2;
+            var message2 = OpMessage + 2;
             var rawMessage2 = RawMessage.From(0, 0, message2);
             _opChannel.Write(rawMessage2.AsStream(buffer));
             
@@ -81,7 +82,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             var buffer = new MemoryStream(1024);
             buffer.SetLength(1024);
             
-            var message1 = _appMessage + 1;
+            var message1 = AppMessage + 1;
             var rawMessage1 = RawMessage.From(0, 0, message1);
             _appChannel.Write(rawMessage1.AsStream(buffer));
 
@@ -90,7 +91,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             Assert.Equal(1, consumer.UntilConsume.ReadFrom<int>("consume"));
             Assert.Equal(message1, consumer.Messages.First());
             
-            var message2 = _appMessage + 2;
+            var message2 = AppMessage + 2;
             var rawMessage2 = RawMessage.From(0, 0, message2);
             _appChannel.Write(rawMessage2.AsStream(buffer));
             
@@ -104,12 +105,13 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
         {
             var converter = new Converter(output);
             Console.SetOut(converter);
-            _node = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), 37373, 37374);
+            var node = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), TestPort, TestPort + 1);
             var logger = ConsoleLogger.TestInstance();
-            _opChannel = new ManagedOutboundSocketChannel(_node, _node.OperationalAddress, logger);
-            _appChannel = new ManagedOutboundSocketChannel(_node, _node.ApplicationAddress, logger);
-            _opReader = new SocketChannelInboundReader(_node.OperationalAddress.Port, "test-op", 1024, logger);
-            _appReader = new SocketChannelInboundReader(_node.ApplicationAddress.Port, "test-app", 1024, logger);
+            _opChannel = new ManagedOutboundSocketChannel(node, node.OperationalAddress, logger);
+            _appChannel = new ManagedOutboundSocketChannel(node, node.ApplicationAddress, logger);
+            _opReader = new SocketChannelInboundReader(node.OperationalAddress.Port, "test-op", 1024, logger);
+            _appReader = new SocketChannelInboundReader(node.ApplicationAddress.Port, "test-app", 1024, logger);
+            ++TestPort;
         }
 
         public void Dispose()

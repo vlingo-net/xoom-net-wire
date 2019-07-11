@@ -248,7 +248,7 @@ namespace Vlingo.Wire.Channel
                 }
                 else
                 {
-                    Logger.Log("RECEIVED on SERVER: " + readBuffer.BytesToText(0, bytesRead) + " | " + bytesRead);
+                    // Logger.Log("RECEIVED on SERVER: " + readBuffer.BytesToText(0, bytesRead) + " | " + bytesRead);
                     // All the data has arrived; put it in response.  
                     if (buffer.Limit() >= 1)
                     {
@@ -344,7 +344,7 @@ namespace Vlingo.Wire.Channel
             try
             {
                 var responseBuffer = buffer.ToArray();
-                Logger.Log("SENDING FROM SERVER: " + responseBuffer.BytesToText(0, responseBuffer.Length) + " | " + responseBuffer.Length);
+                // Logger.Log("SENDING FROM SERVER: " + responseBuffer.BytesToText(0, responseBuffer.Length) + " | " + responseBuffer.Length);
                 var stateObject = new StateObject();
                 stateObject.workSocket = clientChannel;
                 stateObject.Context = context;
@@ -372,7 +372,7 @@ namespace Vlingo.Wire.Channel
 
                 // Complete sending the data to the remote device.  
                 int bytesSent = channel.EndSend(ar);  
-                Logger.Log($"Sent {bytesSent} bytes to client.");
+                // Logger.Log($"Sent {bytesSent} bytes to client.");
 
                 // channel.Shutdown(SocketShutdown.Both);
                 // channel.Close();  

@@ -8,7 +8,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Actors.TestKit;
 using Vlingo.Wire.Channel;
@@ -35,7 +34,7 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
         private Node _node;
         
         [Fact]
-        public  async Task TestOutboundOperationsChannel()
+        public  void TestOutboundOperationsChannel()
         {
             var consumer = new MockChannelReaderConsumer();
             var consumeCount = 0;

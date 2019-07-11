@@ -24,8 +24,8 @@ namespace Vlingo.Wire.Tests.Channel
     {
         private static readonly string TestMessage = "TEST ";
 
-        private SocketChannelWriter _channelWriter;
-        private IChannelReader _channelReader;
+        private readonly SocketChannelWriter _channelWriter;
+        private readonly IChannelReader _channelReader;
         
         [Fact]
         public void TestChannelWriter()

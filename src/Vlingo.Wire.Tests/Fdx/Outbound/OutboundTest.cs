@@ -8,7 +8,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Tests.Message;
 using Xunit;

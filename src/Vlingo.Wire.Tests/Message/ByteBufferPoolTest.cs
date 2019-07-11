@@ -6,7 +6,7 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
-using System.Threading.Tasks;
+using System.Threading;
 using Vlingo.Common;
 using Vlingo.Wire.Message;
 using Xunit;
@@ -55,12 +55,12 @@ namespace Vlingo.Wire.Tests.Message
 
         // TODO : This yields poor performance compared to java. Has to be investigated.
         [Fact]
-        public async Task TestAlwaysAccessible()
+        public void TestAlwaysAccessible()
         {
             var pool = new ByteBufferPool(1, 100);
             var count = new AtomicInteger(0);
 
-            var t1 = Task.Factory.StartNew(() =>
+            var work1 = new Thread(() =>
             {
                 for (int c = 0; c < 10_000_000; ++c)
                 {
@@ -70,9 +70,9 @@ namespace Vlingo.Wire.Tests.Message
                 }
 
                 count.IncrementAndGet();
-            }, TaskCreationOptions.LongRunning);
-
-            var t2 = Task.Factory.StartNew(() =>
+            });
+            
+            var work2 = new Thread(() =>
             {
                 for (int c = 0; c < 10_000_000; ++c)
                 {
@@ -82,9 +82,13 @@ namespace Vlingo.Wire.Tests.Message
                 }
 
                 count.IncrementAndGet();
-            }, TaskCreationOptions.LongRunning);
+            });
 
-            await Task.WhenAll(t1, t2);
+            work1.Start();
+            work2.Start();
+
+            work1.Join();
+            work2.Join();
 
             Assert.Equal(2, count.Get());
         }

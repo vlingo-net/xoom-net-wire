@@ -25,11 +25,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private int _previousPrepareFailures;
         private readonly ByteBufferPool _readBufferPool;
         private bool _disposed;
-
-        // ManualResetEvent instances signal completion.  
-        private ManualResetEvent connectDone = new ManualResetEvent(false);
-        private ManualResetEvent sendDone = new ManualResetEvent(false);
-        private ManualResetEvent receiveDone = new ManualResetEvent(false);
+        private readonly ManualResetEvent _connectDone;
+        private readonly ManualResetEvent _sendDone;
+        private readonly ManualResetEvent _receiveDone;
 
         public ClientRequestResponseChannel(
             Address address,
@@ -45,6 +43,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _channel = null;
             _previousPrepareFailures = 0;
             _readBufferPool = new ByteBufferPool(maxBufferPoolSize, maxMessageSize);
+            _connectDone = new ManualResetEvent(false);
+            _sendDone = new ManualResetEvent(false);
+            _receiveDone = new ManualResetEvent(false);
         }
         
         //=========================================
@@ -66,7 +67,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
         public void RequestWith(byte[] buffer)
         {
-            //_sendQueue.Enqueue(new SendMessage(buffer));
             Socket preparedChannel = null;
             while (preparedChannel == null && _previousPrepareFailures < 10)
             {
@@ -77,10 +77,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             {
                 try
                 {
-                    // var buffer = ((SendMessage)message).Buffer;
-                    _logger.Log("SENDING from client: " + buffer.BytesToText(0, buffer.Length) + " | " + buffer.Length);
-                    preparedChannel.BeginSend(buffer, 0, buffer.Length, 0, new AsyncCallback(SendCallback), preparedChannel);
-                    sendDone.WaitOne();
+                    // _logger.Log("SENDING from client: " + buffer.BytesToText(0, buffer.Length) + " | " + buffer.Length);
+                    preparedChannel.BeginSend(buffer, 0, buffer.Length, 0, SendCallback, preparedChannel);
+                    _sendDone.WaitOne();
                 }
                 catch (Exception e)
                 {
@@ -89,52 +88,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 }
             }
         }
-
-        private void SendCallback(IAsyncResult ar)
-        {
-            try
-            {
-                // Retrieve the socket from the state object.  
-                Socket client = (Socket)ar.AsyncState;
-
-                // Complete sending the data to the remote device.  
-                int bytesSent = client.EndSend(ar);
-                //_logger.Log($"Sent {bytesSent} bytes to server.");
-
-                // Signal that all bytes have been sent.  
-                sendDone.Set();
-            }
-            catch (Exception e)
-            {
-                _logger.Log("SendCallback", e);
-            }
-        }
-
-        //public async void RequestWith(byte[] buffer)
-        //{
-        //    //_sendQueue.Enqueue(new SendMessage(buffer));
-        //    Socket preparedChannel = null;
-        //    while (preparedChannel == null && _previousPrepareFailures < 10)
-        //    {
-        //        preparedChannel = await PreparedChannel();
-        //    }
-
-        //    if (preparedChannel != null)
-        //    {
-        //        try
-        //        {
-        //            // var buffer = ((SendMessage)message).Buffer;
-        //            _logger.Log("SENDING from client: " + buffer.BytesToText(0, buffer.Length) + " | " + buffer.Length);
-        //            await preparedChannel.SendAsync(new ArraySegment<byte>(buffer), SocketFlags.None);
-        //            await Task.Delay(1);
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            _logger.Log($"Write to socket failed because: {e.Message}", e);
-        //            CloseChannel();
-        //        }
-        //    }
-        //}
 
         //=========================================
         // ResponseListenerChannel
@@ -164,32 +117,35 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 _logger.Log($"Failed to read channel selector for {_address} because: {e.Message}", e);
             }
         }
-
-        //public async void ProbeChannel()
-        //{
-        //    if (_closed)
-        //    {
-        //        return;
-        //    }
-
-        //    try
-        //    {
-        //        Socket channel = null;
-        //        while (channel == null && _previousPrepareFailures < 10)
-        //        {
-        //            channel = PreparedChannel();
-        //        }
-        //        if (channel != null)
-        //        {
-        //            await ReadConsume(channel);
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        _logger.Log($"Failed to read channel selector for {_address} because: {e.Message}", e);
-        //    }
-        //}
         
+        //=========================================
+        // Dispose
+        //=========================================
+        
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);  
+        }
+        
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+      
+            if (disposing) 
+            {
+                Close();
+            }
+      
+            _disposed = true;
+            _connectDone.Dispose();
+            _receiveDone.Dispose();
+            _sendDone.Dispose();
+        }
+
         //=========================================
         // internal implementation
         //=========================================
@@ -200,7 +156,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             {
                 try
                 {
-                    _logger.Log("CLOSING Client Channel");
+                    // _logger.Log("CLOSING Client Channel");
                     _channel.Close();
                 }
                 catch (Exception e)
@@ -228,10 +184,10 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 }
                 else
                 {
-                    _logger.Log("CONNECTING");
+                    // _logger.Log("CONNECTING");
                     _channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                     _channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, _channel);
-                    connectDone.WaitOne();
+                    _connectDone.WaitOne();
                     _previousPrepareFailures = 0;
                     return _channel;
                 }
@@ -252,6 +208,24 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             ++_previousPrepareFailures;
             return null;
         }
+        
+        private void ReadConsume(Socket channel)
+        {
+            var pooledBuffer = _readBufferPool.AccessFor("client-response", 25);
+            var readBuffer = pooledBuffer.ToArray();
+            try
+            {
+                // Create the state object.  
+                StateObject state = new StateObject(channel, readBuffer, pooledBuffer);
+                channel.BeginReceive(readBuffer, 0, readBuffer.Length, 0, ReceiveCallback, state);
+                _receiveDone.WaitOne();
+            }
+            catch (Exception e)
+            {
+                _logger.Log("Cannot begin receiving on the channel", e);
+                throw;
+            }
+        }
 
         private void ConnectCallback(IAsyncResult ar)
         {
@@ -266,7 +240,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 _logger.Log($"Socket connected to {client.RemoteEndPoint}");
 
                 // Signal that the connection has been made.  
-                connectDone.Set();
+                _connectDone.Set();
             }
             catch (Exception e)
             {
@@ -274,102 +248,23 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             }
         }
 
-        //private async Task<Socket> PreparedChannel()
-        //{
-        //    try
-        //    {
-        //        if (_channel != null)
-        //        {
-        //            if (_channel.IsSocketConnected())
-        //            {
-        //                _previousPrepareFailures = 0;
-        //                return _channel;
-        //            }
-
-        //            // CloseChannel();
-        //        }
-        //        else
-        //        {
-        //            _logger.Log("CONNECTING");
-        //            _channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        //            await _channel.ConnectAsync(_address.HostName, _address.Port);
-        //            _previousPrepareFailures = 0;
-        //            return _channel;
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        CloseChannel();
-        //        var message = $"{GetType().Name}: Cannot prepare/open channel because: {e.Message}";
-        //        if (_previousPrepareFailures == 0)
-        //        {
-        //            _logger.Log(message, e);
-        //        }
-        //        else if (_previousPrepareFailures % 20 == 0)
-        //        {
-        //            _logger.Log($"AGAIN: {message}");
-        //        }
-        //    }
-        //    ++_previousPrepareFailures;
-        //    return null;
-        //}
-
-        //private async Task ReadConsume(Socket channel)
-        //{
-        //    var pooledBuffer = _readBufferPool.AccessFor("client-response", 25);
-        //    var readBuffer = pooledBuffer.ToArray();
-        //    var totalBytesRead = 0;
-        //    var bytesRead = 0;
-        //    try
-        //    {
-        //        do
-        //        {
-        //            bytesRead = await channel.ReceiveAsync(readBuffer, SocketFlags.None);
-        //            pooledBuffer.Put(readBuffer, 0, bytesRead);
-
-        //            totalBytesRead += bytesRead;
-        //        } while (channel.Available > 0);
-
-        //        if (totalBytesRead > 0)
-        //        {
-        //            _logger.Log("RECEIVED on CLIENT: " + readBuffer.BytesToText(0, bytesRead) + " | " + totalBytesRead);
-        //            //_consumerQueue.Enqueue(new ConsumerBuffer(pooledBuffer.Flip()));
-        //            //lock (locking)
-        //            //{
-        //                _consumer.Consume(pooledBuffer.Flip());
-        //            //}
-        //        }
-        //        else
-        //        {
-        //            pooledBuffer.Release();
-        //        }
-        //    }
-        //    catch (Exception)
-        //    {
-        //        pooledBuffer.Release();
-        //        throw;
-        //    }
-        //}
-
-        private void ReadConsume(Socket channel)
+        private void SendCallback(IAsyncResult ar)
         {
-            var pooledBuffer = _readBufferPool.AccessFor("client-response", 25);
-            var readBuffer = pooledBuffer.ToArray();
             try
             {
-                // Create the state object.  
-                StateObject state = new StateObject();
-                state.workSocket = channel;
-                state.PooledByteBuffer = pooledBuffer;
-                state.buffer = readBuffer;
+                // Retrieve the socket from the state object.  
+                Socket client = (Socket)ar.AsyncState;
 
-                channel.BeginReceive(readBuffer, 0, readBuffer.Length, 0, new AsyncCallback(ReceiveCallback), state);
-                receiveDone.WaitOne();
+                // Complete sending the data to the remote device.  
+                int bytesSent = client.EndSend(ar);
+                _logger.Log($"Sent {bytesSent} bytes.");
+
+                // Signal that all bytes have been sent.  
+                _sendDone.Set();
             }
             catch (Exception e)
             {
-                _logger.Log("ReadConsume", e);
-                throw;
+                _logger.Log("Error while sending bytes", e);
             }
         }
 
@@ -377,10 +272,10 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         {
             // Retrieve the state object and the client socket   
             // from the asynchronous state object.  
-            StateObject state = (StateObject)ar.AsyncState;
-            Socket client = state.workSocket;
+            var state = (StateObject)ar.AsyncState;
+            var client = state.WorkSocket;
             var pooledBuffer = state.PooledByteBuffer;
-            var readBuffer = state.buffer;
+            var readBuffer = state.Buffer;
 
             try
             {
@@ -397,17 +292,11 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 if (bytesRemain > 0)
                 {
                     // Get the rest of the data.  
-                    client.BeginReceive(
-                        readBuffer,
-                        0,
-                        readBuffer.Length,
-                        0,
-                        new AsyncCallback(ReceiveCallback),
-                        state);
+                    client.BeginReceive(readBuffer,0,readBuffer.Length,0, ReceiveCallback, state);
                 }
                 else
                 {
-                    _logger.Log("RECEIVED on CLIENT: " + readBuffer.BytesToText(0, bytesRead) + " | " + pooledBuffer.Limit());
+                    // _logger.Log("RECEIVED on CLIENT: " + readBuffer.BytesToText(0, bytesRead) + " | " + pooledBuffer.Limit());
                     // All the data has arrived; put it in response.  
                     if (pooledBuffer.Limit() >= 1)
                     {
@@ -419,111 +308,31 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                     }
 
                     // Signal that all bytes have been received.  
-                    receiveDone.Set();
+                    _receiveDone.Set();
                 }
             }
             catch (Exception e)
             {
                 pooledBuffer.Release();
-                _logger.Log("ReceiveCallback", e);
+                _logger.Log("Error while receiving bytes", e);
                 throw;
             }
         }
 
-        //public async void HandleMessage(IMessage message)
-        //{
-        //    Socket preparedChannel = null;
-        //    while (preparedChannel == null && _previousPrepareFailures < 10)
-        //    {
-        //        preparedChannel = await PreparedChannel();
-        //    }
+        private class StateObject
+        {
+            public StateObject(Socket workSocket, byte[] buffer, ByteBufferPool.PooledByteBuffer pooledByteBuffer)
+            {
+                WorkSocket = workSocket;
+                Buffer = buffer;
+                PooledByteBuffer = pooledByteBuffer;
+            }
+            
+            public Socket WorkSocket { get; }
 
-        //    if (preparedChannel != null)
-        //    {
-        //        try
-        //        {
-        //            var buffer = ((SendMessage)message).Buffer;
-        //            _logger.Log("SENDING from client: " + buffer.BytesToText(0, buffer.Length) + " | " + buffer.Length);
-        //            await preparedChannel.SendAsync(new ArraySegment<byte>(buffer), SocketFlags.None);
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            _logger.Log($"Write to socket failed because: {e.Message}", e);
-        //            CloseChannel();
-        //        }
-        //    }
-        //}
-        
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);  
-        }
-        
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-      
-            if (disposing) 
-            {
-                Close();
-            }
-      
-            _disposed = true;
-            connectDone.Dispose();
-            receiveDone.Dispose();
-            sendDone.Dispose();
+            public byte[] Buffer { get; }
+
+            public ByteBufferPool.PooledByteBuffer PooledByteBuffer { get; }
         }
     }
-
-    // State object for receiving data from remote device.  
-    public class StateObject
-    {
-        // Client socket.  
-        public Socket workSocket = null;
-        // Size of receive buffer.  
-        public const int BufferSize = 256;
-        // Receive buffer.  
-        public byte[] buffer;
-        // Received data string.  
-        public ByteBufferPool.PooledByteBuffer PooledByteBuffer;
-    }
-
-    //public class SendMessage : IMessage
-    //{
-    //    public byte[] Buffer { get; }
-
-    //    public SendMessage(byte[] buffer)
-    //    {
-    //        this.Buffer = buffer;
-    //    }
-    //}
-
-    //public class ConsumerBufferListener : IMessageQueueListener
-    //{
-    //    private readonly IResponseChannelConsumer _consumer;
-
-    //    public ConsumerBufferListener(IResponseChannelConsumer consumer)
-    //    {
-    //        _consumer = consumer;
-    //    }
-
-    //    public void HandleMessage(IMessage message)
-    //    {
-    //        _consumer.Consume(((ConsumerBuffer)message).Buffer);
-    //    }
-    //}
-
-    //public class ConsumerBuffer : IMessage
-    //{
-    //    public IConsumerByteBuffer Buffer { get; }
-
-    //    public ConsumerBuffer(IConsumerByteBuffer buffer)
-    //    {
-    //        Buffer = buffer;
-    //    }
-    //}
 }

@@ -7,8 +7,8 @@
 
 using System;
 using System.IO;
-using System.Threading.Tasks;
 using Vlingo.Actors.Plugin.Logging.Console;
+using Vlingo.Actors.TestKit;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Multicast;
@@ -20,10 +20,19 @@ namespace Vlingo.Wire.Tests.Multicast
 {
     public class MulticastTest
     {
-        [Fact]
+        [Fact(Skip = "not ready")]
         public void TestMulticastPublishSubscribe()
         {
-            /*var publisherConsumer = new MockChannelReaderConsumer();
+            var publisherCount = 0;
+            var subscriberCount = 0;
+            var accessSafely = AccessSafely.Immediately()
+                .WritingWith<int>("publisherCount", (value) => publisherCount += value)
+                .ReadingWith("publisherCount", () => publisherCount)
+                .WritingWith<int>("subscriberCount", (value) => subscriberCount += value)
+                .ReadingWith("subscriberCount", () => subscriberCount);
+            
+            var publisherConsumer = new MockChannelReaderConsumer();
+            publisherConsumer.UntilConsume = accessSafely;
 
             var publisher = new MulticastPublisherReader(
                 "test-publisher",
@@ -41,6 +50,7 @@ namespace Vlingo.Wire.Tests.Multicast
                 ConsoleLogger.TestInstance());
             
             var subscriberConsumer = new MockChannelReaderConsumer();
+            subscriberConsumer.UntilConsume = accessSafely;
             subscriber.OpenFor(subscriberConsumer);
             
             for (int idx = 0; idx < 10; ++idx)
@@ -49,20 +59,28 @@ namespace Vlingo.Wire.Tests.Multicast
             }
             
             publisher.ProcessChannel();
-    
+
             for (int i = 0; i < 2; ++i)
             {
                 subscriber.ProbeChannel();
             }
+
+            subscriberConsumer.UntilConsume.ReadFromExpecting("subscriberCount", 10);
     
-            Assert.Equal(0, publisherConsumer.ConsumeCount);
-            Assert.Equal(10, subscriberConsumer.ConsumeCount);*/
+            Assert.Equal(0, publisherCount);
+            Assert.Equal(10, subscriberCount);
         }
 
-        [Fact]
-        public async Task TestPublisherChannelReader()
+        [Fact(Skip = "not ready")]
+        public void TestPublisherChannelReader()
         {
+            var publisherCount = 0;
+            var accessSafely = AccessSafely.AfterCompleting(1)
+                .WritingWith<int>("publisherCount", (value) => publisherCount += value)
+                .ReadingWith("publisherCount", () => publisherCount);
+            
             var publisherConsumer = new MockChannelReaderConsumer();
+            publisherConsumer.UntilConsume = accessSafely;
 
             var publisher = new MulticastPublisherReader(
                 "test-publisher",
@@ -83,13 +101,19 @@ namespace Vlingo.Wire.Tests.Multicast
 
             publisher.ProcessChannel();
             
-            // Assert.Equal(1, publisherConsumer.ConsumeCount);
+            Assert.Equal(1, publisherCount);
         }
         
-        [Fact]
-        public async Task TestPublisherChannelReaderWithMultipleClients()
+        [Fact(Skip = "not ready")]
+        public void TestPublisherChannelReaderWithMultipleClients()
         {
+            var publisherCount = 0;
+            var accessSafely = AccessSafely.AfterCompleting(4)
+                .WritingWith<int>("publisherCount", (value) => publisherCount += value)
+                .ReadingWith("publisherCount", () => publisherCount);
+            
             var publisherConsumer = new MockChannelReaderConsumer();
+            publisherConsumer.UntilConsume = accessSafely;
 
             var publisher = new MulticastPublisherReader(
                 "test-publisher",
@@ -130,7 +154,7 @@ namespace Vlingo.Wire.Tests.Multicast
             publisher.ProbeChannel();
             publisher.ProbeChannel();
 
-            // Assert.Equal(4, publisherConsumer.ConsumeCount);
+            Assert.Equal(4, publisherCount);
         }
 
         public MulticastTest(ITestOutputHelper output)

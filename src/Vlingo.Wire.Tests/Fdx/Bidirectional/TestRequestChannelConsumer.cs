@@ -14,11 +14,8 @@ using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 {
-    using System.Threading;
-
     public class TestRequestChannelConsumer : IRequestChannelConsumer
     {
-        private int _count = 0;
         private readonly StringBuilder _requestBuilder = new StringBuilder();
         private string _remaining = string.Empty;
         
@@ -29,8 +26,6 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         public AccessSafely UntilClosed { get; }
         
         public AccessSafely UntilConsume { get; set; }
-
-        public ManualResetEvent Reset { get; set; }
 
         public void CloseWith<T>(RequestResponseContext<T> requestResponseContext, object data) => UntilClosed.WriteUsing("closed", 1);
 
@@ -75,7 +70,6 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                     context.RespondWith(responseBuffer.Clear().Put(Converters.TextToBytes(request)).Flip()); // echo back
         
                     last = currentIndex == combinedLength;
-                    _count++;
 
                     UntilConsume.WriteUsing("serverConsume", 1);
                 }

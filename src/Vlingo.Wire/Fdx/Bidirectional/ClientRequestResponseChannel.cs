@@ -32,12 +32,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private readonly AsyncMessageQueue _sendQueue;
 
         // ManualResetEvent instances signal completion.  
-        private static ManualResetEvent connectDone =
-            new ManualResetEvent(false);
-        private static ManualResetEvent sendDone =
-            new ManualResetEvent(false);
-        private static ManualResetEvent receiveDone =
-            new ManualResetEvent(false);
+        private ManualResetEvent connectDone = new ManualResetEvent(false);
+        private ManualResetEvent sendDone = new ManualResetEvent(false);
+        private ManualResetEvent receiveDone = new ManualResetEvent(false);
 
         public ClientRequestResponseChannel(
             Address address,
@@ -214,6 +211,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 {
                     _logger.Log("CLOSING Client Channel");
                     _channel.Close();
+                    connectDone.Dispose();
+                    receiveDone.Dispose();
+                    sendDone.Dispose();
                 }
                 catch (Exception e)
                 {

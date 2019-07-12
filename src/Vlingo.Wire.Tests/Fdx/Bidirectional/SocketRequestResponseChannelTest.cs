@@ -39,8 +39,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             _serverConsumer.CurrentExpectedRequestLength = request.Length;
             _clientConsumer.CurrentExpectedResponseLength = _serverConsumer.CurrentExpectedRequestLength;
-            Request(request);
-            
+
             var serverConsumeCount = 0;
             var clientConsumeCount = 0;
             var accessSafely = AccessSafely.AfterCompleting(1)
@@ -50,6 +49,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 .ReadingWith("clientConsume", () => clientConsumeCount);
             _serverConsumer.UntilConsume = accessSafely;
             _clientConsumer.UntilConsume = accessSafely;
+
+            Request(request);
 
             while (_serverConsumer.UntilConsume.ReadFrom<int>("serverConsume") < 1)
             {
@@ -123,6 +124,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         [Fact]
         public void Test10RequestResponse()
         {
+            var total = 10;
             var request = "Hello, Request-Response";
 
             _serverConsumer.CurrentExpectedRequestLength = request.Length + 1; // digits 0 - 9
@@ -130,7 +132,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             var serverConsumeCount = 0;
             var clientConsumeCount = 0;
-            var accessSafely = AccessSafely.AfterCompleting(10)
+            var accessSafely = AccessSafely.AfterCompleting(total)
                 .WritingWith<int>("serverConsume", (value) => serverConsumeCount += value)
                 .ReadingWith("serverConsume", () => serverConsumeCount)
                 .WritingWith<int>("clientConsume", (value) => clientConsumeCount += value)
@@ -138,28 +140,28 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _serverConsumer.UntilConsume = accessSafely;
             _clientConsumer.UntilConsume = accessSafely;
 
-            for (var idx = 0; idx < 10; ++idx)
+            for (var idx = 0; idx < total; ++idx)
             {
                 Request(request + idx);
             }
 
-            while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < 10)
+            while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < total)
             {
                 _client.ProbeChannel();
             }
 
-            _serverConsumer.UntilConsume.ReadFromExpecting("serverConsume", 10);
-            _clientConsumer.UntilConsume.ReadFromExpecting("clientConsume", 10);
+            _serverConsumer.UntilConsume.ReadFromExpecting("serverConsume", total);
+            _clientConsumer.UntilConsume.ReadFromExpecting("clientConsume", total);
 
-            Assert.Equal(10, _serverConsumer.UntilConsume.ReadFrom<int>("serverConsume"));
-            Assert.Equal(10, serverConsumeCount);
-            Assert.Equal(10, _serverConsumer.Requests.Count);
+            Assert.Equal(total, _serverConsumer.UntilConsume.ReadFrom<int>("serverConsume"));
+            Assert.Equal(total, serverConsumeCount);
+            Assert.Equal(total, _serverConsumer.Requests.Count);
 
-            Assert.Equal(10, _clientConsumer.UntilConsume.ReadFrom<int>("clientConsume"));
-            Assert.Equal(10, clientConsumeCount);
-            Assert.Equal(10, _clientConsumer.Responses.Count);
+            Assert.Equal(total, _clientConsumer.UntilConsume.ReadFrom<int>("clientConsume"));
+            Assert.Equal(total, clientConsumeCount);
+            Assert.Equal(total, _clientConsumer.Responses.Count);
     
-            for (int idx = 0; idx < 10; ++idx)
+            for (int idx = 0; idx < total; ++idx)
             {
                 Assert.Equal(_clientConsumer.Responses[idx], _serverConsumer.Requests[idx]);
             }
@@ -189,15 +191,15 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 Request(request + idx.ToString("D3"));
             }
 
-            for (int idx = 0; idx < total; ++idx)
-            {
-                _client.ProbeChannel();
-            }
-
-            //while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < total)
+            //for (int idx = 0; idx < total; ++idx)
             //{
             //    _client.ProbeChannel();
             //}
+
+            while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < total)
+            {
+                _client.ProbeChannel();
+            }
 
             _serverConsumer.UntilConsume.ReadFromExpecting("serverConsume", total, 10);
             _clientConsumer.UntilConsume.ReadFromExpecting("clientConsume", total, 10);

@@ -27,12 +27,13 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
         private static readonly string AppMessage = "APP TEST ";
         private static readonly string OpMessage = "OP TEST ";
 
-        private ManagedOutboundSocketChannel _appChannel;
-        private IChannelReader _appReader;
-        private ManagedOutboundSocketChannel _opChannel;
-        private IChannelReader _opReader;
-        private Node _node;
-        
+        private static int TestPort = 37577;
+
+        private readonly ManagedOutboundSocketChannel _appChannel;
+        private readonly IChannelReader _appReader;
+        private readonly ManagedOutboundSocketChannel _opChannel;
+        private readonly IChannelReader _opReader;
+
         [Fact]
         public  void TestOutboundOperationsChannel()
         {
@@ -105,12 +106,13 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
         {
             var converter = new Converter(output);
             Console.SetOut(converter);
-            _node = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), 37375, 37376);
+            var node = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), TestPort, TestPort + 1);
             var logger = ConsoleLogger.TestInstance();
-            _opChannel = new ManagedOutboundSocketChannel(_node, _node.OperationalAddress, logger);
-            _appChannel = new ManagedOutboundSocketChannel(_node, _node.ApplicationAddress, logger);
-            _opReader = new SocketChannelInboundReader(_node.OperationalAddress.Port, "test-op", 1024, logger);
-            _appReader = new SocketChannelInboundReader(_node.ApplicationAddress.Port, "test-app", 1024, logger);
+            _opChannel = new ManagedOutboundSocketChannel(node, node.OperationalAddress, logger);
+            _appChannel = new ManagedOutboundSocketChannel(node, node.ApplicationAddress, logger);
+            _opReader = new SocketChannelInboundReader(node.OperationalAddress.Port, "test-op", 1024, logger);
+            _appReader = new SocketChannelInboundReader(node.ApplicationAddress.Port, "test-app", 1024, logger);
+            ++TestPort;
         }
 
         public void Dispose()

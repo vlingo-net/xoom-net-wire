@@ -187,6 +187,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             {
                 Request(request + idx.ToString("D3"));
             }
+            
+            Thread.Sleep(100);
 
             while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < total)
             {
@@ -196,11 +198,11 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _serverConsumer.UntilConsume.ReadFromExpecting("serverConsume", total);
             _clientConsumer.UntilConsume.ReadFromExpecting("clientConsume", total);
             
-            //Assert.Equal(total, _serverConsumer.UntilConsume.ReadFrom<int>("serverConsume"));
+            Assert.Equal(total, _serverConsumer.UntilConsume.ReadFrom<int>("serverConsume"));
             Assert.Equal(total, serverConsumeCount);
             Assert.Equal(serverConsumeCount, _serverConsumer.Requests.Count);
 
-            //Assert.Equal(total, _clientConsumer.UntilConsume.ReadFrom<int>("clientConsume"));
+            Assert.Equal(total, _clientConsumer.UntilConsume.ReadFrom<int>("clientConsume"));
             Assert.Equal(total, clientConsumeCount);
             Assert.Equal(clientConsumeCount, _clientConsumer.Responses.Count);
 

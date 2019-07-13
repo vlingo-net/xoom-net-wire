@@ -26,7 +26,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
         private const string AppMessage = "APP TEST ";
         private const string OpMessage = "OP TEST ";
 
-        private static int TestPort = 37373;
+        private static int _testPort = 37673;
 
         private readonly ManagedOutboundSocketChannel _appChannel;
         private readonly IChannelReader _appReader;
@@ -105,13 +105,13 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
         {
             var converter = new Converter(output);
             Console.SetOut(converter);
-            var node = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), TestPort, TestPort + 1);
+            var node = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), _testPort, _testPort + 1);
             var logger = ConsoleLogger.TestInstance();
             _opChannel = new ManagedOutboundSocketChannel(node, node.OperationalAddress, logger);
             _appChannel = new ManagedOutboundSocketChannel(node, node.ApplicationAddress, logger);
             _opReader = new SocketChannelInboundReader(node.OperationalAddress.Port, "test-op", 1024, logger);
             _appReader = new SocketChannelInboundReader(node.ApplicationAddress.Port, "test-app", 1024, logger);
-            ++TestPort;
+            ++_testPort;
         }
 
         public void Dispose()

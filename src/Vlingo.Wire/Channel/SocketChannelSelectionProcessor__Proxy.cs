@@ -1,7 +1,6 @@
 using System;
 using System.Net.Sockets;
 using Vlingo.Actors;
-using System.Threading.Tasks;
 
 namespace Vlingo.Wire.Channel
 {

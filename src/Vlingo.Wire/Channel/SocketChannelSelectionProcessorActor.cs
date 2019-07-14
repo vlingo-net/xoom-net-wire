@@ -71,13 +71,10 @@ namespace Vlingo.Wire.Channel
         {
             try
             {
-                // Set the event to nonsignaled state.  
-                //_allDone.Reset();
                 if (channel.Poll(10000, SelectMode.SelectRead))
                 {
-                    channel.BeginAccept(new AsyncCallback(AcceptCallback), channel);
+                    channel.BeginAccept(AcceptCallback, channel);
                 }
-                //_allDone.WaitOne();
             }
             catch (ObjectDisposedException e)
             {
@@ -90,17 +87,7 @@ namespace Vlingo.Wire.Channel
                 throw;
             }
         }
-        
-        public void AcceptCallback(IAsyncResult ar) {  
-            // Signal the main thread to continue.  
-            //_allDone.Set();  
-  
-            // Get the socket that handles the client request.  
-            Socket listener = (Socket)ar.AsyncState;  
-            Socket clientChannel = listener.EndAccept(ar);  
-            _context = new Context(this, clientChannel);
-        }  
-        
+
         //=========================================
         // Scheduled
         //=========================================
@@ -186,7 +173,7 @@ namespace Vlingo.Wire.Channel
                 Logger.Log($"Failed client channel processing for {_name} because: {e.Message}", e);
             }
         }
-        
+
         private void Read(Context readable)
         {
             var channel = readable.Channel;
@@ -198,122 +185,9 @@ namespace Vlingo.Wire.Channel
             }
             
             // Create the state object.  
-            StateObject state = new StateObject();  
-            state.workSocket = channel;
-            state.Context = readable;
-            state.buffer = new byte[_messageBufferSize];
-            state.ByteBuffer = readable.RequestBuffer.Clear();
-            channel.BeginReceive(state.buffer, 0, _messageBufferSize, 0,  
-                new AsyncCallback(ReadCallback), state);
+            var state = new StateObject(channel, readable, new byte[_messageBufferSize], readable.RequestBuffer.Clear());
+            channel.BeginReceive(state.Buffer, 0, _messageBufferSize, 0, ReadCallback, state);
         }
-
-        public void ReadCallback(IAsyncResult ar)
-        {
-            // Retrieve the state object and the handler socket  
-            // from the asynchronous state object.  
-            StateObject state = (StateObject) ar.AsyncState;  
-            Socket channel = state.workSocket;
-            Context readable = state.Context;
-
-            var buffer = state.ByteBuffer;
-            var readBuffer = state.buffer;
-            int bytesRead;
-
-            try
-            {
-                // Read data from the client socket.   
-                bytesRead = channel.EndReceive(ar);
-
-                if (bytesRead > 0)
-                {
-                    buffer.Put(readBuffer, 0, bytesRead);
-                }
-                
-                if (bytesRead == 0)
-                {
-                    Close(readable.Channel, readable);
-                }
-
-                int bytesRemain = channel.Available;
-                if (bytesRemain > 0)
-                {
-                    // Get the rest of the data.  
-                    channel.BeginReceive(
-                        readBuffer,
-                        0,
-                        readBuffer.Length,
-                        0,
-                        new AsyncCallback(ReadCallback),
-                        state);
-                }
-                else
-                {
-                    // Logger.Log("RECEIVED on SERVER: " + readBuffer.BytesToText(0, bytesRead) + " | " + bytesRead);
-                    // All the data has arrived; put it in response.  
-                    if (buffer.Limit() >= 1)
-                    {
-                        readable.Consumer.Consume(readable, buffer.Flip());
-                    }
-                    else
-                    {
-                        buffer.Release();
-                    }
-                }
-            }
-            catch
-            {
-                // likely a forcible close by the client,
-                // so force close and cleanup
-                bytesRead = 0;
-            }
-        }
-        
-        /*private async Task Read(Context readable)
-        {
-            var channel = readable.Channel;
-            if (!channel.IsSocketConnected())
-            {
-                readable.Close();
-                channel.Close();
-                return;
-            }
-
-            var buffer = readable.RequestBuffer.Clear();
-            var readBuffer = buffer.ToArray();
-            var totalBytesRead = 0;
-            int bytesRead;
-
-            try
-            {
-                do
-                {
-                    bytesRead = await channel.ReceiveAsync(readBuffer, SocketFlags.None);
-                    buffer.Put(readBuffer, 0, bytesRead);
-                    totalBytesRead += bytesRead;
-                } while (channel.Available > 0);
-            }
-            catch
-            {
-                // likely a forcible close by the client,
-                // so force close and cleanup
-                bytesRead = 0;
-            }
-
-            if (bytesRead == 0)
-            {
-                Close(readable.Channel, readable);
-            }
-            
-            if (totalBytesRead > 0)
-            {
-                Logger.Log("RECEIVED on SERVER: " + readBuffer.BytesToText(0, totalBytesRead) + " | " + totalBytesRead);
-                readable.Consumer.Consume(readable, buffer.Flip());
-            } 
-            else 
-            {
-                buffer.Release();
-            }
-        }*/
         
         private void Write(Context writable)
         {
@@ -345,13 +219,9 @@ namespace Vlingo.Wire.Channel
             {
                 var responseBuffer = buffer.ToArray();
                 // Logger.Log("SENDING FROM SERVER: " + responseBuffer.BytesToText(0, responseBuffer.Length) + " | " + responseBuffer.Length);
-                var stateObject = new StateObject();
-                stateObject.workSocket = clientChannel;
-                stateObject.Context = context;
-                stateObject.ByteBuffer = buffer;
+                var stateObject = new StateObject(clientChannel, context, null, buffer);
                 // Begin sending the data to the remote device.  
-                clientChannel.BeginSend(responseBuffer, 0, responseBuffer.Length, 0,  
-                    new AsyncCallback(SendCallback), stateObject); 
+                clientChannel.BeginSend(responseBuffer, 0, responseBuffer.Length, 0, SendCallback, stateObject); 
             }
             catch (Exception e)
             {
@@ -362,69 +232,84 @@ namespace Vlingo.Wire.Channel
                 buffer.Release();
             }
         }
+
+        private void ReadCallback(IAsyncResult ar)
+        {
+            // Retrieve the state object and the handler socket  
+            // from the asynchronous state object.  
+            var state = (StateObject) ar.AsyncState;  
+            var channel = state.WorkSocket;
+            var readable = state.Context;
+            var buffer = state.ByteBuffer;
+            var readBuffer = state.Buffer;
+
+            try
+            {
+                // Read data from the client socket.   
+                var bytesRead = channel.EndReceive(ar);
+
+                if (bytesRead > 0)
+                {
+                    buffer.Put(readBuffer, 0, bytesRead);
+                }
+                
+                if (bytesRead == 0)
+                {
+                    Close(readable.Channel, readable);
+                }
+
+                int bytesRemain = channel.Available;
+                if (bytesRemain > 0)
+                {
+                    // Get the rest of the data.  
+                    channel.BeginReceive(readBuffer,0,readBuffer.Length,0, ReadCallback, state);
+                }
+                else
+                {
+                    // Logger.Log("RECEIVED on SERVER: " + readBuffer.BytesToText(0, bytesRead) + " | " + bytesRead);
+                    // All the data has arrived; put it in response.  
+                    if (buffer.Limit() >= 1)
+                    {
+                        readable.Consumer.Consume(readable, buffer.Flip());
+                    }
+                    else
+                    {
+                        buffer.Release();
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                // likely a forcible close by the client,
+                // so force close and cleanup
+                Logger.Log("Error while reading from the channel", e);
+            }
+        }
         
+        private void AcceptCallback(IAsyncResult ar)
+        {
+            // Get the socket that handles the client request.  
+            var listener = (Socket)ar.AsyncState;  
+            var clientChannel = listener.EndAccept(ar);  
+            _context = new Context(this, clientChannel);
+        }
+
         private void SendCallback(IAsyncResult ar)
         {  
             try {  
                 // Retrieve the socket from the state object.  
                 var state = (StateObject)ar.AsyncState;
-                var channel = state.workSocket;
+                var channel = state.WorkSocket;
 
                 // Complete sending the data to the remote device.  
                 int bytesSent = channel.EndSend(ar);  
-                // Logger.Log($"Sent {bytesSent} bytes to client.");
+                Logger.Log($"Sent {bytesSent} bytes.");
 
-                // channel.Shutdown(SocketShutdown.Both);
-                // channel.Close();  
-  
             } catch (Exception e)
             {
-                Logger.Log("SendCallback");
+                Logger.Log("Error while sending", e);
             }  
         }
-
-        /*private async Task Write(Context writable)
-        {
-            var channel = writable.Channel;
-            if (!channel.IsSocketConnected())
-            {
-                writable.Close();
-                channel.Close();
-                return;
-            }
-            
-            if (writable.HasNextWritable)
-            {
-                await WriteWithCachedData(writable, channel);
-            }
-        }
-
-        private async Task WriteWithCachedData(Context context, Socket channel)
-        {
-            for (var buffer = context.NextWritable(); buffer != null; buffer = context.NextWritable())
-            {
-                await WriteWithCachedData(context, channel, buffer);
-            }
-        }
-
-        private async Task WriteWithCachedData(Context context, Socket clientChannel, IConsumerByteBuffer buffer)
-        {
-            try
-            {
-                var responseBuffer = buffer.ToArray();
-                Logger.Log("SENDING FROM SERVER: " + responseBuffer.BytesToText(0, responseBuffer.Length) + " | " + responseBuffer.Length);
-                await clientChannel.SendAsync(new ArraySegment<byte>(responseBuffer), SocketFlags.None);
-                await Task.Delay(1);
-            }
-            catch (Exception e)
-            {
-                Logger.Log($"Failed to write buffer for {_name} with channel {clientChannel.RemoteEndPoint} because: {e.Message}", e);
-            }
-            finally
-            {
-                buffer.Release();
-            }
-        }*/
 
         private class Context : RequestResponseContext<Socket>
         {
@@ -504,16 +389,24 @@ namespace Vlingo.Wire.Channel
         
         private class StateObject
         {
-            // Client socket.  
-            public Socket workSocket = null;
-            // Size of receive buffer.  
-            public const int BufferSize = 256;
-            // Receive buffer.  
-            public byte[] buffer;
-            // Received data string.  
-            public Context Context;
+            public StateObject(Socket workSocket, Context context, byte[] buffer, IConsumerByteBuffer byteBuffer)
+            {
+                WorkSocket = workSocket;
+                Context = context;
+                Buffer = buffer;
+                ByteBuffer = byteBuffer;
+            }
 
-            public IConsumerByteBuffer ByteBuffer;
+            // Client socket.  
+            public Socket WorkSocket { get; }
+            
+            // Receive buffer.  
+            public byte[] Buffer { get; }
+            
+            // Received data string.  
+            public Context Context { get; }
+
+            public IConsumerByteBuffer ByteBuffer { get; }
         }
     }
 }

@@ -13,12 +13,18 @@ namespace Vlingo.Wire.Channel
 {
     public class MockChannelReaderConsumer : IChannelReaderConsumer
     {
+        private readonly string _name;
         private readonly List<string> _messages = new List<string>();
+
+        public MockChannelReaderConsumer(string name)
+        {
+            _name = name;
+        }
 
         public void Consume(RawMessage message)
         {
             _messages.Add(message.AsTextMessage());
-            UntilConsume.WriteUsing("consume", 1);
+            UntilConsume.WriteUsing(_name, 1);
         }
 
         public IReadOnlyCollection<string> Messages => _messages;

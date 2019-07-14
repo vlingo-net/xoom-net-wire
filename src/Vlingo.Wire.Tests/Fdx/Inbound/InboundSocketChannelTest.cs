@@ -36,7 +36,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
         [Fact]
         public void TestOpInboundChannel()
         {
-            var consumer = new MockChannelReaderConsumer();
+            var consumer = new MockChannelReaderConsumer("consume");
             var consumeCount = 0;
             var accessSafely = AccessSafely.Immediately()
                 .WritingWith<int>("consume", (value) => consumeCount += value)
@@ -70,7 +70,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
         [Fact]
         public void TestAppInboundChannel()
         {
-            var consumer = new MockChannelReaderConsumer();
+            var consumer = new MockChannelReaderConsumer("consume");
             var consumeCount = 0;
             var accessSafely = AccessSafely.Immediately()
                 .WritingWith<int>("consume", (value) => consumeCount += value)

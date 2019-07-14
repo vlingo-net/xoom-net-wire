@@ -20,7 +20,7 @@ namespace Vlingo.Wire.Tests.Multicast
 {
     public class MulticastTest
     {
-        [Fact(Skip = "not ready")]
+        [Fact]
         public void TestMulticastPublishSubscribe()
         {
             var publisherCount = 0;
@@ -31,25 +31,25 @@ namespace Vlingo.Wire.Tests.Multicast
                 .WritingWith<int>("subscriberCount", (value) => subscriberCount += value)
                 .ReadingWith("subscriberCount", () => subscriberCount);
             
-            var publisherConsumer = new MockChannelReaderConsumer();
+            var publisherConsumer = new MockChannelReaderConsumer("publisherCount");
             publisherConsumer.UntilConsume = accessSafely;
 
             var publisher = new MulticastPublisherReader(
                 "test-publisher",
-                new Group("237.37.37.1", 37371),
-                37379,
+                new Group("237.37.37.1", 37771),
+                37779,
                 1024,
                 publisherConsumer,
                 ConsoleLogger.TestInstance());
             
             var subscriber = new MulticastSubscriber(
                 "test-subscriber",
-                new Group("237.37.37.1", 37371),
+                new Group("237.37.37.1", 37771),
                 1024,
                 10,
                 ConsoleLogger.TestInstance());
             
-            var subscriberConsumer = new MockChannelReaderConsumer();
+            var subscriberConsumer = new MockChannelReaderConsumer("subscriberCount");
             subscriberConsumer.UntilConsume = accessSafely;
             subscriber.OpenFor(subscriberConsumer);
             
@@ -71,7 +71,7 @@ namespace Vlingo.Wire.Tests.Multicast
             Assert.Equal(10, subscriberCount);
         }
 
-        [Fact(Skip = "not ready")]
+        [Fact]
         public void TestPublisherChannelReader()
         {
             var publisherCount = 0;
@@ -79,7 +79,7 @@ namespace Vlingo.Wire.Tests.Multicast
                 .WritingWith<int>("publisherCount", (value) => publisherCount += value)
                 .ReadingWith("publisherCount", () => publisherCount);
             
-            var publisherConsumer = new MockChannelReaderConsumer();
+            var publisherConsumer = new MockChannelReaderConsumer("publisherCount");
             publisherConsumer.UntilConsume = accessSafely;
 
             var publisher = new MulticastPublisherReader(
@@ -104,7 +104,7 @@ namespace Vlingo.Wire.Tests.Multicast
             Assert.Equal(1, publisherCount);
         }
         
-        [Fact(Skip = "not ready")]
+        [Fact]
         public void TestPublisherChannelReaderWithMultipleClients()
         {
             var publisherCount = 0;
@@ -112,7 +112,7 @@ namespace Vlingo.Wire.Tests.Multicast
                 .WritingWith<int>("publisherCount", (value) => publisherCount += value)
                 .ReadingWith("publisherCount", () => publisherCount);
             
-            var publisherConsumer = new MockChannelReaderConsumer();
+            var publisherConsumer = new MockChannelReaderConsumer("publisherCount");
             publisherConsumer.UntilConsume = accessSafely;
 
             var publisher = new MulticastPublisherReader(

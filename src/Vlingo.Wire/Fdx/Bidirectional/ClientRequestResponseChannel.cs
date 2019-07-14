@@ -253,11 +253,10 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             try
             {
                 // Retrieve the socket from the state object.  
-                Socket client = (Socket)ar.AsyncState;
+                var client = (Socket)ar.AsyncState;
 
                 // Complete sending the data to the remote device.  
-                int bytesSent = client.EndSend(ar);
-                _logger.Log($"Sent {bytesSent} bytes.");
+                client.EndSend(ar);
 
                 // Signal that all bytes have been sent.  
                 _sendDone.Set();

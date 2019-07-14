@@ -302,8 +302,7 @@ namespace Vlingo.Wire.Channel
                 var channel = state.WorkSocket;
 
                 // Complete sending the data to the remote device.  
-                int bytesSent = channel.EndSend(ar);  
-                Logger.Log($"Sent {bytesSent} bytes.");
+                channel.EndSend(ar);  
 
             } catch (Exception e)
             {

@@ -67,8 +67,8 @@ namespace Vlingo.Wire.Channel
                 while (buffer.HasRemaining())
                 {
                     var bytes = new byte[buffer.Length];
-                    buffer.Read(bytes, 0, bytes.Length); // This could be async but is now blocking
-                    totalBytesWritten += _channel.Send(bytes, SocketFlags.None); // This could be async but is now blocking
+                    buffer.Read(bytes, 0, bytes.Length); // TODO: This could be async but is now blocking
+                    totalBytesWritten += _channel.Send(bytes, SocketFlags.None); // TODO: This could be async but is now blocking
                 }
             }
             catch (Exception e)
@@ -97,7 +97,7 @@ namespace Vlingo.Wire.Channel
                 }
                 
                 var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                channel.Connect(_address.HostName, _address.Port); // This could be async but it is now blocking
+                channel.Connect(_address.HostName, _address.Port); // TODO: This could be async but it is now blocking
                 return channel;
             }
             catch (Exception e)

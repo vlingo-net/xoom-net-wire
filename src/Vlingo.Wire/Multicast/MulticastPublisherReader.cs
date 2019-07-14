@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using Vlingo.Actors;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
@@ -31,6 +32,7 @@ namespace Vlingo.Wire.Multicast
         private readonly Socket _readChannel;
         private readonly List<Socket> _clientReadChannels;
         private bool _disposed;
+        private readonly ManualResetEvent _acceptDone;
 
         public MulticastPublisherReader(
             string name,
@@ -44,6 +46,7 @@ namespace Vlingo.Wire.Multicast
             _maxMessageSize = maxMessageSize;
             _consumer = consumer;
             _logger = logger;
+            _acceptDone = new ManualResetEvent(false);
             _groupAddress = new IPEndPoint(IPAddress.Parse(group.Address), group.Port);
             _messageQueue = new Queue<RawMessage>();
             
@@ -214,6 +217,7 @@ namespace Vlingo.Wire.Multicast
                 if (_readChannel.Poll(10000, SelectMode.SelectRead))
                 {
                     _readChannel.BeginAccept(AcceptCallback, _readChannel);
+                    _acceptDone.WaitOne();
                 }
             }
             catch (Exception e)
@@ -233,7 +237,7 @@ namespace Vlingo.Wire.Multicast
             
             var buffer = new MemoryStream(message.Length);
             var messageBytes = Converters.TextToBytes(message);
-            buffer.Write(messageBytes, 0, messageBytes.Length);
+            buffer.Write(messageBytes, 0, messageBytes.Length); // TODO: Can be done async
             buffer.Flip();
 
             return RawMessage.ReadFromWithoutHeader(buffer);
@@ -278,6 +282,7 @@ namespace Vlingo.Wire.Multicast
             var listener = (Socket)ar.AsyncState;  
             var clientChannel = listener.EndAccept(ar);  
             _clientReadChannels.Add(clientChannel);
+            _acceptDone.Set();
         }
 
         private void SendToCallback(IAsyncResult ar)

@@ -6,7 +6,6 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.IO;
-using System.Threading.Tasks;
 
 namespace Vlingo.Wire.Fdx.Outbound
 {
@@ -14,6 +13,6 @@ namespace Vlingo.Wire.Fdx.Outbound
     {
         void Close();
 
-        Task Write(Stream buffer);
+        void Write(Stream buffer);
     }
 }

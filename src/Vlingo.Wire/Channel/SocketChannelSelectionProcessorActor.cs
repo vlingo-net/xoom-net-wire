@@ -8,7 +8,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 using Vlingo.Actors;
 using Vlingo.Wire.Message;
 
@@ -68,15 +67,18 @@ namespace Vlingo.Wire.Channel
         // SocketChannelSelectionProcessor
         //=========================================
         
-        public async Task Process(Socket channel)
+        public void Process(Socket channel)
         {
             try
             {
                 if (channel.Poll(10000, SelectMode.SelectRead))
                 {
-                    var clientChannel = await channel.AcceptAsync();
-                    _context = new Context(this, clientChannel);
+                    channel.BeginAccept(AcceptCallback, channel);
                 }
+            }
+            catch (ObjectDisposedException e)
+            {
+                Logger.Log($"The underlying channel for {_name} is closed. This is certainly because Actor was stopped.", e);
             }
             catch (Exception e)
             {
@@ -85,7 +87,7 @@ namespace Vlingo.Wire.Channel
                 throw;
             }
         }
-        
+
         //=========================================
         // Scheduled
         //=========================================
@@ -94,17 +96,11 @@ namespace Vlingo.Wire.Channel
         {
             try
             {
-                // this is invoked in the context of another Thread so even if we can block here
-                ProbeChannel().Wait();
+                ProbeChannel();
             }
-            catch (AggregateException ae)
+            catch (Exception e)
             {
-                foreach (var e in ae.InnerExceptions)
-                {
-                    Logger.Log($"Failed to ProbeChannel for {_name} because: {e.Message}", e);
-                }
-                
-                throw ae.Flatten();
+                Logger.Log($"Failed to ProbeChannel for {_name} because: {e.Message}", e);
             }
         }
 
@@ -151,7 +147,7 @@ namespace Vlingo.Wire.Channel
             }
         }
 
-        private async Task ProbeChannel()
+        private void ProbeChannel()
         {
             if (IsStopped)
             {
@@ -164,11 +160,11 @@ namespace Vlingo.Wire.Channel
                 {
                     if (_context.Channel.Available > 0)
                     {
-                        await Read(_context);
+                        Read(_context);
                     }
                     else
                     {
-                        await Write(_context);
+                        Write(_context);
                     }
                 }
             }
@@ -177,8 +173,8 @@ namespace Vlingo.Wire.Channel
                 Logger.Log($"Failed client channel processing for {_name} because: {e.Message}", e);
             }
         }
-        
-        private async Task Read(Context readable)
+
+        private void Read(Context readable)
         {
             var channel = readable.Channel;
             if (!channel.IsSocketConnected())
@@ -187,44 +183,13 @@ namespace Vlingo.Wire.Channel
                 channel.Close();
                 return;
             }
-
-            var buffer = readable.RequestBuffer.Clear();
-            var readBuffer = buffer.ToArray();
-            var totalBytesRead = 0;
-            int bytesRead;
-
-            try
-            {
-                do
-                {
-                    bytesRead = await channel.ReceiveAsync(readBuffer, SocketFlags.None);
-                    buffer.Put(readBuffer, 0, bytesRead);
-                    totalBytesRead += bytesRead;
-                } while (channel.Available > 0);
-            }
-            catch
-            {
-                // likely a forcible close by the client,
-                // so force close and cleanup
-                bytesRead = 0;
-            }
-
-            if (bytesRead == 0)
-            {
-                Close(readable.Channel, readable);
-            }
             
-            if (totalBytesRead > 0)
-            {
-                readable.Consumer.Consume(readable, buffer.Flip());
-            } 
-            else 
-            {
-                buffer.Release();
-            }
+            // Create the state object.  
+            var state = new StateObject(channel, readable, new byte[_messageBufferSize], readable.RequestBuffer.Clear());
+            channel.BeginReceive(state.Buffer, 0, _messageBufferSize, 0, ReadCallback, state);
         }
-
-        private async Task Write(Context writable)
+        
+        private void Write(Context writable)
         {
             var channel = writable.Channel;
             if (!channel.IsSocketConnected())
@@ -236,24 +201,27 @@ namespace Vlingo.Wire.Channel
             
             if (writable.HasNextWritable)
             {
-                await WriteWithCachedData(writable, channel);
+                WriteWithCachedData(writable, channel);
             }
         }
 
-        private async Task WriteWithCachedData(Context context, Socket channel)
+        private void WriteWithCachedData(Context context, Socket channel)
         {
             for (var buffer = context.NextWritable(); buffer != null; buffer = context.NextWritable())
             {
-                await WriteWithCachedData(context, channel, buffer);
+                WriteWithCachedData(context, channel, buffer);
             }
         }
 
-        private async Task WriteWithCachedData(Context context, Socket clientChannel, IConsumerByteBuffer buffer)
+        private void WriteWithCachedData(Context context, Socket clientChannel, IConsumerByteBuffer buffer)
         {
             try
             {
                 var responseBuffer = buffer.ToArray();
-                await clientChannel.SendAsync(new ArraySegment<byte>(responseBuffer), SocketFlags.None);
+                // Logger.Log("SENDING FROM SERVER: " + responseBuffer.BytesToText(0, responseBuffer.Length) + " | " + responseBuffer.Length);
+                var stateObject = new StateObject(clientChannel, context, null, buffer);
+                // Begin sending the data to the remote device.  
+                clientChannel.BeginSend(responseBuffer, 0, responseBuffer.Length, 0, SendCallback, stateObject); 
             }
             catch (Exception e)
             {
@@ -263,6 +231,83 @@ namespace Vlingo.Wire.Channel
             {
                 buffer.Release();
             }
+        }
+
+        private void ReadCallback(IAsyncResult ar)
+        {
+            // Retrieve the state object and the handler socket  
+            // from the asynchronous state object.  
+            var state = (StateObject) ar.AsyncState;  
+            var channel = state.WorkSocket;
+            var readable = state.Context;
+            var buffer = state.ByteBuffer;
+            var readBuffer = state.Buffer;
+
+            try
+            {
+                // Read data from the client socket.   
+                var bytesRead = channel.EndReceive(ar);
+
+                if (bytesRead > 0)
+                {
+                    buffer.Put(readBuffer, 0, bytesRead);
+                }
+                
+                if (bytesRead == 0)
+                {
+                    Close(readable.Channel, readable);
+                }
+
+                int bytesRemain = channel.Available;
+                if (bytesRemain > 0)
+                {
+                    // Get the rest of the data.  
+                    channel.BeginReceive(readBuffer,0,readBuffer.Length,0, ReadCallback, state);
+                }
+                else
+                {
+                    // Logger.Log("RECEIVED on SERVER: " + readBuffer.BytesToText(0, bytesRead) + " | " + bytesRead);
+                    // All the data has arrived; put it in response.  
+                    if (buffer.Limit() >= 1)
+                    {
+                        readable.Consumer.Consume(readable, buffer.Flip());
+                    }
+                    else
+                    {
+                        buffer.Release();
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                // likely a forcible close by the client,
+                // so force close and cleanup
+                Logger.Log("Error while reading from the channel", e);
+            }
+        }
+        
+        private void AcceptCallback(IAsyncResult ar)
+        {
+            // Get the socket that handles the client request.  
+            var listener = (Socket)ar.AsyncState;  
+            var clientChannel = listener.EndAccept(ar);  
+            _context = new Context(this, clientChannel);
+        }
+
+        private void SendCallback(IAsyncResult ar)
+        {  
+            try {  
+                // Retrieve the socket from the state object.  
+                var state = (StateObject)ar.AsyncState;
+                var channel = state.WorkSocket;
+
+                // Complete sending the data to the remote device.  
+                channel.EndSend(ar);  
+
+            } catch (Exception e)
+            {
+                Logger.Log("Error while sending", e);
+            }  
         }
 
         private class Context : RequestResponseContext<Socket>
@@ -339,6 +384,28 @@ namespace Vlingo.Wire.Channel
             public IConsumerByteBuffer RequestBuffer => _buffer;
 
             public Socket Channel => _clientChannel;
+        }
+        
+        private class StateObject
+        {
+            public StateObject(Socket workSocket, Context context, byte[] buffer, IConsumerByteBuffer byteBuffer)
+            {
+                WorkSocket = workSocket;
+                Context = context;
+                Buffer = buffer;
+                ByteBuffer = byteBuffer;
+            }
+
+            // Client socket.  
+            public Socket WorkSocket { get; }
+            
+            // Receive buffer.  
+            public byte[] Buffer { get; }
+            
+            // Received data string.  
+            public Context Context { get; }
+
+            public IConsumerByteBuffer ByteBuffer { get; }
         }
     }
 }

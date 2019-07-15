@@ -20,16 +20,14 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         private string _remaining = string.Empty;
         
         public int CurrentExpectedRequestLength { get; set; }
-        
-        public int ConsumeCount { get; private set; }
-        
+
         public IList<string> Requests { get; } = new List<string>();
         
-        public TestUntil UntilClosed { get; }
+        public AccessSafely UntilClosed { get; }
         
-        public TestUntil UntilConsume { get; set; }
-        
-        public void CloseWith<T>(RequestResponseContext<T> requestResponseContext, object data) => UntilClosed?.Happened();
+        public AccessSafely UntilConsume { get; set; }
+
+        public void CloseWith<T>(RequestResponseContext<T> requestResponseContext, object data) => UntilClosed.WriteUsing("closed", 1);
 
         public void Consume<T>(RequestResponseContext<T> context, IConsumerByteBuffer buffer)
         {
@@ -67,14 +65,13 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                     startIndex = startIndex + CurrentExpectedRequestLength;
 
                     Requests.Add(request);
-                    ++ConsumeCount;
-                    
+
                     var responseBuffer = new BasicConsumerByteBuffer(1, CurrentExpectedRequestLength);
                     context.RespondWith(responseBuffer.Clear().Put(Converters.TextToBytes(request)).Flip()); // echo back
         
                     last = currentIndex == combinedLength;
 
-                    UntilConsume?.Happened();
+                    UntilConsume.WriteUsing("serverConsume", 1);
                 }
             }
         }

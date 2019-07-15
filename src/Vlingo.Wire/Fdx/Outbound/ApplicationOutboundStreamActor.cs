@@ -24,9 +24,9 @@ namespace Vlingo.Wire.Fdx.Outbound
         // ClusterApplicationOutboundStream
         //===================================
 
-        public void Broadcast(RawMessage message) => _outbound.Broadcast(message).Wait();
+        public void Broadcast(RawMessage message) => _outbound.Broadcast(message);
 
-        public void SendTo(RawMessage message, Id targetId) => _outbound.SendTo(message, targetId).Wait();
+        public void SendTo(RawMessage message, Id targetId) => _outbound.SendTo(message, targetId);
         
         //===================================
         // Stoppable

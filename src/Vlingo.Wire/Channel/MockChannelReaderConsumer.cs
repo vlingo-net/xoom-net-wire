@@ -6,22 +6,29 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
+using Vlingo.Actors.TestKit;
 using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Channel
 {
     public class MockChannelReaderConsumer : IChannelReaderConsumer
     {
+        private readonly string _name;
         private readonly List<string> _messages = new List<string>();
+
+        public MockChannelReaderConsumer(string name)
+        {
+            _name = name;
+        }
 
         public void Consume(RawMessage message)
         {
-            ++ConsumeCount;
             _messages.Add(message.AsTextMessage());
+            UntilConsume.WriteUsing(_name, 1);
         }
 
-        public int ConsumeCount { get; private set; }
-
         public IReadOnlyCollection<string> Messages => _messages;
+        
+        public AccessSafely UntilConsume { get; set; }
     }
 }

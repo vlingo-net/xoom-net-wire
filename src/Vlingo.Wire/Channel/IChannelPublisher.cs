@@ -5,7 +5,6 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-using System.Threading.Tasks;
 using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Channel
@@ -13,7 +12,7 @@ namespace Vlingo.Wire.Channel
     public interface IChannelPublisher
     {
         void Close();
-        Task ProcessChannel();
+        void ProcessChannel();
         void SendAvailability();
         void Send(RawMessage message);
     }

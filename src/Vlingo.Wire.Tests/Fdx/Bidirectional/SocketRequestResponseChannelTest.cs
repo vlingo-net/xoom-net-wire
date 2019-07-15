@@ -7,9 +7,7 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Vlingo.Actors;
 using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Actors.TestKit;
@@ -24,48 +22,53 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 {
     public class SocketRequestResponseChannelTest : IDisposable
     {
-        private readonly ITestOutputHelper _output;
-        
         private static readonly int PoolSize = 100;
-        private static int TestPort = 37371;
+        private static int _testPort = 37471;
 
-        private MemoryStream _buffer;
-        private ClientRequestResponseChannel _client;
-        private TestResponseChannelConsumer _clientConsumer;
-        private TestRequestChannelConsumerProvider _provider;
-        private IServerRequestResponseChannel _server;
-        private TestRequestChannelConsumer _serverConsumer;
-        private World _world;
+        private readonly MemoryStream _buffer;
+        private readonly ClientRequestResponseChannel _client;
+        private readonly TestResponseChannelConsumer _clientConsumer;
+        private readonly IServerRequestResponseChannel _server;
+        private readonly TestRequestChannelConsumer _serverConsumer;
+        private readonly World _world;
 
         [Fact]
-        public async Task TestBasicRequestResponse()
+        public void TestBasicRequestResponse()
         {
             var request = "Hello, Request-Response";
             
             _serverConsumer.CurrentExpectedRequestLength = request.Length;
             _clientConsumer.CurrentExpectedResponseLength = _serverConsumer.CurrentExpectedRequestLength;
-            await Request(request);
-            
-            _serverConsumer.UntilConsume = TestUntil.Happenings(1);
-            _clientConsumer.UntilConsume = TestUntil.Happenings(1);
 
-            while (_serverConsumer.UntilConsume.Remaining > 0)
+            var serverConsumeCount = 0;
+            var clientConsumeCount = 0;
+            var accessSafely = AccessSafely.AfterCompleting(1)
+                .WritingWith<int>("serverConsume", (value) => serverConsumeCount += value)
+                .ReadingWith("serverConsume", () => serverConsumeCount)
+                .WritingWith<int>("clientConsume", (value) => clientConsumeCount += value)
+                .ReadingWith("clientConsume", () => clientConsumeCount);
+            _serverConsumer.UntilConsume = accessSafely;
+            _clientConsumer.UntilConsume = accessSafely;
+
+            Request(request);
+
+            while (_serverConsumer.UntilConsume.ReadFrom<int>("serverConsume") < 1)
             {
-                await Task.Delay(1);
+                Thread.Sleep(1);
             }
-            _serverConsumer.UntilConsume.Completes();
+            _serverConsumer.UntilConsume.ReadFromExpecting("serverConsume", 1);
             
-            while (_clientConsumer.UntilConsume.Remaining > 0)
+            while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < 1)
             {
-                await _client.ProbeChannel();
+                _client.ProbeChannel();
             }
-            _clientConsumer.UntilConsume.Completes();
+            _clientConsumer.UntilConsume.ReadFromExpecting("clientConsume", 1);
             
             Assert.False(_serverConsumer.Requests.Count == 0);
         }
 
         [Fact]
-        public async Task TestGappyRequestResponse()
+        public void TestGappyRequestResponse()
         {
             var requestPart1 = "Request Part-1";
             var requestPart2 = "Request Part-2";
@@ -75,106 +78,137 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 requestPart1.Length + requestPart2.Length + requestPart3.Length;
             _clientConsumer.CurrentExpectedResponseLength = _serverConsumer.CurrentExpectedRequestLength;
             
+            var serverConsumeCount = 0;
+            var clientConsumeCount = 0;
+            var accessSafely = AccessSafely.AfterCompleting(1)
+                .WritingWith<int>("serverConsume", (value) => serverConsumeCount += value)
+                .ReadingWith("serverConsume", () => serverConsumeCount)
+                .WritingWith<int>("clientConsume", (value) => clientConsumeCount += value)
+                .ReadingWith("clientConsume", () => clientConsumeCount);
+            _serverConsumer.UntilConsume = accessSafely;
+            _clientConsumer.UntilConsume = accessSafely;
+            
             // simulate network latency for parts of single request
-            await Request(requestPart1);
-            await Task.Delay(100);
-            await Request(requestPart2);
-            await Task.Delay(200);
-            await Request(requestPart3);
-            _serverConsumer.UntilConsume = TestUntil.Happenings(1);
-            while (_serverConsumer.UntilConsume.Remaining > 0)
+            Request(requestPart1);
+            Thread.Sleep(100);
+            Request(requestPart2);
+            Thread.Sleep(200);
+            Request(requestPart3);
+            while (_serverConsumer.UntilConsume.ReadFrom<int>("serverConsume") < 1)
             {
                 ;
             }
-            _serverConsumer.UntilConsume.Completes();
+            _serverConsumer.UntilConsume.ReadFromExpecting("serverConsume", 1);
             
-            _clientConsumer.UntilConsume = TestUntil.Happenings(1);
-            while (_clientConsumer.UntilConsume.Remaining > 0)
+            while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < 1)
             {
-                await Task.Delay(10);
-                await _client.ProbeChannel();
+                _client.ProbeChannel();
             }
-            _clientConsumer.UntilConsume.Completes();
             
-            Assert.True(_serverConsumer.Requests.Any());
-            Assert.Equal(1, _serverConsumer.ConsumeCount);
-            Assert.Equal(_serverConsumer.ConsumeCount, _serverConsumer.Requests.Count);
+            _clientConsumer.UntilConsume.ReadFromExpecting("clientConsume", 1);
             
-            Assert.True(_clientConsumer.Responses.Any());
-            Assert.Equal(1, _clientConsumer.ConsumeCount);
-            Assert.Equal(_clientConsumer.ConsumeCount, _clientConsumer.Responses.Count);
+            Assert.Equal(1, _serverConsumer.UntilConsume.ReadFrom<int>("serverConsume"));
+            Assert.Equal(1, serverConsumeCount);
+            Assert.Equal(serverConsumeCount, _serverConsumer.Requests.Count);
+            
+            Assert.Equal(1, _clientConsumer.UntilConsume.ReadFrom<int>("clientConsume"));
+            Assert.Equal(1, clientConsumeCount);
+            Assert.Equal(clientConsumeCount, _clientConsumer.Responses.Count);
             
             Assert.Equal(_clientConsumer.Responses[0], _serverConsumer.Requests[0]);
         }
 
         [Fact]
-        public async Task Test10RequestResponse()
+        public void Test10RequestResponse()
         {
+            var total = 10;
             var request = "Hello, Request-Response";
-            
+
             _serverConsumer.CurrentExpectedRequestLength = request.Length + 1; // digits 0 - 9
             _clientConsumer.CurrentExpectedResponseLength = _serverConsumer.CurrentExpectedRequestLength;
             
-            _serverConsumer.UntilConsume = TestUntil.Happenings(10);
-            _clientConsumer.UntilConsume = TestUntil.Happenings(10);
-            
-            for (int idx = 0; idx < 10; ++idx) {
-                await Request(request + idx);
+            var serverConsumeCount = 0;
+            var clientConsumeCount = 0;
+            var accessSafely = AccessSafely.AfterCompleting(total)
+                .WritingWith<int>("serverConsume", (value) => serverConsumeCount += value)
+                .ReadingWith("serverConsume", () => serverConsumeCount)
+                .WritingWith<int>("clientConsume", (value) => clientConsumeCount += value)
+                .ReadingWith("clientConsume", () => clientConsumeCount);
+            _serverConsumer.UntilConsume = accessSafely;
+            _clientConsumer.UntilConsume = accessSafely;
+
+            for (var idx = 0; idx < total; ++idx)
+            {
+                Request(request + idx);
             }
-            
-            while (_clientConsumer.UntilConsume.Remaining > 0) {
-                await _client.ProbeChannel();
+
+            while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < total)
+            {
+                _client.ProbeChannel();
             }
-            
-            _serverConsumer.UntilConsume.Completes();
-            _clientConsumer.UntilConsume.Completes();
-            
-            Assert.True(_serverConsumer.Requests.Any());
-            Assert.Equal(10, _serverConsumer.ConsumeCount);
-            Assert.Equal(_serverConsumer.ConsumeCount, _serverConsumer.Requests.Count);
+
+            _serverConsumer.UntilConsume.ReadFromExpecting("serverConsume", total);
+            _clientConsumer.UntilConsume.ReadFromExpecting("clientConsume", total);
+
+            Assert.Equal(total, _serverConsumer.UntilConsume.ReadFrom<int>("serverConsume"));
+            Assert.Equal(total, serverConsumeCount);
+            Assert.Equal(total, _serverConsumer.Requests.Count);
+
+            Assert.Equal(total, _clientConsumer.UntilConsume.ReadFrom<int>("clientConsume"));
+            Assert.Equal(total, clientConsumeCount);
+            Assert.Equal(total, _clientConsumer.Responses.Count);
     
-            Assert.True(_clientConsumer.Responses.Any());
-            Assert.Equal(10, _clientConsumer.ConsumeCount);
-            Assert.Equal(_clientConsumer.ConsumeCount, _clientConsumer.Responses.Count);
-    
-            for (int idx = 0; idx < 10; ++idx) {
+            for (int idx = 0; idx < total; ++idx)
+            {
                 Assert.Equal(_clientConsumer.Responses[idx], _serverConsumer.Requests[idx]);
             }
         }
         
         [Fact]
-        public async Task TestThatRequestResponsePoolLimitsNotExceeded()
+        public void TestThatRequestResponsePoolLimitsNotExceeded()
         {
             var total = PoolSize * 2;
             var request = "Hello, Request-Response";
             
             _serverConsumer.CurrentExpectedRequestLength = request.Length + 3; // digits 000 - 999
             _clientConsumer.CurrentExpectedResponseLength = _serverConsumer.CurrentExpectedRequestLength;
-    
-            _serverConsumer.UntilConsume = TestUntil.Happenings(total);
-            _clientConsumer.UntilConsume = TestUntil.Happenings(total);
-    
-            for (int idx = 0; idx < total; ++idx) {
-                await Request(request + idx.ToString("D3"));
-            }
-    
-            while (_clientConsumer.UntilConsume.Remaining > 0) {
-                await _client.ProbeChannel();
-            }
-            _serverConsumer.UntilConsume.Completes();
-            _clientConsumer.UntilConsume.Completes();
 
-            Assert.True(_serverConsumer.Requests.Any());
-            Assert.Equal(total, _serverConsumer.ConsumeCount);
-            Assert.Equal(_serverConsumer.ConsumeCount, _serverConsumer.Requests.Count);
+            var serverConsumeCount = 0;
+            var clientConsumeCount = 0;
+            var accessSafely = AccessSafely.AfterCompleting(total)
+                .WritingWith<int>("serverConsume", (value) => serverConsumeCount += value)
+                .ReadingWith("serverConsume", () => serverConsumeCount)
+                .WritingWith<int>("clientConsume", (value) => clientConsumeCount += value)
+                .ReadingWith("clientConsume", () => clientConsumeCount);
+            _serverConsumer.UntilConsume = accessSafely;
+            _clientConsumer.UntilConsume = accessSafely;
     
-            Assert.True(_clientConsumer.Responses.Any());
-            Assert.Equal(total, _clientConsumer.ConsumeCount);
-            Assert.Equal(_clientConsumer.ConsumeCount, _clientConsumer.Responses.Count);
-    
-            for (int idx = 0; idx < total; ++idx) {
+            for (int idx = 0; idx < total; ++idx)
+            {
+                Request(request + idx.ToString("D3"));
+            }
+            
+            Thread.Sleep(100);
+
+            while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < total)
+            {
+                _client.ProbeChannel();
+            }
+
+            _serverConsumer.UntilConsume.ReadFromExpecting("serverConsume", total);
+            _clientConsumer.UntilConsume.ReadFromExpecting("clientConsume", total);
+            
+            Assert.Equal(total, _serverConsumer.UntilConsume.ReadFrom<int>("serverConsume"));
+            Assert.Equal(total, serverConsumeCount);
+            Assert.Equal(serverConsumeCount, _serverConsumer.Requests.Count);
+
+            Assert.Equal(total, _clientConsumer.UntilConsume.ReadFrom<int>("clientConsume"));
+            Assert.Equal(total, clientConsumeCount);
+            Assert.Equal(clientConsumeCount, _clientConsumer.Responses.Count);
+
+            for (int idx = 0; idx < total; ++idx) 
+            {
                 Assert.Equal(_clientConsumer.Responses[idx], _serverConsumer.Requests[idx]);
-                // _output.WriteLine($"_clientConsumer.Responses[idx] - ${_clientConsumer.Responses[idx]} | _serverConsumer.Requests[idx] - ${_serverConsumer.Requests[idx]}");
             }
         }
 
@@ -182,18 +216,18 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         {
             var converter = new Converter(output);
             Console.SetOut(converter);
-            _output = output;
+
             _world = World.StartWithDefault("test-request-response-channel");
             
             _buffer = new MemoryStream(1024);
             var logger = ConsoleLogger.TestInstance();
-            _provider = new TestRequestChannelConsumerProvider();
-            _serverConsumer = (TestRequestChannelConsumer)_provider.Consumer;
+            var provider = new TestRequestChannelConsumerProvider();
+            _serverConsumer = (TestRequestChannelConsumer)provider.Consumer;
 
             _server = ServerRequestResponseChannelFactory.Start(
                 _world.Stage,
-                _provider,
-                TestPort,
+                provider,
+                _testPort,
                 "test-server",
                 1,
                 PoolSize,
@@ -202,10 +236,10 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             _clientConsumer = new TestResponseChannelConsumer();
             
-            _client = new ClientRequestResponseChannel(Address.From(Host.Of("localhost"), TestPort, AddressType.None),
+            _client = new ClientRequestResponseChannel(Address.From(Host.Of("localhost"), _testPort, AddressType.None),
                 _clientConsumer, PoolSize, 10240, logger);
 
-            ++TestPort;
+            ++_testPort;
         }
 
         public void Dispose()
@@ -226,12 +260,12 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _world.Terminate();
         }
         
-        private async Task Request(string request)
+        private void Request(string request)
         {
             _buffer.Clear();
             _buffer.Write(Converters.TextToBytes(request));
             _buffer.Flip();
-            await _client.RequestWith(_buffer);
+            _client.RequestWith(_buffer.ToArray());
         }
     }
 }

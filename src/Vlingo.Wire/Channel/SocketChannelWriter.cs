@@ -8,7 +8,6 @@
 using System;
 using System.IO;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 using Vlingo.Actors;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Node;
@@ -45,7 +44,7 @@ namespace Vlingo.Wire.Channel
             _channel = null;
         }
 
-        public Task<int> Write(RawMessage message, MemoryStream buffer)
+        public int Write(RawMessage message, MemoryStream buffer)
         {
             buffer.Clear();
             message.CopyBytesTo(buffer);
@@ -53,9 +52,9 @@ namespace Vlingo.Wire.Channel
             return Write(buffer);
         }
 
-        public async Task<int> Write(MemoryStream buffer)
+        public int Write(MemoryStream buffer)
         {
-            _channel = await PreparedChannel();
+            _channel = PreparedChannel();
             
             var totalBytesWritten = 0;
             if (_channel == null)
@@ -68,8 +67,8 @@ namespace Vlingo.Wire.Channel
                 while (buffer.HasRemaining())
                 {
                     var bytes = new byte[buffer.Length];
-                    await buffer.ReadAsync(bytes, 0, bytes.Length);
-                    totalBytesWritten += await _channel.SendAsync(new ArraySegment<byte>(bytes), SocketFlags.None);
+                    buffer.Read(bytes, 0, bytes.Length); // TODO: This could be async but is now blocking
+                    totalBytesWritten += _channel.Send(bytes, SocketFlags.None); // TODO: This could be async but is now blocking
                 }
             }
             catch (Exception e)
@@ -83,7 +82,7 @@ namespace Vlingo.Wire.Channel
 
         public override string ToString() => $"SocketChannelWriter[address={_address}, channel={_channel}]";
 
-        private async Task<Socket> PreparedChannel()
+        private Socket PreparedChannel()
         {
             try
             {
@@ -98,7 +97,7 @@ namespace Vlingo.Wire.Channel
                 }
                 
                 var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                await channel.ConnectAsync(_address.HostName, _address.Port);
+                channel.Connect(_address.HostName, _address.Port); // TODO: This could be async but it is now blocking
                 return channel;
             }
             catch (Exception e)

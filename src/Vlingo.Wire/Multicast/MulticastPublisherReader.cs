@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading.Tasks;
+using System.Threading;
 using Vlingo.Actors;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
@@ -32,6 +32,7 @@ namespace Vlingo.Wire.Multicast
         private readonly Socket _readChannel;
         private readonly List<Socket> _clientReadChannels;
         private bool _disposed;
+        private readonly ManualResetEvent _acceptDone;
 
         public MulticastPublisherReader(
             string name,
@@ -45,6 +46,7 @@ namespace Vlingo.Wire.Multicast
             _maxMessageSize = maxMessageSize;
             _consumer = consumer;
             _logger = logger;
+            _acceptDone = new ManualResetEvent(false);
             _groupAddress = new IPEndPoint(IPAddress.Parse(group.Address), group.Port);
             _messageQueue = new Queue<RawMessage>();
             
@@ -105,7 +107,7 @@ namespace Vlingo.Wire.Multicast
             }
         }
 
-        public async Task ProcessChannel()
+        public void ProcessChannel()
         {
             if (_closed)
             {
@@ -114,7 +116,8 @@ namespace Vlingo.Wire.Multicast
 
             try
             {
-                await Task.WhenAll(ProbeChannel(), SendMax());
+                ProbeChannel();
+                SendMax();
             }
             catch (SocketException e)
             {
@@ -181,17 +184,17 @@ namespace Vlingo.Wire.Multicast
         // internal implementation
         //====================================
         
-        public async Task ProbeChannel()
+        public void ProbeChannel()
         {
             try
             {
-                await Accept();
+                Accept();
 
                 foreach (var clientReadChannel in _clientReadChannels.ToArray())
                 {
                     if (clientReadChannel.Available > 0)
                     {
-                        await new SocketChannelSelectionReader(this).Read(clientReadChannel, new RawMessageBuilder(_maxMessageSize));
+                        new SocketChannelSelectionReader(this).Read(clientReadChannel, new RawMessageBuilder(_maxMessageSize));
                     }
                     
                     if (!clientReadChannel.IsSocketConnected())
@@ -207,13 +210,14 @@ namespace Vlingo.Wire.Multicast
             }
         }
         
-        private async Task Accept()
+        private void Accept()
         {
             try
             {
                 if (_readChannel.Poll(10000, SelectMode.SelectRead))
                 {
-                    _clientReadChannels.Add(await _readChannel.AcceptAsync());
+                    _readChannel.BeginAccept(AcceptCallback, _readChannel);
+                    _acceptDone.WaitOne();
                 }
             }
             catch (Exception e)
@@ -233,7 +237,7 @@ namespace Vlingo.Wire.Multicast
             
             var buffer = new MemoryStream(message.Length);
             var messageBytes = Converters.TextToBytes(message);
-            buffer.Write(messageBytes, 0, messageBytes.Length);
+            buffer.Write(messageBytes, 0, messageBytes.Length); // TODO: Can be done async
             buffer.Flip();
 
             return RawMessage.ReadFromWithoutHeader(buffer);
@@ -256,7 +260,7 @@ namespace Vlingo.Wire.Multicast
             }
         }
 
-        private async Task SendMax()
+        private void SendMax()
         {
             while (true)
             {
@@ -266,18 +270,30 @@ namespace Vlingo.Wire.Multicast
                 }
                 
                 var message = _messageQueue.Peek();
-                
-                var sent = await _publisherChannel.SendToAsync(new ArraySegment<byte>(message.AsBuffer(new MemoryStream(_maxMessageSize))),
-                                    SocketFlags.None, _groupAddress);
 
-                if (sent > 0)
-                {
-                    _messageQueue.Dequeue();
-                }
-                else
-                {
-                    return;
-                }
+                var buffer = message.AsBuffer(new MemoryStream(_maxMessageSize));
+                _publisherChannel.BeginSendTo(buffer, 0, buffer.Length, SocketFlags.None, _groupAddress, SendToCallback, _publisherChannel);
+            }
+        }
+        
+        private void AcceptCallback(IAsyncResult ar)
+        {
+            // Get the socket that handles the client request.  
+            var listener = (Socket)ar.AsyncState;  
+            var clientChannel = listener.EndAccept(ar);  
+            _clientReadChannels.Add(clientChannel);
+            _acceptDone.Set();
+        }
+
+        private void SendToCallback(IAsyncResult ar)
+        {
+            var publisherChannel = (Socket)ar.AsyncState;
+
+            var sent = publisherChannel.EndSendTo(ar);
+            
+            if (sent > 0)
+            {
+                _messageQueue.Dequeue();
             }
         }
     }

@@ -1,7 +1,6 @@
 using System;
 using System.Net.Sockets;
 using Vlingo.Actors;
-using System.Threading.Tasks;
 
 namespace Vlingo.Wire.Channel
 {
@@ -40,11 +39,11 @@ namespace Vlingo.Wire.Channel
             }
         }
 
-        public Task Process(Socket channel)
+        public void Process(Socket channel)
         {
             if (!actor.IsStopped)
             {
-                Action<ISocketChannelSelectionProcessor> consumer = x => x.Process(channel).Wait();
+                Action<ISocketChannelSelectionProcessor> consumer = x => x.Process(channel);
                 if (mailbox.IsPreallocated)
                 {
                     mailbox.Send(actor, consumer, null, ProcessRepresentation2);
@@ -60,8 +59,6 @@ namespace Vlingo.Wire.Channel
             {
                 actor.DeadLetters.FailedDelivery(new DeadLetter(actor, ProcessRepresentation2));
             }
-
-            return Task.CompletedTask;
         }
     }
 }

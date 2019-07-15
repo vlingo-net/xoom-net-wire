@@ -8,7 +8,7 @@
 using System;
 using System.IO;
 using System.Net.Sockets;
-using System.Threading.Tasks;
+using System.Threading;
 using Vlingo.Actors;
 using Vlingo.Wire.Channel;
 
@@ -23,12 +23,16 @@ namespace Vlingo.Wire.Fdx.Outbound
         private readonly Node _node;
         private readonly ILogger _logger;
         private bool _disposed;
+        private readonly ManualResetEvent _connectDone;
+        private readonly ManualResetEvent _sendDone;
 
         public ManagedOutboundSocketChannel(Node node, Address address, ILogger logger)
         {
             _node = node;
             _address = address;
             _logger = logger;
+            _connectDone = new ManualResetEvent(false);
+            _sendDone = new ManualResetEvent(false);
         }
         
         public void Close()
@@ -47,9 +51,9 @@ namespace Vlingo.Wire.Fdx.Outbound
             }
         }
 
-        public async Task Write(Stream buffer)
+        public void Write(Stream buffer)
         {
-            _channel = await PreparedChannel();
+            _channel = PreparedChannel();
             if (_channel == null)
             {
                 return;
@@ -59,8 +63,9 @@ namespace Vlingo.Wire.Fdx.Outbound
                 while (buffer.HasRemaining())
                 {
                     var bytes = new byte[buffer.Length];
-                    await buffer.ReadAsync(bytes, 0, bytes.Length);
-                    await _channel.SendAsync(new ArraySegment<byte>(bytes), SocketFlags.None);
+                    buffer.Read(bytes, 0, bytes.Length); // TODO: can be done async
+                    _channel.BeginSend(bytes, 0, bytes.Length, 0, SendCallback, _channel);
+                    _sendDone.WaitOne();
                 }
             }
             catch (Exception e)
@@ -91,7 +96,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             _disposed = true;
         }
         
-        private async Task<Socket> PreparedChannel()
+        private Socket PreparedChannel()
         {
             try
             {
@@ -106,15 +111,57 @@ namespace Vlingo.Wire.Fdx.Outbound
                 }
                 
                 var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                await channel.ConnectAsync(_address.HostName, _address.Port);
+                channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, channel);
+                _connectDone.WaitOne();
                 return channel;
             }
-            catch
+            catch (Exception e)
             {
                 Close();
+                _logger.Log($"{GetType().Name}: Cannot prepare/open channel because: {e.Message}");
             }
 
             return null;
+        }
+        
+        private void ConnectCallback(IAsyncResult ar)
+        {
+            try
+            {
+                // Retrieve the socket from the state object.  
+                Socket client = (Socket)ar.AsyncState;
+
+                // Complete the connection.  
+                client.EndConnect(ar);
+
+                _logger.Log($"Socket connected to {client.RemoteEndPoint}");
+
+                // Signal that the connection has been made.  
+                _connectDone.Set();
+            }
+            catch (Exception e)
+            {
+                _logger.Log("Cannot connect", e);
+            }
+        }
+        
+        private void SendCallback(IAsyncResult ar)
+        {
+            try
+            {
+                // Retrieve the socket from the state object.  
+                var client = (Socket)ar.AsyncState;
+
+                // Complete sending the data to the remote device.  
+                client.EndSend(ar);
+
+                // Signal that all bytes have been sent.  
+                _sendDone.Set();
+            }
+            catch (Exception e)
+            {
+                _logger.Log("Error while sending bytes", e);
+            }
         }
     }
 }

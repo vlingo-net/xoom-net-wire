@@ -5,7 +5,6 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-using System.Buffers;
 using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Channel
@@ -14,8 +13,5 @@ namespace Vlingo.Wire.Channel
     {
         void CloseWith<T>(RequestResponseContext<T> requestResponseContext, object data);
         void Consume<T>(RequestResponseContext<T> context, IConsumerByteBuffer buffer);
-        
-        // Experimental System.IO.Pipelines
-        void Consume<T>(RequestResponseContext<T> context, ReadOnlySequence<byte> buffer);
     }
 }

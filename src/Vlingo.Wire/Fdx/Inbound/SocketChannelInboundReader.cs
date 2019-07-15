@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading.Tasks;
+using System.Threading;
 using Vlingo.Actors;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
@@ -27,6 +27,7 @@ namespace Vlingo.Wire.Fdx.Inbound
         private readonly string _name;
         private readonly int _port;
         private bool _disposed;
+        private readonly ManualResetEvent _acceptDone;
 
         public SocketChannelInboundReader(int port, string name, int maxMessageSize, ILogger logger)
         {
@@ -36,6 +37,7 @@ namespace Vlingo.Wire.Fdx.Inbound
             _logger = logger;
             _channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _clientChannels = new List<Socket>();
+            _acceptDone = new ManualResetEvent(false);
         }
         
         //=========================================
@@ -82,17 +84,17 @@ namespace Vlingo.Wire.Fdx.Inbound
             _channel.Listen(120);
         }
 
-        public async Task ProbeChannel()
+        public void ProbeChannel()
         {
             try
             {
-                await Accept();
+                Accept();
 
                 foreach (var clientChannel in _clientChannels.ToArray())
                 {
                     if (clientChannel.Available > 0)
                     {
-                        await new SocketChannelSelectionReader(this).Read(clientChannel, new RawMessageBuilder(_maxMessageSize));
+                        new SocketChannelSelectionReader(this).Read(clientChannel, new RawMessageBuilder(_maxMessageSize));
                     }
                     
                     if (!clientChannel.IsSocketConnected())
@@ -141,13 +143,14 @@ namespace Vlingo.Wire.Fdx.Inbound
         // internal implementation
         //=========================================
         
-        private async Task Accept()
+        private void Accept()
         {
             try
             {
                 if (_channel.Poll(10000, SelectMode.SelectRead))
                 {
-                    _clientChannels.Add(await _channel.AcceptAsync());
+                    _channel.BeginAccept(AcceptCallback, _channel);
+                    _acceptDone.WaitOne();
                 }
             }
             catch (Exception e)
@@ -156,6 +159,15 @@ namespace Vlingo.Wire.Fdx.Inbound
                 Logger.Log(message, e);
                 throw;
             }
+        }
+        
+        private void AcceptCallback(IAsyncResult ar)
+        {
+            // Get the socket that handles the client request.  
+            var listener = (Socket)ar.AsyncState;  
+            var clientChannel = listener.EndAccept(ar);  
+            _clientChannels.Add(clientChannel);
+            _acceptDone.Set();
         }
     }
 }

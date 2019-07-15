@@ -11,7 +11,6 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 using Vlingo.Actors;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
@@ -24,13 +23,11 @@ namespace Vlingo.Wire.Multicast
         private bool _closed;
         private readonly Socket _channel;
         private IChannelReaderConsumer _consumer;
-        private readonly IPAddress _groupAddress;
         private readonly ILogger _logger;
         private readonly int _maxReceives;
         private readonly RawMessage _message;
         private readonly string _name;
-        private NetworkInterface _networkInterface;
-        private readonly EndPoint _ipEndPoint;
+        private EndPoint _ipEndPoint;
         private bool _disposed;
 
         public MulticastSubscriber(
@@ -59,18 +56,18 @@ namespace Vlingo.Wire.Multicast
             _channel.Blocking = false;
             _ipEndPoint = new IPEndPoint(IPAddress.Any, group.Port);
             _channel.Bind(_ipEndPoint);
-            _networkInterface = AssignNetworkInterfaceTo(_channel, networkInterfaceName);
-            _groupAddress = IPAddress.Parse(group.Address);
+            var networkInterface = AssignNetworkInterfaceTo(_channel, networkInterfaceName);
+            var groupAddress = IPAddress.Parse(@group.Address);
 
-            var p = _networkInterface.GetIPProperties().GetIPv4Properties();
-            var mcastOption = new MulticastOption(_groupAddress, p.Index);
+            var p = networkInterface.GetIPProperties().GetIPv4Properties();
+            var mcastOption = new MulticastOption(groupAddress, p.Index);
             _channel.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, mcastOption);
             _channel.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 50);
             
             _buffer = new MemoryStream(maxMessageSize);
             _message = new RawMessage(maxMessageSize);
             
-            logger.Log($"MulticastSubscriber joined: {_networkInterface.Id}");
+            logger.Log($"MulticastSubscriber joined: {networkInterface.Id}");
         }
         
         //=========================================
@@ -118,7 +115,7 @@ namespace Vlingo.Wire.Multicast
             _consumer = consumer;
         }
 
-        public async Task ProbeChannel()
+        public void ProbeChannel()
         {
             if (_closed)
             {
@@ -138,19 +135,8 @@ namespace Vlingo.Wire.Multicast
                     // _channel.Blocking = false; is not taken into account
                     if (_channel.Available > 0)
                     {
-                        var received = await _channel.ReceiveFromAsync(
-                            new ArraySegment<byte>(bytes),
-                            SocketFlags.None,
-                            _ipEndPoint);
-                        
-                        if (received.ReceivedBytes > 0)
-                        {
-                            _buffer.Write(bytes, 0, received.ReceivedBytes);
-                            _buffer.Flip();
-                            _message.From(_buffer);
-                        
-                            _consumer.Consume(_message);
-                        }
+                        var state = new StateObject(_channel, bytes);
+                        _channel.BeginReceiveFrom(bytes, 0, bytes.Length, SocketFlags.None, ref _ipEndPoint, ReceiveCallback, state);
                     }
                 }
             }
@@ -159,7 +145,7 @@ namespace Vlingo.Wire.Multicast
                 _logger.Log($"Failed to read channel selector for: '{_name}'", e);
             }
         }
-        
+
         public void Dispose()
         {
             Dispose(true);
@@ -237,6 +223,49 @@ namespace Vlingo.Wire.Multicast
             }
 
             return networkInterface;
+        }
+        
+        private void ReceiveCallback(IAsyncResult ar)
+        {
+            var state = (StateObject) ar.AsyncState;  
+            var channel = state.WorkSocket;
+            var buffer = state.Buffer;
+            
+            try
+            {
+                var bytesRead = channel.EndReceiveFrom(ar, ref _ipEndPoint);
+                if (bytesRead > 0)
+                {
+                    _buffer.Write(buffer, 0, bytesRead);
+                    _buffer.Flip();
+                    _message.From(_buffer);
+                    
+                    _consumer.Consume(_message);
+                }
+                if (channel.Available > 0)
+                {
+                    channel.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref _ipEndPoint, ReceiveCallback, state);
+                }
+            }
+            catch (SocketException e)
+            {
+                _logger.Log($"Failed to receive callback: '{_name}'", e);
+            }
+        }
+        
+        private class StateObject
+        {
+            public StateObject(Socket workSocket, byte[] buffer)
+            {
+                WorkSocket = workSocket;
+                Buffer = buffer;
+            }
+
+            // Client socket.  
+            public Socket WorkSocket { get; }
+            
+            // Receive buffer.  
+            public byte[] Buffer { get; }
         }
     }
 }

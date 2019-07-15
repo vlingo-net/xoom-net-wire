@@ -5,8 +5,6 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-using System.Threading.Tasks;
-
 namespace Vlingo.Wire.Channel
 {
     public interface IChannelReader
@@ -14,6 +12,6 @@ namespace Vlingo.Wire.Channel
         void Close();
         string Name { get; }
         void OpenFor(IChannelReaderConsumer consumer);
-        Task ProbeChannel();
+        void ProbeChannel();
     }
 }

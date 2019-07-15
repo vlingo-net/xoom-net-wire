@@ -6,7 +6,6 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
-using System.Threading.Tasks;
 using Vlingo.Actors;
 using Vlingo.Actors.TestKit;
 using Vlingo.Wire.Fdx.Inbound;

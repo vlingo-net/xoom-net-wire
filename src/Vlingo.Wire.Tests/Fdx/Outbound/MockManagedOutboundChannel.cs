@@ -7,7 +7,6 @@
 
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using Vlingo.Wire.Fdx.Outbound;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Node;
@@ -30,11 +29,10 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             Writes.Clear();
         }
 
-        public Task Write(Stream buffer)
+        public void Write(Stream buffer)
         {
             var message = RawMessage.ReadFromWithHeader(buffer);
             Writes.Add(message.AsTextMessage());
-            return Task.CompletedTask;
         }
     }
 }

@@ -6,7 +6,6 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.Net.Sockets;
-using System.Threading.Tasks;
 using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Channel
@@ -20,7 +19,7 @@ namespace Vlingo.Wire.Channel
             Dispatcher = dispatcher;
         }
 
-        public abstract Task Read(Socket channel, RawMessageBuilder builder);
+        public abstract void Read(Socket channel, RawMessageBuilder builder);
 
         protected void CloseClientResources(Socket socket)
         {

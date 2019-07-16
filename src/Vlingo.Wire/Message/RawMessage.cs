@@ -138,7 +138,7 @@ namespace Vlingo.Wire.Message
             using (MemoryStream ms = new MemoryStream())
             {
                 buffer.CopyTo(ms);
-                Array.Copy(ms.ToArray(), 0, _bytes, 0, length);
+                Array.Copy(ms.ToArray(), 0, _bytes, _index, length);
             }
 
             _index = length;
@@ -154,7 +154,7 @@ namespace Vlingo.Wire.Message
                 // this copies from the actual position to the end of the stream so for the Array.Copy we need just to start at position = 0
                 // because the call to ms.GetBuffer() will bring the remaining buffer.
                 buffer.CopyTo(ms);
-                Array.Copy(ms.GetBuffer(), 0, _bytes, 0, length);
+                Array.Copy(ms.GetBuffer(), 0, _bytes, _index, length);
             }
 
             _index = length;

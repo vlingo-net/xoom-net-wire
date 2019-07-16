@@ -279,7 +279,7 @@ namespace Vlingo.Wire.Multicast
         private void AcceptCallback(IAsyncResult ar)
         {
             // Get the socket that handles the client request.  
-            var listener = (Socket)ar.AsyncState;  
+            var listener = (Socket)ar.AsyncState;
             var clientChannel = listener.EndAccept(ar);  
             _clientReadChannels.Add(clientChannel);
             _acceptDone.Set();

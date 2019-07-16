@@ -236,15 +236,13 @@ namespace Vlingo.Wire.Multicast
                 var bytesRead = channel.EndReceiveFrom(ar, ref _ipEndPoint);
                 if (bytesRead > 0)
                 {
+                    _buffer.Clear();
+                    _message.Reset();
                     _buffer.Write(buffer, 0, bytesRead);
                     _buffer.Flip();
                     _message.From(_buffer);
                     
                     _consumer.Consume(_message);
-                }
-                if (channel.Available > 0)
-                {
-                    channel.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref _ipEndPoint, ReceiveCallback, state);
                 }
             }
             catch (SocketException e)

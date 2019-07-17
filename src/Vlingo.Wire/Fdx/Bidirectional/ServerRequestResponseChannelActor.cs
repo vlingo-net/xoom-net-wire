@@ -37,14 +37,14 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
             try
             {
-                Logger.Log($"{GetType().Name}: OPENING PORT: {port}");
+                Logger.Info($"{GetType().Name}: OPENING PORT: {port}");
                 _channel = new Socket(SocketType.Stream, ProtocolType.Tcp);
                 _channel.Bind(new IPEndPoint(IPAddress.Any, port));
                 _channel.Listen(120);
             }
             catch (Exception e)
             {
-                Logger.Log($"Failure opening socket because: {e.Message}", e);
+                Logger.Error($"Failure opening socket because: {e.Message}", e);
                 throw;
             }
 
@@ -124,7 +124,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             }
             catch (Exception e)
             {
-                Logger.Log($"Failed to close channel for: '{_name}'", e);
+                Logger.Error($"Failed to close channel for: '{_name}'", e);
             }
             
             base.Stop();
@@ -146,7 +146,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             }
             catch (Exception e)
             {
-                Logger.Log($"Failed to accept client channel for '{_name}' because: {e.Message}", e);
+                Logger.Error($"Failed to accept client channel for '{_name}' because: {e.Message}", e);
             }
         }
 

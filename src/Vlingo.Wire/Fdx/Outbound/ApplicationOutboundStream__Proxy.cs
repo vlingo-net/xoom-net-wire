@@ -14,6 +14,7 @@ namespace Vlingo.Wire.Fdx.Outbound
 {
     public class ApplicationOutboundStream__Proxy : IApplicationOutboundStream
     {
+        private const string RepresentationConclude0 = "Conclude()";
         private const string RepresentationStop1 = "Stop()";
         private const string RepresentationBroadcast2 = "Broadcast(RawMessage)";
         private const string RepresentationSendTo3 = "SendTo(RawMessage, Id)";
@@ -25,6 +26,26 @@ namespace Vlingo.Wire.Fdx.Outbound
         {
             _actor = actor;
             _mailbox = mailbox;
+        }
+        
+        public void Conclude()
+        {
+            if (!_actor.IsStopped)
+            {
+                Action<IStoppable> consumer = x => x.Conclude();
+                if (_mailbox.IsPreallocated)
+                {
+                    _mailbox.Send(_actor, consumer, null, RepresentationConclude0);
+                }
+                else
+                {
+                    _mailbox.Send(new LocalMessage<IStoppable>(_actor, consumer, RepresentationConclude0));
+                }
+            }
+            else
+            {
+                _actor.DeadLetters.FailedDelivery(new DeadLetter(_actor, RepresentationConclude0));
+            }
         }
         
         public void Stop()

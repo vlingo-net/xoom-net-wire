@@ -6,6 +6,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 {
     public class ServerRequestResponseChannel__Proxy : IServerRequestResponseChannel
     {
+        private const string RepresentationConclude0 = "Conclude()";
         private const string StartRepresentation1 = "Start()";
         private const string StopRepresentation2 = "Stop()";
         private const string CloseRepresentation3 = "Close()";
@@ -17,6 +18,26 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         {
             this.actor = actor;
             this.mailbox = mailbox;
+        }
+        
+        public void Conclude()
+        {
+            if (!actor.IsStopped)
+            {
+                Action<IStoppable> consumer = x => x.Conclude();
+                if (mailbox.IsPreallocated)
+                {
+                    mailbox.Send(actor, consumer, null, RepresentationConclude0);
+                }
+                else
+                {
+                    mailbox.Send(new LocalMessage<IStoppable>(actor, consumer, RepresentationConclude0));
+                }
+            }
+            else
+            {
+                actor.DeadLetters.FailedDelivery(new DeadLetter(actor, RepresentationConclude0));
+            }
         }
 
         public bool IsStopped => actor.IsStopped;

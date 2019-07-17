@@ -77,13 +77,12 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             {
                 try
                 {
-                    // _logger.Log("SENDING from client: " + buffer.BytesToText(0, buffer.Length) + " | " + buffer.Length);
                     preparedChannel.BeginSend(buffer, 0, buffer.Length, 0, SendCallback, preparedChannel);
                     _sendDone.WaitOne();
                 }
                 catch (Exception e)
                 {
-                    _logger.Log($"Write to socket failed because: {e.Message}", e);
+                    _logger.Error($"Write to socket failed because: {e.Message}", e);
                     CloseChannel();
                 }
             }
@@ -114,7 +113,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             }
             catch (Exception e)
             {
-                _logger.Log($"Failed to read channel selector for {_address} because: {e.Message}", e);
+                _logger.Error($"Failed to read channel selector for {_address} because: {e.Message}", e);
             }
         }
         
@@ -156,12 +155,11 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             {
                 try
                 {
-                    // _logger.Log("CLOSING Client Channel");
                     _channel.Close();
                 }
                 catch (Exception e)
                 {
-                    _logger.Log($"Failed to close channel to {_address} because: {e.Message}", e);
+                    _logger.Error($"Failed to close channel to {_address} because: {e.Message}", e);
                 }
             }
 
@@ -184,7 +182,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 }
                 else
                 {
-                    // _logger.Log("CONNECTING");
                     _channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                     _channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, _channel);
                     _connectDone.WaitOne();
@@ -198,11 +195,11 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 var message = $"{GetType().Name}: Cannot prepare/open channel because: {e.Message}";
                 if (_previousPrepareFailures == 0)
                 {
-                    _logger.Log(message, e);
+                    _logger.Error(message, e);
                 }
                 else if (_previousPrepareFailures % 20 == 0)
                 {
-                    _logger.Log($"AGAIN: {message}");
+                    _logger.Info($"AGAIN: {message}");
                 }
             }
             ++_previousPrepareFailures;
@@ -222,7 +219,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             }
             catch (Exception e)
             {
-                _logger.Log("Cannot begin receiving on the channel", e);
+                _logger.Error("Cannot begin receiving on the channel", e);
                 throw;
             }
         }
@@ -237,14 +234,14 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 // Complete the connection.  
                 client.EndConnect(ar);
 
-                _logger.Log($"Socket connected to {client.RemoteEndPoint}");
+                _logger.Info($"Socket connected to {client.RemoteEndPoint}");
 
                 // Signal that the connection has been made.  
                 _connectDone.Set();
             }
             catch (Exception e)
             {
-                _logger.Log("Cannot connect", e);
+                _logger.Error("Cannot connect", e);
             }
         }
 
@@ -263,7 +260,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             }
             catch (Exception e)
             {
-                _logger.Log("Error while sending bytes", e);
+                _logger.Error("Error while sending bytes", e);
             }
         }
 
@@ -295,7 +292,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 }
                 else
                 {
-                    // _logger.Log("RECEIVED on CLIENT: " + readBuffer.BytesToText(0, bytesRead) + " | " + pooledBuffer.Limit());
                     // All the data has arrived; put it in response.  
                     if (pooledBuffer.Limit() >= 1)
                     {
@@ -313,7 +309,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             catch (Exception e)
             {
                 pooledBuffer.Release();
-                _logger.Log("Error while receiving bytes", e);
+                _logger.Error("Error while receiving bytes", e);
                 throw;
             }
         }

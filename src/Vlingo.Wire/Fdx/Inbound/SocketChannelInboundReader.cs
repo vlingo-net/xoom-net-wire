@@ -64,7 +64,7 @@ namespace Vlingo.Wire.Fdx.Inbound
             }
             catch (Exception e)
             {
-                _logger.Log($"Failed to close channel for: '{_name}'", e);
+                _logger.Error($"Failed to close channel for: '{_name}'", e);
             }
         }
 
@@ -79,7 +79,7 @@ namespace Vlingo.Wire.Fdx.Inbound
             }
 
             _consumer = consumer;
-            Logger.Log($"{GetType().Name}: OPENING PORT: {_port}");
+            Logger.Debug($"{GetType().Name}: OPENING PORT: {_port}");
             _channel.Bind(new IPEndPoint(IPAddress.Any, _port));
             _channel.Listen(120);
         }
@@ -106,7 +106,7 @@ namespace Vlingo.Wire.Fdx.Inbound
             }
             catch (Exception e)
             {
-                Logger.Log($"Failed to read channel selector for: '{_name}' because: {e.Message}", e);
+                Logger.Error($"Failed to read channel selector for: '{_name}' because: {e.Message}", e);
             }
         }
 
@@ -156,7 +156,7 @@ namespace Vlingo.Wire.Fdx.Inbound
             catch (Exception e)
             {
                 var message = $"Failed to accept client socket for {_name} because: {e.Message}";
-                Logger.Log(message, e);
+                Logger.Error(message, e);
                 throw;
             }
         }

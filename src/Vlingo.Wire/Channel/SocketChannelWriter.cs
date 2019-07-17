@@ -37,7 +37,7 @@ namespace Vlingo.Wire.Channel
                 } 
                 catch (Exception e)
                 {
-                    _logger.Log($"Channel close failed because: {e.Message}", e);
+                    _logger.Error($"Channel close failed because: {e.Message}", e);
                 }
             }
             
@@ -73,7 +73,7 @@ namespace Vlingo.Wire.Channel
             }
             catch (Exception e)
             {
-                _logger.Log($"Write to channel failed because: {e.Message}", e);
+                _logger.Error($"Write to channel failed because: {e.Message}", e);
                 Close();
             }
 
@@ -102,7 +102,7 @@ namespace Vlingo.Wire.Channel
             }
             catch (Exception e)
             {
-                _logger.Log($"{this}: Failed to prepare channel because: {e.Message}", e);
+                _logger.Error($"{this}: Failed to prepare channel because: {e.Message}", e);
                 Close();
             }
 

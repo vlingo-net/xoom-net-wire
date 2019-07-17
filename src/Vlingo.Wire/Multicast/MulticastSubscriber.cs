@@ -67,7 +67,7 @@ namespace Vlingo.Wire.Multicast
             _buffer = new MemoryStream(maxMessageSize);
             _message = new RawMessage(maxMessageSize);
             
-            logger.Log($"MulticastSubscriber joined: {networkInterface.Id}");
+            logger.Info($"MulticastSubscriber joined: {networkInterface.Id}");
         }
         
         //=========================================
@@ -101,7 +101,7 @@ namespace Vlingo.Wire.Multicast
             }
             catch (Exception e)
             {
-                _logger.Log($"Failed to close channel for: '{_name}'", e);
+                _logger.Error($"Failed to close channel for: '{_name}'", e);
             }
         }
 
@@ -142,7 +142,7 @@ namespace Vlingo.Wire.Multicast
             }
             catch (SocketException e)
             {
-                _logger.Log($"Failed to read channel selector for: '{_name}'", e);
+                _logger.Error($"Failed to read channel selector for: '{_name}'", e);
             }
         }
 
@@ -247,7 +247,7 @@ namespace Vlingo.Wire.Multicast
             }
             catch (SocketException e)
             {
-                _logger.Log($"Failed to receive callback: '{_name}'", e);
+                _logger.Error($"Failed to receive callback: '{_name}'", e);
             }
         }
         

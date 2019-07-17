@@ -46,7 +46,7 @@ namespace Vlingo.Wire.Fdx.Outbound
                 }
                 catch (Exception e)
                 {
-                    _logger.Log($"Close of channel to {_node.Id} failed for because: {e.Message}", e);
+                    _logger.Error($"Close of channel to {_node.Id} failed for because: {e.Message}", e);
                 }
             }
         }
@@ -70,7 +70,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             }
             catch (Exception e)
             {
-                _logger.Log($"Write to {_node} failed because: {e.Message}", e);
+                _logger.Error($"Write to {_node} failed because: {e.Message}", e);
                 Close();
             }
         }
@@ -118,7 +118,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             catch (Exception e)
             {
                 Close();
-                _logger.Log($"{GetType().Name}: Cannot prepare/open channel because: {e.Message}");
+                _logger.Error($"{GetType().Name}: Cannot prepare/open channel because: {e.Message}");
             }
 
             return null;
@@ -134,14 +134,14 @@ namespace Vlingo.Wire.Fdx.Outbound
                 // Complete the connection.  
                 client.EndConnect(ar);
 
-                _logger.Log($"Socket connected to {client.RemoteEndPoint}");
+                _logger.Debug($"Socket connected to {client.RemoteEndPoint}");
 
                 // Signal that the connection has been made.  
                 _connectDone.Set();
             }
             catch (Exception e)
             {
-                _logger.Log("Cannot connect", e);
+                _logger.Error("Cannot connect", e);
             }
         }
         
@@ -160,7 +160,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             }
             catch (Exception e)
             {
-                _logger.Log("Error while sending bytes", e);
+                _logger.Error("Error while sending bytes", e);
             }
         }
     }

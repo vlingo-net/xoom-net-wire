@@ -90,7 +90,7 @@ namespace Vlingo.Wire.Multicast
             }
             catch (Exception e)
             {
-                _logger.Log($"Failed to close multicast publisher selector for: '{_name}'", e);
+                _logger.Error($"Failed to close multicast publisher selector for: '{_name}'", e);
             }
             
             try
@@ -103,7 +103,7 @@ namespace Vlingo.Wire.Multicast
             }
             catch (Exception e)
             {
-                _logger.Log($"Failed to close multicast reader channel for: '{_name}'", e);
+                _logger.Error($"Failed to close multicast reader channel for: '{_name}'", e);
             }
         }
 
@@ -121,7 +121,7 @@ namespace Vlingo.Wire.Multicast
             }
             catch (SocketException e)
             {
-                _logger.Log($"Failed to read channel selector for: '{_name}'", e);
+                _logger.Error($"Failed to read channel selector for: '{_name}'", e);
             }
         }
 
@@ -206,7 +206,7 @@ namespace Vlingo.Wire.Multicast
             }
             catch (Exception e)
             {
-                Logger.Log($"Failed to read channel selector for: '{_name}' because: {e.Message}", e);
+                Logger.Error($"Failed to read channel selector for: '{_name}' because: {e.Message}", e);
             }
         }
         
@@ -223,7 +223,7 @@ namespace Vlingo.Wire.Multicast
             catch (Exception e)
             {
                 var message = $"Failed to accept client socket for {_name} because: {e.Message}";
-                Logger.Log(message, e);
+                Logger.Error(message, e);
                 throw;
             }
         }

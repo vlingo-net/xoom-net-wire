@@ -55,7 +55,7 @@ namespace Vlingo.Wire.Fdx.Inbound
                 return;
             }
             
-            Logger.Log($"Inbound stream listening: for '{_reader.Name}'");
+            Logger.Debug($"Inbound stream listening: for '{_reader.Name}'");
             
             try 
             {

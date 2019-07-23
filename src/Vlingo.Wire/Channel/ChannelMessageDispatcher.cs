@@ -37,7 +37,7 @@ namespace Vlingo.Wire.Channel
                 }
                 catch (Exception e)
                 {
-                    Logger.Log($"Cannot dispatch message for: '{Name}'", e);
+                    Logger.Error($"Cannot dispatch message for: '{Name}'", e);
                 }
 
                 builder.PrepareForNextMessage();

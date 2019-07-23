@@ -5,6 +5,7 @@ namespace Vlingo.Wire.Fdx.Inbound
 {
     public class InboundStream__Proxy : IInboundStream
     {
+        private const string RepresentationConclude0 = "Conclude()";
         private const string StartRepresentation1 = "Start()";
         private const string StopRepresentation2 = "Stop()";
 
@@ -15,6 +16,26 @@ namespace Vlingo.Wire.Fdx.Inbound
         {
             this.actor = actor;
             this.mailbox = mailbox;
+        }
+        
+        public void Conclude()
+        {
+            if (!actor.IsStopped)
+            {
+                Action<IStoppable> consumer = x => x.Conclude();
+                if (mailbox.IsPreallocated)
+                {
+                    mailbox.Send(actor, consumer, null, RepresentationConclude0);
+                }
+                else
+                {
+                    mailbox.Send(new LocalMessage<IStoppable>(actor, consumer, RepresentationConclude0));
+                }
+            }
+            else
+            {
+                actor.DeadLetters.FailedDelivery(new DeadLetter(actor, RepresentationConclude0));
+            }
         }
 
         public bool IsStopped => false;

@@ -78,12 +78,12 @@ namespace Vlingo.Wire.Channel
             }
             catch (ObjectDisposedException e)
             {
-                Logger.Log($"The underlying channel for {_name} is closed. This is certainly because Actor was stopped.", e);
+                Logger.Error($"The underlying channel for {_name} is closed. This is certainly because Actor was stopped.", e);
             }
             catch (Exception e)
             {
                 var message = $"Failed to accept client socket for {_name} because: {e.Message}";
-                Logger.Log(message, e);
+                Logger.Error(message, e);
                 throw;
             }
         }
@@ -100,7 +100,7 @@ namespace Vlingo.Wire.Channel
             }
             catch (Exception e)
             {
-                Logger.Log($"Failed to ProbeChannel for {_name} because: {e.Message}", e);
+                Logger.Error($"Failed to ProbeChannel for {_name} because: {e.Message}", e);
             }
         }
 
@@ -118,7 +118,7 @@ namespace Vlingo.Wire.Channel
             }
             catch (Exception e)
             {
-                Logger.Log($"Failed to close client context '{_context.Id}' socket for {_name} while stopping because: {e.Message}", e);
+                Logger.Error($"Failed to close client context '{_context.Id}' socket for {_name} while stopping because: {e.Message}", e);
             }
         }
         
@@ -170,7 +170,7 @@ namespace Vlingo.Wire.Channel
             }
             catch (Exception e)
             {
-                Logger.Log($"Failed client channel processing for {_name} because: {e.Message}", e);
+                Logger.Error($"Failed client channel processing for {_name} because: {e.Message}", e);
             }
         }
 
@@ -225,7 +225,7 @@ namespace Vlingo.Wire.Channel
             }
             catch (Exception e)
             {
-                Logger.Log($"Failed to write buffer for {_name} with channel {clientChannel.RemoteEndPoint} because: {e.Message}", e);
+                Logger.Error($"Failed to write buffer for {_name} with channel {clientChannel.RemoteEndPoint} because: {e.Message}", e);
             }
             finally
             {
@@ -282,7 +282,7 @@ namespace Vlingo.Wire.Channel
             {
                 // likely a forcible close by the client,
                 // so force close and cleanup
-                Logger.Log("Error while reading from the channel", e);
+                Logger.Error("Error while reading from the channel", e);
             }
         }
         
@@ -306,7 +306,7 @@ namespace Vlingo.Wire.Channel
 
             } catch (Exception e)
             {
-                Logger.Log("Error while sending", e);
+                Logger.Error("Error while sending", e);
             }  
         }
 
@@ -361,7 +361,7 @@ namespace Vlingo.Wire.Channel
                 }
                 catch (Exception e)
                 {
-                    _parent.Logger.Log($"Failed to close client channel for {_parent._name} because: {e.Message}", e);
+                    _parent.Logger.Error($"Failed to close client channel for {_parent._name} because: {e.Message}", e);
                 }
             }
 

@@ -15,17 +15,21 @@ using Vlingo.Wire.Node;
 
 namespace Vlingo.Wire.Fdx.Bidirectional
 {
-    public class ClientRequestResponseChannel : IRequestSenderChannel, IResponseListenerChannel, IDisposable
+    public abstract class ClientRequestResponseChannel : IRequestSenderChannel, IResponseListenerChannel, IDisposable
     {
-        private readonly Address _address;
+        protected readonly Address Address;
+        protected readonly IResponseChannelConsumer Consumer;
+        protected readonly ILogger Logger;
+        protected ByteBufferPool ReadBufferPool;
+        protected int PreviousPrepareFailures;
+        
         private Socket _channel;
         private bool _closed;
-        private readonly IResponseChannelConsumer _consumer;
-        private readonly ILogger _logger;
-        private int _previousPrepareFailures;
-        private readonly ByteBufferPool _readBufferPool;
+        
         private bool _disposed;
-        private readonly ManualResetEvent _connectDone;
+        private readonly int _maxBufferPoolSize;
+        private int _maxMessageSize;
+        
         private readonly ManualResetEvent _sendDone;
         private readonly ManualResetEvent _receiveDone;
 
@@ -36,14 +40,14 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             int maxMessageSize,
             ILogger logger)
         {
-            _address = address;
-            _consumer = consumer;
-            _logger = logger;
+            Address = address;
+            Consumer = consumer;
+            _maxBufferPoolSize = maxBufferPoolSize;
+            _maxMessageSize = maxMessageSize;
+            Logger = logger;
             _closed = false;
             _channel = null;
-            _previousPrepareFailures = 0;
-            _readBufferPool = new ByteBufferPool(maxBufferPoolSize, maxMessageSize);
-            _connectDone = new ManualResetEvent(false);
+            PreviousPrepareFailures = 0;
             _sendDone = new ManualResetEvent(false);
             _receiveDone = new ManualResetEvent(false);
         }
@@ -68,7 +72,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         public void RequestWith(byte[] buffer)
         {
             Socket preparedChannel = null;
-            while (preparedChannel == null && _previousPrepareFailures < 10)
+            while (preparedChannel == null && PreviousPrepareFailures < 10)
             {
                 preparedChannel = PreparedChannel();
             }
@@ -82,7 +86,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 }
                 catch (Exception e)
                 {
-                    _logger.Error($"Write to socket failed because: {e.Message}", e);
+                    Logger.Error($"Write to socket failed because: {e.Message}", e);
                     CloseChannel();
                 }
             }
@@ -102,7 +106,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             try
             {
                 Socket channel = null;
-                while (channel == null && _previousPrepareFailures < 10)
+                while (channel == null && PreviousPrepareFailures < 10)
                 {
                     channel = PreparedChannel();
                 }
@@ -113,7 +117,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             }
             catch (Exception e)
             {
-                _logger.Error($"Failed to read channel selector for {_address} because: {e.Message}", e);
+                Logger.Error($"Failed to read channel selector for {Address} because: {e.Message}", e);
             }
         }
         
@@ -140,7 +144,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             }
       
             _disposed = true;
-            _connectDone.Dispose();
             _receiveDone.Dispose();
             _sendDone.Dispose();
         }
@@ -149,7 +152,15 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         // internal implementation
         //=========================================
 
-        private void CloseChannel()
+        protected Socket Channel => _channel;
+
+        protected int MaxMessageSize
+        {
+            get => _maxMessageSize;
+            set => _maxMessageSize = value;
+        }
+
+        protected void CloseChannel()
         {
             if (_channel != null)
             {
@@ -159,56 +170,25 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 }
                 catch (Exception e)
                 {
-                    _logger.Error($"Failed to close channel to {_address} because: {e.Message}", e);
+                    Logger.Error($"Failed to close channel to {Address} because: {e.Message}", e);
                 }
             }
 
             _channel = null;
         }
+        
+        protected abstract Socket PreparedChannelDelegate();
 
         private Socket PreparedChannel()
         {
-            try
-            {
-                if (_channel != null)
-                {
-                    if (_channel.IsSocketConnected())
-                    {
-                        _previousPrepareFailures = 0;
-                        return _channel;
-                    }
-
-                    CloseChannel();
-                }
-                else
-                {
-                    _channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    _channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, _channel);
-                    _connectDone.WaitOne();
-                    _previousPrepareFailures = 0;
-                    return _channel;
-                }
-            }
-            catch (Exception e)
-            {
-                CloseChannel();
-                var message = $"{GetType().Name}: Cannot prepare/open channel because: {e.Message}";
-                if (_previousPrepareFailures == 0)
-                {
-                    _logger.Error(message, e);
-                }
-                else if (_previousPrepareFailures % 20 == 0)
-                {
-                    _logger.Info($"AGAIN: {message}");
-                }
-            }
-            ++_previousPrepareFailures;
-            return null;
+            var prepared = PreparedChannelDelegate();
+            _channel = prepared;
+            return prepared;
         }
-        
+
         private void ReadConsume(Socket channel)
         {
-            var pooledBuffer = _readBufferPool.AccessFor("client-response", 25);
+            var pooledBuffer = PooledByteBuffer();
             var readBuffer = pooledBuffer.ToArray();
             try
             {
@@ -219,12 +199,21 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             }
             catch (Exception e)
             {
-                _logger.Error("Cannot begin receiving on the channel", e);
+                Logger.Error("Cannot begin receiving on the channel", e);
                 throw;
             }
         }
+        
+        private IConsumerByteBuffer PooledByteBuffer()
+        {
+            if (ReadBufferPool == null)
+            {
+                ReadBufferPool = new ByteBufferPool(_maxBufferPoolSize, _maxMessageSize);
+            }
+            return ReadBufferPool.AccessFor("client-response", 25);
+        }
 
-        private void ConnectCallback(IAsyncResult ar)
+        /*private void ConnectCallback(IAsyncResult ar)
         {
             try
             {
@@ -234,16 +223,16 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 // Complete the connection.  
                 client.EndConnect(ar);
 
-                _logger.Info($"Socket connected to {client.RemoteEndPoint}");
+                Logger.Info($"Socket connected to {client.RemoteEndPoint}");
 
                 // Signal that the connection has been made.  
                 _connectDone.Set();
             }
             catch (Exception e)
             {
-                _logger.Error("Cannot connect", e);
+                Logger.Error("Cannot connect", e);
             }
-        }
+        }*/
 
         private void SendCallback(IAsyncResult ar)
         {
@@ -260,7 +249,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             }
             catch (Exception e)
             {
-                _logger.Error("Error while sending bytes", e);
+                Logger.Error("Error while sending bytes", e);
             }
         }
 
@@ -295,7 +284,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                     // All the data has arrived; put it in response.  
                     if (pooledBuffer.Limit() >= 1)
                     {
-                        _consumer.Consume(pooledBuffer.Flip());
+                        Consumer.Consume(pooledBuffer.Flip());
                     }
                     else
                     {
@@ -309,14 +298,14 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             catch (Exception e)
             {
                 pooledBuffer.Release();
-                _logger.Error("Error while receiving bytes", e);
+                Logger.Error("Error while receiving bytes", e);
                 throw;
             }
         }
 
         private class StateObject
         {
-            public StateObject(Socket workSocket, byte[] buffer, ByteBufferPool.PooledByteBuffer pooledByteBuffer)
+            public StateObject(Socket workSocket, byte[] buffer, IConsumerByteBuffer pooledByteBuffer)
             {
                 WorkSocket = workSocket;
                 Buffer = buffer;
@@ -327,7 +316,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
             public byte[] Buffer { get; }
 
-            public ByteBufferPool.PooledByteBuffer PooledByteBuffer { get; }
+            public IConsumerByteBuffer PooledByteBuffer { get; }
         }
     }
 }

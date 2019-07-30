@@ -21,14 +21,14 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
     {
         private static int _poolSize = 100;
         
-        private SecureClientRequestResponseChannel _client;
-        private World _world;
-        private TestSecureResponseChannelConsumer _clientConsumer;
+        private IClientRequestResponseChannel _client;
+        private readonly World _world;
+        private readonly TestSecureResponseChannelConsumer _clientConsumer;
 
         [Fact]
         public void TestThatSecureClientRequestResponse()
         {
-            var address = Address.From(Host.Of("google.com"), 443, AddressType.None);
+            var address = Address.From(Host.Of("www.google.com"), 443, AddressType.None);
             _client = new SecureClientRequestResponseChannel(address, _clientConsumer, _poolSize, 10240, _world.DefaultLogger);
 
             _clientConsumer.CurrentExpectedResponseLength = 500;

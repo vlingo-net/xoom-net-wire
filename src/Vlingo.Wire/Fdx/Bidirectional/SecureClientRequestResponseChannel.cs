@@ -16,7 +16,7 @@ using Vlingo.Wire.Node;
 
 namespace Vlingo.Wire.Fdx.Bidirectional
 {
-    public class SecureClientRequestResponseChannel : IRequestSenderChannel, IResponseListenerChannel, IDisposable
+    public class SecureClientRequestResponseChannel : IClientRequestResponseChannel, IDisposable
     {
         private readonly Address _address;
         private Socket _channel;

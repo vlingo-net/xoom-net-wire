@@ -8,6 +8,7 @@
 using System;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Vlingo.Actors;
 using Vlingo.Wire.Channel;
@@ -262,6 +263,11 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 sslStream.EndAuthenticateAsClient(ar);
 
                 _logger.Info($"Authenticate succeeded");
+                DisplaySecurityLevel(sslStream);
+                DisplaySecurityServices(sslStream);
+                DisplayCertificateInformation(sslStream);
+                DisplayStreamProperties(sslStream);
+                DisplayUsage();
 
                 _authenticateDone.Set();
             }
@@ -334,6 +340,60 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 _logger.Error("Error while receiving bytes", e);
                 throw;
             }
+        }
+        
+        private void DisplaySecurityLevel(SslStream stream)
+        {
+            _logger.Debug($"Cipher: {stream.CipherAlgorithm} strength {stream.CipherStrength}");
+            _logger.Debug($"Hash: {stream.HashAlgorithm} strength {stream.HashStrength}");
+            _logger.Debug($"Key exchange: {stream.KeyExchangeAlgorithm} strength {stream.KeyExchangeStrength}");
+            _logger.Debug($"Protocol: {stream.SslProtocol}");
+        }
+        
+        private void DisplaySecurityServices(SslStream stream)
+        {
+            _logger.Debug($"Is authenticated: {stream.IsAuthenticated} as server? {stream.IsServer}");
+            _logger.Debug($"IsSigned: {stream.IsSigned}");
+            _logger.Debug($"Is Encrypted: {stream.IsEncrypted}");
+        }
+        
+        private void DisplayStreamProperties(SslStream stream)
+        {
+            _logger.Debug($"Can read: {stream.CanRead}, write {stream.CanWrite}");
+            _logger.Debug($"Can timeout: {stream.CanTimeout}");
+        }
+        
+        private void DisplayCertificateInformation(SslStream stream)
+        {
+            _logger.Debug($"Certificate revocation list checked: {stream.CheckCertRevocationStatus}");
+                
+            X509Certificate localCertificate = stream.LocalCertificate;
+            if (stream.LocalCertificate != null)
+            {
+                _logger.Debug(
+                    $"Local cert was issued to {localCertificate.Subject} and is valid from {localCertificate.GetEffectiveDateString()} until {localCertificate.GetExpirationDateString()}.");
+            }
+            else
+            {
+                _logger.Debug("Local certificate is null.");
+            }
+            // Display the properties of the client's certificate.
+            X509Certificate remoteCertificate = stream.RemoteCertificate;
+            
+            if (stream.RemoteCertificate != null)
+            {
+                _logger.Debug($"Remote cert was issued to {remoteCertificate.Subject} and is valid from {remoteCertificate.GetEffectiveDateString()} until {remoteCertificate.GetExpirationDateString()}.");
+            }
+            else
+            {
+                _logger.Debug("Remote certificate is null.");
+            }
+        }
+        
+        private void DisplayUsage()
+        { 
+            _logger.Debug("To start the server specify:");
+            _logger.Debug("serverSync certificateFile.cer");
         }
 
         private class StateObject

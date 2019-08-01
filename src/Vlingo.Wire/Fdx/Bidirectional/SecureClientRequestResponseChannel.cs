@@ -6,7 +6,9 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
+using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Vlingo.Actors;
 using Vlingo.Wire.Channel;
@@ -15,10 +17,12 @@ using Vlingo.Wire.Node;
 
 namespace Vlingo.Wire.Fdx.Bidirectional
 {
-    public class ClientRequestResponseChannel : IRequestSenderChannel, IResponseListenerChannel, IDisposable
+    public class SecureClientRequestResponseChannel : IClientRequestResponseChannel, IDisposable
     {
         private readonly Address _address;
         private Socket _channel;
+        private SslStream _sslStream;
+        private TcpClient _tcpClient;
         private bool _closed;
         private readonly IResponseChannelConsumer _consumer;
         private readonly ILogger _logger;
@@ -26,10 +30,11 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private readonly ByteBufferPool _readBufferPool;
         private bool _disposed;
         private readonly ManualResetEvent _connectDone;
+        private readonly ManualResetEvent _authenticateDone;
         private readonly ManualResetEvent _sendDone;
         private readonly ManualResetEvent _receiveDone;
 
-        public ClientRequestResponseChannel(
+        public SecureClientRequestResponseChannel(
             Address address,
             IResponseChannelConsumer consumer,
             int maxBufferPoolSize,
@@ -44,6 +49,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _previousPrepareFailures = 0;
             _readBufferPool = new ByteBufferPool(maxBufferPoolSize, maxMessageSize);
             _connectDone = new ManualResetEvent(false);
+            _authenticateDone = new ManualResetEvent(false);
             _sendDone = new ManualResetEvent(false);
             _receiveDone = new ManualResetEvent(false);
         }
@@ -67,17 +73,16 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
         public void RequestWith(byte[] buffer)
         {
-            Socket preparedChannel = null;
-            while (preparedChannel == null && _previousPrepareFailures < 10)
+            while (_sslStream == null && _previousPrepareFailures < 10)
             {
-                preparedChannel = PreparedChannel();
+                _sslStream = PreparedChannel();
             }
 
-            if (preparedChannel != null)
+            if (_sslStream != null)
             {
                 try
                 {
-                    preparedChannel.BeginSend(buffer, 0, buffer.Length, 0, SendCallback, preparedChannel);
+                    _sslStream.BeginWrite(buffer, 0, buffer.Length, SendCallback, _sslStream);
                     _sendDone.WaitOne();
                 }
                 catch (Exception e)
@@ -101,14 +106,13 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
             try
             {
-                Socket channel = null;
-                while (channel == null && _previousPrepareFailures < 10)
+                while (_sslStream == null && _previousPrepareFailures < 10)
                 {
-                    channel = PreparedChannel();
+                    _sslStream = PreparedChannel();
                 }
-                if (channel != null)
+                if (_sslStream != null)
                 {
-                    ReadConsume(channel);
+                    ReadConsume(_sslStream);
                 }
             }
             catch (Exception e)
@@ -141,8 +145,10 @@ namespace Vlingo.Wire.Fdx.Bidirectional
       
             _disposed = true;
             _connectDone.Dispose();
+            _authenticateDone.Dispose();
             _receiveDone.Dispose();
             _sendDone.Dispose();
+            _sslStream.Dispose();
         }
 
         //=========================================
@@ -166,7 +172,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _channel = null;
         }
 
-        private Socket PreparedChannel()
+        private SslStream PreparedChannel()
         {
             try
             {
@@ -175,18 +181,21 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                     if (_channel.IsSocketConnected())
                     {
                         _previousPrepareFailures = 0;
-                        return _channel;
+                        return _sslStream;
                     }
 
                     CloseChannel();
                 }
                 else
                 {
-                    _channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    _channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, _channel);
+                    _tcpClient = new TcpClient();
+                    _tcpClient.BeginConnect(_address.HostName, _address.Port, ConnectCallback, _tcpClient);
                     _connectDone.WaitOne();
+                    _sslStream = new SslStream(_tcpClient.GetStream(), false, (sender, certificate, chain, errors) => true);
+                    _sslStream.BeginAuthenticateAsClient(_address.HostName, AuthenticateCallback, _sslStream);
+                    _authenticateDone.WaitOne();
                     _previousPrepareFailures = 0;
-                    return _channel;
+                    return _sslStream;
                 }
             }
             catch (Exception e)
@@ -205,16 +214,16 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             ++_previousPrepareFailures;
             return null;
         }
-        
-        private void ReadConsume(Socket channel)
+
+        private void ReadConsume(SslStream sslStream)
         {
             var pooledBuffer = _readBufferPool.AccessFor("client-response", 25);
             var readBuffer = pooledBuffer.ToArray();
             try
             {
                 // Create the state object.  
-                StateObject state = new StateObject(channel, readBuffer, pooledBuffer);
-                channel.BeginReceive(readBuffer, 0, readBuffer.Length, 0, ReceiveCallback, state);
+                StateObject state = new StateObject(sslStream, readBuffer, pooledBuffer);
+                sslStream.BeginRead(readBuffer, 0, readBuffer.Length, ReceiveCallback, state);
                 _receiveDone.WaitOne();
             }
             catch (Exception e)
@@ -228,15 +237,15 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         {
             try
             {
-                // Retrieve the socket from the state object.  
-                Socket client = (Socket)ar.AsyncState;
+                // Retrieve the socket from the state object.
+                var client = (TcpClient)ar.AsyncState;
 
-                // Complete the connection.  
+                // Complete the connection.
                 client.EndConnect(ar);
 
-                _logger.Info($"Socket connected to {client.RemoteEndPoint}");
+                _logger.Info($"Socket connected to {client.Client.RemoteEndPoint}");
 
-                // Signal that the connection has been made.  
+                // Signal that the connection has been made.
                 _connectDone.Set();
             }
             catch (Exception e)
@@ -244,18 +253,38 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 _logger.Error("Cannot connect", e);
             }
         }
+        
+        private void AuthenticateCallback(IAsyncResult ar)
+        {
+            try
+            {
+                var sslStream = (SslStream)ar.AsyncState;
+
+                sslStream.EndAuthenticateAsClient(ar);
+
+                _logger.Info($"Authenticate succeeded");
+                DisplaySecurityLevel(sslStream);
+                DisplaySecurityServices(sslStream);
+                DisplayCertificateInformation(sslStream);
+                DisplayStreamProperties(sslStream);
+                DisplayUsage();
+
+                _authenticateDone.Set();
+            }
+            catch (Exception e)
+            {
+                _logger.Error("Cannot authenticate", e);
+            }
+        }
 
         private void SendCallback(IAsyncResult ar)
         {
             try
             {
-                // Retrieve the socket from the state object.  
-                var client = (Socket)ar.AsyncState;
+                var sslStream = (SslStream)ar.AsyncState;
 
-                // Complete sending the data to the remote device.  
-                client.EndSend(ar);
+                sslStream.EndWrite(ar);
 
-                // Signal that all bytes have been sent.  
                 _sendDone.Set();
             }
             catch (Exception e)
@@ -269,26 +298,25 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             // Retrieve the state object and the client socket   
             // from the asynchronous state object.  
             var state = (StateObject)ar.AsyncState;
-            var client = state.WorkSocket;
+            var sslStream = state.SslStream;
             var pooledBuffer = state.PooledByteBuffer;
             var readBuffer = state.Buffer;
 
             try
             {
                 // Read data from the remote device.  
-                int bytesRead = client.EndReceive(ar);
+                int bytesRead = sslStream.EndRead(ar);
 
                 if (bytesRead > 0)
                 {
                     // There might be more data, so store the data received so far.  
                     pooledBuffer.Put(readBuffer, 0, bytesRead);
                 }
-
-                int bytesRemain = client.Available;
-                if (bytesRemain > 0)
+                
+                if (_tcpClient.Available > 0)
                 {
                     // Get the rest of the data.  
-                    client.BeginReceive(readBuffer,0,readBuffer.Length,0, ReceiveCallback, state);
+                    sslStream.BeginRead(readBuffer,0,readBuffer.Length, ReceiveCallback, state);
                 }
                 else
                 {
@@ -313,17 +341,71 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 throw;
             }
         }
+        
+        private void DisplaySecurityLevel(SslStream stream)
+        {
+            _logger.Debug($"Cipher: {stream.CipherAlgorithm} strength {stream.CipherStrength}");
+            _logger.Debug($"Hash: {stream.HashAlgorithm} strength {stream.HashStrength}");
+            _logger.Debug($"Key exchange: {stream.KeyExchangeAlgorithm} strength {stream.KeyExchangeStrength}");
+            _logger.Debug($"Protocol: {stream.SslProtocol}");
+        }
+        
+        private void DisplaySecurityServices(SslStream stream)
+        {
+            _logger.Debug($"Is authenticated: {stream.IsAuthenticated} as server? {stream.IsServer}");
+            _logger.Debug($"IsSigned: {stream.IsSigned}");
+            _logger.Debug($"Is Encrypted: {stream.IsEncrypted}");
+        }
+        
+        private void DisplayStreamProperties(SslStream stream)
+        {
+            _logger.Debug($"Can read: {stream.CanRead}, write {stream.CanWrite}");
+            _logger.Debug($"Can timeout: {stream.CanTimeout}");
+        }
+        
+        private void DisplayCertificateInformation(SslStream stream)
+        {
+            _logger.Debug($"Certificate revocation list checked: {stream.CheckCertRevocationStatus}");
+                
+            X509Certificate localCertificate = stream.LocalCertificate;
+            if (stream.LocalCertificate != null)
+            {
+                _logger.Debug(
+                    $"Local cert was issued to {localCertificate.Subject} and is valid from {localCertificate.GetEffectiveDateString()} until {localCertificate.GetExpirationDateString()}.");
+            }
+            else
+            {
+                _logger.Debug("Local certificate is null.");
+            }
+            // Display the properties of the client's certificate.
+            X509Certificate remoteCertificate = stream.RemoteCertificate;
+            
+            if (stream.RemoteCertificate != null)
+            {
+                _logger.Debug($"Remote cert was issued to {remoteCertificate.Subject} and is valid from {remoteCertificate.GetEffectiveDateString()} until {remoteCertificate.GetExpirationDateString()}.");
+            }
+            else
+            {
+                _logger.Debug("Remote certificate is null.");
+            }
+        }
+        
+        private void DisplayUsage()
+        { 
+            _logger.Debug("To start the server specify:");
+            _logger.Debug("serverSync certificateFile.cer");
+        }
 
         private class StateObject
         {
-            public StateObject(Socket workSocket, byte[] buffer, ByteBufferPool.PooledByteBuffer pooledByteBuffer)
+            public StateObject(SslStream sslStream, byte[] buffer, ByteBufferPool.PooledByteBuffer pooledByteBuffer)
             {
-                WorkSocket = workSocket;
+                SslStream = sslStream;
                 Buffer = buffer;
                 PooledByteBuffer = pooledByteBuffer;
             }
             
-            public Socket WorkSocket { get; }
+            public SslStream SslStream { get; }
 
             public byte[] Buffer { get; }
 

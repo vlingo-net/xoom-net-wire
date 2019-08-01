@@ -22,6 +22,7 @@ namespace Vlingo.Wire.Message
         {
             _id = id;
             _buffer = new MemoryStream(maxBufferSize);
+            _buffer.SetLength(maxBufferSize);
         }
         
         public static BasicConsumerByteBuffer Allocate(int id, int maxBufferSize) => new BasicConsumerByteBuffer(id, maxBufferSize);

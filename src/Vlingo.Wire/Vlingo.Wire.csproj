@@ -6,7 +6,7 @@
 
     <!-- NuGet Metadata -->
     <IsPackable>true</IsPackable>
-    <PackageVersion>0.5.2</PackageVersion>
+    <PackageVersion>0.5.3</PackageVersion>
     <PackageId>Vlingo.Wire</PackageId>
     <Authors>Vlingo</Authors>
     <Description>

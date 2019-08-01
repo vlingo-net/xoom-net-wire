@@ -8,6 +8,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Vlingo.Actors;
 using Vlingo.Wire.Fdx.Bidirectional;
 using Vlingo.Wire.Message;
@@ -29,18 +30,23 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         public void TestThatSecureClientRequestResponse()
         {
             var address = Address.From(Host.Of("www.google.com"), 443, AddressType.None);
-            _client = new SecureClientRequestResponseChannel(address, _clientConsumer, _poolSize, 10240, _world.DefaultLogger);
+            _client = new SecureClientRequestResponseChannel(address, _clientConsumer, _poolSize, 65536, _world.DefaultLogger);
 
             _clientConsumer.CurrentExpectedResponseLength = 500;
-            _clientConsumer.AfterCompleting(1);
+            var access = _clientConsumer.AfterCompleting(1);
 
-            var get = "GET / HTTP/1.1\nHost: google.com\n\n";
+            var get = "GET / HTTP/1.1\nHost: www.google.com\nConnection: close\n\n";
             var buffer = BasicConsumerByteBuffer.Allocate(1, 1000);
             buffer.Put(Encoding.UTF8.GetBytes(get));
             buffer.Flip();
             _client.RequestWith(buffer.ToArray());
 
-            _client.ProbeChannel();
+            for (int count = 0; count < 100; ++count)
+            {
+                if (access.TotalWrites > 0) break;
+                _client.ProbeChannel();
+                Thread.Sleep(100);
+            }
 
             Assert.True(_clientConsumer.GetConsumeCount() > 0);
             Assert.Contains("google.com", _clientConsumer.GetResponses().First());

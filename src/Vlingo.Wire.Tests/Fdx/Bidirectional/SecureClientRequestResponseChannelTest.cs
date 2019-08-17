@@ -57,7 +57,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             var converter = new Converter(output);
             Console.SetOut(converter);
 
-            _world = World.StartWithDefault("test-request-response-channel");
+            _world = World.StartWithDefaults("test-request-response-channel");
 
             _clientConsumer = new TestSecureResponseChannelConsumer();
         }

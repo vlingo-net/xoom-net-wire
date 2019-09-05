@@ -26,7 +26,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
         [Fact]
         public void TestInbound()
         {
-            _interest.TestResult.UntilStops = TestUntil.Happenings(1);
+            _interest.TestResult.UntilStops = AccessSafely.AfterCompleting(1);
             while (_reader.ProbeChannelCount.Get() == 0)
                 ;
             
@@ -38,9 +38,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
                 ++count;
                 Assert.Equal(MockChannelReader.MessagePrefix + count, message);
             }
-   
-            _interest.TestResult.UntilStops.Completes();
-    
+      
             Assert.True(_interest.TestResult.MessageCount.Get() > 0);
             Assert.Equal(count, _reader.ProbeChannelCount.Get());
         }

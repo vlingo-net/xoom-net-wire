@@ -30,15 +30,14 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             var textMessage = message.AsTextMessage();
             TestResult.Messages.Add(textMessage);
             TestResult.MessageCount.IncrementAndGet();
-            Debug.WriteLine($"INTEREST: {textMessage} list-size: {TestResult.Messages.Count} count: {TestResult.MessageCount.Get()} count-down: {TestResult.UntilStops.Remaining}");
-            TestResult.UntilStops.Happened();
+            Debug.WriteLine($"INTEREST: {textMessage} list-size: {TestResult.Messages.Count} count: {TestResult.MessageCount.Get()}");
         }
 
         public class TestResults
         {
             public readonly AtomicInteger MessageCount = new AtomicInteger(0);
             public readonly ConcurrentBag<string> Messages = new ConcurrentBag<string>();
-            public TestUntil UntilStops;
+            public AccessSafely UntilStops;
         }
     }
 }

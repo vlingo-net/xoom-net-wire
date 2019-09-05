@@ -2,6 +2,7 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/mxhw7gsnhcgjomty?svg=true)](https://ci.appveyor.com/project/VlingoNetOwner/vlingo-net-wire/branch/master) 
 [![NuGet](https://img.shields.io/nuget/v/Vlingo.Wire.svg)](https://www.nuget.org/packages/Vlingo.Wire)
+[![Gitter](https://badges.gitter.im/vlingo-platform-net/community.svg)](https://gitter.im/vlingo-platform-net/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Wire protocol messaging implementations, such as with full-duplex TCP and UDP multicast, using vlingo/actors.
 

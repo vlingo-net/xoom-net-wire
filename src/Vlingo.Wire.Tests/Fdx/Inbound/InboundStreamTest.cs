@@ -40,9 +40,15 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             _inboundStream.Actor.Stop();
 
             int count = 0;
-            count += (from item in Enumerable.Range(1, _interest.TestResult.Messages.Count)
-                      where _interest.TestResult.Messages.Contains($"{MockChannelReader.MessagePrefix}{item}")
-                      select item).Count();
+            var tempArray = _interest.TestResult.Messages.ToArray();
+
+            for (int i = 1; i < _interest.TestResult.Messages.Count + 1; i++)
+            {
+                if (tempArray.Contains($"{MockChannelReader.MessagePrefix}{i}"))
+                {
+                    count++;
+                }
+            }
 
             _interest.TestResult.UntilStops.ReadFromExpecting("count", happenings);
 

@@ -16,13 +16,13 @@ using Vlingo.Wire.Tests.Message;
 
 namespace Vlingo.Wire.Tests.Fdx.Inbound
 {
-    public class MockInboundStreamInterest: AbstractMessageTool, IInboundStreamInterest
+    public class MockInboundStreamInterest : AbstractMessageTool, IInboundStreamInterest
     {
         public MockInboundStreamInterest()
         {
             TestResult = new TestResults();
         }
-        
+
         public readonly TestResults TestResult;
 
         public void HandleInboundStreamMessage(AddressType addressType, RawMessage message)
@@ -30,15 +30,15 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             var textMessage = message.AsTextMessage();
             TestResult.Messages.Add(textMessage);
             TestResult.MessageCount.IncrementAndGet();
-            Debug.WriteLine($"INTEREST: {textMessage} list-size: {TestResult.Messages.Count} count: {TestResult.MessageCount.Get()} count-down: {TestResult.UntilStops.Remaining}");
-            TestResult.UntilStops.Happened();
+            Debug.WriteLine($"INTEREST: {textMessage} list-size: {TestResult.Messages.Count} count: {TestResult.MessageCount.Get()} count-down: {TestResult.MessageCount.Get() - TestResult.UntilStops.TotalWrites}");
+            TestResult.UntilStops.WriteUsing("count", 1);            
         }
 
         public class TestResults
         {
             public readonly AtomicInteger MessageCount = new AtomicInteger(0);
             public readonly ConcurrentBag<string> Messages = new ConcurrentBag<string>();
-            public TestUntil UntilStops;
+            public AccessSafely UntilStops;
         }
     }
 }

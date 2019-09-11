@@ -8,6 +8,7 @@
 using System;
 using System.IO;
 using System.Net.Sockets;
+using System.Threading;
 using Vlingo.Actors;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Node;
@@ -19,28 +20,32 @@ namespace Vlingo.Wire.Channel
         private Socket _channel;
         private readonly Address _address;
         private readonly ILogger _logger;
+        private readonly ManualResetEvent _sendManualResetEvent;
+        private readonly ManualResetEvent _readManualResetEvent;
 
         public SocketChannelWriter(Address address, ILogger logger)
         {
             _address = address;
             _logger = logger;
             _channel = null;
+            _sendManualResetEvent = new ManualResetEvent(false);
+            _readManualResetEvent = new ManualResetEvent(false);
         }
-        
-        public void Close() 
+
+        public void Close()
         {
             if (_channel != null)
             {
                 try
                 {
                     _channel.Close();
-                } 
+                }
                 catch (Exception e)
                 {
                     _logger.Error($"Channel close failed because: {e.Message}", e);
                 }
             }
-            
+
             _channel = null;
         }
 
@@ -55,20 +60,29 @@ namespace Vlingo.Wire.Channel
         public int Write(MemoryStream buffer)
         {
             _channel = PreparedChannel();
-            
+
             var totalBytesWritten = 0;
             if (_channel == null)
             {
                 return totalBytesWritten;
             }
-            
+
             try
             {
                 while (buffer.HasRemaining())
                 {
                     var bytes = new byte[buffer.Length];
-                    buffer.Read(bytes, 0, bytes.Length); // TODO: This could be async but is now blocking
-                    totalBytesWritten += _channel.Send(bytes, SocketFlags.None); // TODO: This could be async but is now blocking
+                    var readResult = buffer.BeginRead(bytes, 0, bytes.Length, new AsyncCallback(ReadCallback), buffer);
+                    _readManualResetEvent.WaitOne();
+
+                    var ms = (MemoryStream)readResult.AsyncState;
+                    totalBytesWritten += ms.ToArray().Length;
+
+                    _channel.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, new AsyncCallback(SendCallback), _channel);
+                    _sendManualResetEvent.WaitOne();
+
+                    _readManualResetEvent.Reset();
+                    _sendManualResetEvent.Reset();
                 }
             }
             catch (Exception e)
@@ -78,6 +92,36 @@ namespace Vlingo.Wire.Channel
             }
 
             return totalBytesWritten;
+        }
+
+        private void ReadCallback(IAsyncResult ar)
+        {
+            try
+            {
+                var ms = (MemoryStream)ar.AsyncState;
+                ms.EndRead(ar);
+                _readManualResetEvent.Set();
+            }
+            catch (Exception e)
+            {
+                _logger.Error($"{this}: Failed to read from memory stream because: {e.Message}", e);
+                Close();
+            }
+        }
+
+        private void SendCallback(IAsyncResult ar)
+        {
+            try
+            {
+                var channel = (Socket)ar.AsyncState;
+                channel.EndSend(ar);
+                _sendManualResetEvent.Set();
+            }
+            catch (Exception e)
+            {
+                _logger.Error($"{this}: Failed to send to channel because: {e.Message}", e);
+                Close();
+            }
         }
 
         public override string ToString() => $"SocketChannelWriter[address={_address}, channel={_channel}]";
@@ -92,10 +136,10 @@ namespace Vlingo.Wire.Channel
                     {
                         return _channel;
                     }
-                    
+
                     Close();
                 }
-                
+
                 var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 channel.Connect(_address.HostName, _address.Port); // TODO: This could be async but it is now blocking
                 return channel;

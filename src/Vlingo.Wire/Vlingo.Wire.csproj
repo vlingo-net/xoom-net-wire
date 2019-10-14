@@ -28,7 +28,7 @@
     <None Include="..\..\LICENSE" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Vlingo.Actors" Version="0.4.5" />
-    <PackageReference Include="Vlingo.Common" Version="0.5.3" />
+    <PackageReference Include="Vlingo.Actors" Version="0.4.7" />
+    <PackageReference Include="Vlingo.Common" Version="0.5.5" />
   </ItemGroup>
 </Project>

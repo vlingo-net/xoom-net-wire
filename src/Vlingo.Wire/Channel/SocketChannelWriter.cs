@@ -22,6 +22,7 @@ namespace Vlingo.Wire.Channel
         private readonly ILogger _logger;
         private readonly ManualResetEvent _sendManualResetEvent;
         private readonly ManualResetEvent _readManualResetEvent;
+        private readonly ManualResetEvent _connectDoneResetEvent;
 
         public SocketChannelWriter(Address address, ILogger logger)
         {
@@ -30,6 +31,7 @@ namespace Vlingo.Wire.Channel
             _channel = null;
             _sendManualResetEvent = new ManualResetEvent(false);
             _readManualResetEvent = new ManualResetEvent(false);
+            _connectDoneResetEvent = new ManualResetEvent(false);
         }
 
         public void Close()
@@ -141,7 +143,8 @@ namespace Vlingo.Wire.Channel
                 }
 
                 var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                channel.Connect(_address.HostName, _address.Port); // TODO: This could be async but it is now blocking
+                channel.BeginConnect(_address.HostName, _address.Port, new AsyncCallback(ConnectCallback), channel);
+                _connectDoneResetEvent.WaitOne();
                 return channel;
             }
             catch (Exception e)
@@ -151,6 +154,22 @@ namespace Vlingo.Wire.Channel
             }
 
             return null;
+        }
+
+        private void ConnectCallback(IAsyncResult ar)
+        {
+            try
+            {
+                var channel = (Socket)ar.AsyncState;
+                channel.EndConnect(ar);
+                _logger.Error($"{this}: Socket End Connect {channel.RemoteEndPoint.ToString()}");
+                _connectDoneResetEvent.Set();
+            }
+            catch (Exception e)
+            {
+                _logger.Error($"{this}: Failed to connect to channel because: {e.Message}", e);
+                Close();
+            }
         }
     }
 }

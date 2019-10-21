@@ -24,11 +24,11 @@ namespace Vlingo.Wire.Channel
         public void Consume(RawMessage message)
         {
             _messages.Add(message.AsTextMessage());
-            UntilConsume.WriteUsing(_name, 1);
+            UntilConsume?.WriteUsing(_name, 1);
         }
 
         public IReadOnlyCollection<string> Messages => _messages;
         
-        public AccessSafely UntilConsume { get; set; }
+        public AccessSafely? UntilConsume { get; set; }
     }
 }

@@ -134,7 +134,7 @@ namespace Vlingo.Wire.Message
             return new Name(text);
         }
 
-        public static string ParseField(string record, string fieldName)
+        public static string? ParseField(string record, string fieldName)
         {
             var skinnyRecord = record.Trim();
 

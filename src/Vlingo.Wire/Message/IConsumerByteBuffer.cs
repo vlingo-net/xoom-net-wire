@@ -14,7 +14,7 @@ namespace Vlingo.Wire.Message
         int Id { get; }
         
         void Release();
-        string Tag { get; set; }
+        string? Tag { get; set; }
 
         byte[] ToArray();
         

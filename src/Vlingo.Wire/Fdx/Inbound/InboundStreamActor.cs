@@ -18,7 +18,7 @@ namespace Vlingo.Wire.Fdx.Inbound
     public class InboundStreamActor: Actor, IInboundStream, IChannelReaderConsumer, IScheduled<object>
     {
         private readonly AddressType _addressType;
-        private ICancellable _cancellable;
+        private ICancellable? _cancellable;
         private readonly IInboundStreamInterest _interest;
         private readonly long _probeInterval;
         private readonly IChannelReader _reader;
@@ -68,7 +68,7 @@ namespace Vlingo.Wire.Fdx.Inbound
                 throw new InvalidOperationException(e.Message, e);
             }
             
-            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled<object>>(), null, TimeSpan.FromMilliseconds(1000), TimeSpan.FromMilliseconds(_probeInterval));
+            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled<object?>>(), null, TimeSpan.FromMilliseconds(1000), TimeSpan.FromMilliseconds(_probeInterval));
         }
         
         //=========================================

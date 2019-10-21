@@ -48,7 +48,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 throw;
             }
 
-            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled<object>>(),
+            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled<object?>>(),
                 null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(probeInterval));
         }
         

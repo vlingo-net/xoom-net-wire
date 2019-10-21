@@ -20,9 +20,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional
     public class SecureClientRequestResponseChannel : IClientRequestResponseChannel, IDisposable
     {
         private readonly Address _address;
-        private Socket _channel;
-        private SslStream _sslStream;
-        private TcpClient _tcpClient;
+        private Socket? _channel;
+        private SslStream? _sslStream;
+        private TcpClient? _tcpClient;
         private bool _closed;
         private readonly IResponseChannelConsumer _consumer;
         private readonly ILogger _logger;
@@ -148,7 +148,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _authenticateDone.Dispose();
             _receiveDone.Dispose();
             _sendDone.Dispose();
-            _sslStream.Dispose();
+            _sslStream?.Dispose();
         }
 
         //=========================================
@@ -172,7 +172,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _channel = null;
         }
 
-        private SslStream PreparedChannel()
+        private SslStream? PreparedChannel()
         {
             try
             {
@@ -313,7 +313,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                     pooledBuffer.Put(readBuffer, 0, bytesRead);
                 }
                 
-                if (_tcpClient.Available > 0)
+                if (_tcpClient!.Available > 0)
                 {
                     // Get the rest of the data.  
                     sslStream.BeginRead(readBuffer,0,readBuffer.Length, ReceiveCallback, state);

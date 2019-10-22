@@ -21,7 +21,7 @@ namespace Vlingo.Wire.Fdx.Inbound
         private readonly Socket _channel;
         private readonly List<Socket> _clientChannels;
         private bool _closed;
-        private IChannelReaderConsumer _consumer;
+        private IChannelReaderConsumer? _consumer;
         private readonly ILogger _logger;
         private readonly int _maxMessageSize;
         private readonly string _name;
@@ -135,7 +135,7 @@ namespace Vlingo.Wire.Fdx.Inbound
         // ChannelMessageDispatcher
         //=========================================
 
-        public override IChannelReaderConsumer Consumer => _consumer;
+        public override IChannelReaderConsumer? Consumer => _consumer;
 
         public override ILogger Logger => _logger;
         

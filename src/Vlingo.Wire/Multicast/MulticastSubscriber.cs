@@ -22,7 +22,7 @@ namespace Vlingo.Wire.Multicast
         private readonly MemoryStream _buffer;
         private bool _closed;
         private readonly Socket _channel;
-        private IChannelReaderConsumer _consumer;
+        private IChannelReaderConsumer? _consumer;
         private readonly ILogger _logger;
         private readonly int _maxReceives;
         private readonly RawMessage _message;
@@ -42,7 +42,7 @@ namespace Vlingo.Wire.Multicast
         public MulticastSubscriber(
             string name,
             Group group,
-            string networkInterfaceName,
+            string? networkInterfaceName,
             int maxMessageSize,
             int maxReceives,
             ILogger logger)
@@ -74,7 +74,7 @@ namespace Vlingo.Wire.Multicast
         // ChannelMessageDispatcher
         //=========================================
 
-        public override IChannelReaderConsumer Consumer => _consumer;
+        public override IChannelReaderConsumer? Consumer => _consumer;
         
         public override ILogger Logger => _logger;
         
@@ -171,7 +171,7 @@ namespace Vlingo.Wire.Multicast
         // internal implementation
         //=========================================
         
-        private NetworkInterface AssignNetworkInterfaceTo(Socket channel, string networkInterfaceName)
+        private NetworkInterface AssignNetworkInterfaceTo(Socket channel, string? networkInterfaceName)
         {
             if (networkInterfaceName != null && networkInterfaceName.Trim() != string.Empty)
             {
@@ -191,7 +191,7 @@ namespace Vlingo.Wire.Multicast
 
         private NetworkInterface AssignBestGuessNetworkInterfaceTo(Socket channel)
         {
-            NetworkInterface networkInterface = null;
+            NetworkInterface? networkInterface = null;
             var networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
             foreach (var candidate in networkInterfaces)
             {
@@ -242,7 +242,7 @@ namespace Vlingo.Wire.Multicast
                     _buffer.Flip();
                     _message.From(_buffer);
                     
-                    _consumer.Consume(_message);
+                    _consumer!.Consume(_message);
                 }
             }
             catch (SocketException e)

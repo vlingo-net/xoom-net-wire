@@ -17,7 +17,7 @@ namespace Vlingo.Wire.Channel
 {
     public class SocketChannelWriter
     {
-        private Socket _channel;
+        private Socket? _channel;
         private readonly Address _address;
         private readonly ILogger _logger;
         private readonly ManualResetEvent _sendManualResetEvent;
@@ -128,7 +128,7 @@ namespace Vlingo.Wire.Channel
 
         public override string ToString() => $"SocketChannelWriter[address={_address}, channel={_channel}]";
 
-        private Socket PreparedChannel()
+        private Socket? PreparedChannel()
         {
             try
             {

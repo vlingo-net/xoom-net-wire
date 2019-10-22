@@ -18,7 +18,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
     public class BasicClientRequestResponseChannel : IClientRequestResponseChannel, IDisposable
     {
         private readonly Address _address;
-        private Socket _channel;
+        private Socket? _channel;
         private bool _closed;
         private readonly IResponseChannelConsumer _consumer;
         private readonly ILogger _logger;
@@ -67,7 +67,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
         public void RequestWith(byte[] buffer)
         {
-            Socket preparedChannel = null;
+            Socket? preparedChannel = null;
             while (preparedChannel == null && _previousPrepareFailures < 10)
             {
                 preparedChannel = PreparedChannel();
@@ -101,7 +101,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
             try
             {
-                Socket channel = null;
+                Socket? channel = null;
                 while (channel == null && _previousPrepareFailures < 10)
                 {
                     channel = PreparedChannel();
@@ -166,7 +166,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _channel = null;
         }
 
-        private Socket PreparedChannel()
+        private Socket? PreparedChannel()
         {
             try
             {

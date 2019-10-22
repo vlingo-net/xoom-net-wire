@@ -27,7 +27,7 @@ namespace Vlingo.Wire.Channel
         private readonly string _name;
         private readonly IRequestChannelConsumerProvider _provider;
         private readonly IResponseSenderChannel<Socket> _responder;
-        private Context _context;
+        private Context? _context;
         
         public SocketChannelSelectionProcessorActor(
             IRequestChannelConsumerProvider provider,
@@ -40,7 +40,7 @@ namespace Vlingo.Wire.Channel
             _name = name;
             _messageBufferSize = messageBufferSize;
             _responder = SelfAs<IResponseSenderChannel<Socket>>();
-            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled<object>>(),
+            _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled<object?>>(),
                 null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(probeInterval));
         }
         
@@ -114,11 +114,11 @@ namespace Vlingo.Wire.Channel
 
             try
             {
-                _context.Close();
+                _context?.Close();
             }
             catch (Exception e)
             {
-                Logger.Error($"Failed to close client context '{_context.Id}' socket for {_name} while stopping because: {e.Message}", e);
+                Logger.Error($"Failed to close client context '{_context?.Id}' socket for {_name} while stopping because: {e.Message}", e);
             }
         }
         
@@ -241,7 +241,7 @@ namespace Vlingo.Wire.Channel
             var channel = state.WorkSocket;
             var readable = state.Context;
             var buffer = state.ByteBuffer;
-            var readBuffer = state.Buffer;
+            var readBuffer = state.Buffer!;
 
             try
             {
@@ -315,9 +315,9 @@ namespace Vlingo.Wire.Channel
             private readonly IConsumerByteBuffer _buffer;
             private readonly SocketChannelSelectionProcessorActor _parent;
             private readonly Socket _clientChannel;
-            private object _closingData;
+            private object? _closingData;
             private readonly IRequestChannelConsumer _consumer;
-            private object _consumerData;
+            private object? _consumerData;
             private readonly string _id;
             private readonly Queue<IConsumerByteBuffer> _writables;
 
@@ -331,7 +331,7 @@ namespace Vlingo.Wire.Channel
                 _writables = new Queue<IConsumerByteBuffer>();
             }
 
-            public override T ConsumerData<T>() => (T) _consumerData;
+            public override T ConsumerData<T>() => (T) _consumerData!;
 
             public override T ConsumerData<T>(T workingData)
             {
@@ -369,7 +369,7 @@ namespace Vlingo.Wire.Channel
 
             public bool HasNextWritable => _writables.Count > 0;
 
-            public IConsumerByteBuffer NextWritable()
+            public IConsumerByteBuffer? NextWritable()
             {
                 if (HasNextWritable)
                 {
@@ -388,7 +388,7 @@ namespace Vlingo.Wire.Channel
         
         private class StateObject
         {
-            public StateObject(Socket workSocket, Context context, byte[] buffer, IConsumerByteBuffer byteBuffer)
+            public StateObject(Socket workSocket, Context context, byte[]? buffer, IConsumerByteBuffer byteBuffer)
             {
                 WorkSocket = workSocket;
                 Context = context;
@@ -400,7 +400,7 @@ namespace Vlingo.Wire.Channel
             public Socket WorkSocket { get; }
             
             // Receive buffer.  
-            public byte[] Buffer { get; }
+            public byte[]? Buffer { get; }
             
             // Received data string.  
             public Context Context { get; }

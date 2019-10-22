@@ -18,7 +18,7 @@ namespace Vlingo.Wire.Fdx.Outbound
     
     public class ManagedOutboundSocketChannel: IManagedOutboundChannel, IDisposable
     {
-        private Socket _channel;
+        private Socket? _channel;
         private readonly Address _address;
         private readonly Node _node;
         private readonly ILogger _logger;
@@ -96,7 +96,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             _disposed = true;
         }
         
-        private Socket PreparedChannel()
+        private Socket? PreparedChannel()
         {
             try
             {

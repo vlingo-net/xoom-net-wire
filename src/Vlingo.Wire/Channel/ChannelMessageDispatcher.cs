@@ -13,7 +13,7 @@ namespace Vlingo.Wire.Channel
 {
     public abstract class ChannelMessageDispatcher
     {
-        public abstract IChannelReaderConsumer Consumer { get; }
+        public abstract IChannelReaderConsumer? Consumer { get; }
 
         public abstract ILogger Logger { get; }
 
@@ -33,7 +33,7 @@ namespace Vlingo.Wire.Channel
                 try
                 {
                     var message = builder.CurrentRawMessage();
-                    Consumer.Consume(message);
+                    Consumer?.Consume(message);
                 }
                 catch (Exception e)
                 {

@@ -15,7 +15,7 @@ namespace Vlingo.Wire.Message
     {
         private MemoryStream _buffer;
         private readonly int _id;
-        private string _tag;
+        private string? _tag;
         private long _mark;
 
         public BasicConsumerByteBuffer(int id, int maxBufferSize)
@@ -33,7 +33,7 @@ namespace Vlingo.Wire.Message
         {
         }
 
-        public string Tag
+        public string? Tag
         {
             get => _tag;
             set => _tag = value;

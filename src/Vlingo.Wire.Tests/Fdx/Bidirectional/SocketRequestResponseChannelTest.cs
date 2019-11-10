@@ -22,6 +22,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 {
     public class SocketRequestResponseChannelTest : IDisposable
     {
+        private readonly ITestOutputHelper _output;
         private static readonly int PoolSize = 100;
         private static int _testPort = 37471;
 
@@ -35,6 +36,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         [Fact]
         public void TestBasicRequestResponse()
         {
+            _output.WriteLine("Starting TestBasicRequestResponse");
             var request = "Hello, Request-Response";
             
             _serverConsumer.CurrentExpectedRequestLength = request.Length;
@@ -70,6 +72,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         [Fact]
         public void TestGappyRequestResponse()
         {
+            _output.WriteLine("Starting TestGappyRequestResponse");
             var requestPart1 = "Request Part-1";
             var requestPart2 = "Request Part-2";
             var requestPart3 = "Request Part-3";
@@ -121,6 +124,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         [Fact]
         public void Test10RequestResponse()
         {
+            _output.WriteLine("Starting Test10RequestResponse");
             var total = 10;
             var request = "Hello, Request-Response";
 
@@ -167,6 +171,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         [Fact]
         public void TestThatRequestResponsePoolLimitsNotExceeded()
         {
+            _output.WriteLine("Starting TestThatRequestResponsePoolLimitsNotExceeded");
             var total = PoolSize * 2;
             var request = "Hello, Request-Response";
             
@@ -214,6 +219,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 
         public SocketRequestResponseChannelTest(ITestOutputHelper output)
         {
+            _output = output;
             var converter = new Converter(output);
             Console.SetOut(converter);
 

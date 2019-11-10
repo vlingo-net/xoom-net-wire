@@ -31,7 +31,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
         {
             var counter = 0;
             var accessSafely = AccessSafely.AfterCompleting(happenings)
-                .WritingWith<int>("count", (value) => counter += value)
+                .WritingWith<int>("count", value => counter += value)
                 .ReadingWith("count", () => counter);
             _interest.TestResult.UntilStops = accessSafely;
 

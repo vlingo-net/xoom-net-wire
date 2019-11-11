@@ -16,7 +16,7 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/vlingo-net/vlingo-net-wire</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/vlingo-net/vlingo-net-wire/master/vlingo-64x64.png</PackageIconUrl>
+    <PackageIcon>vlingo-64x64.png</PackageIcon>
     <RepositoryUrl>https://github.com/vlingo-net/vlingo-net-wire</RepositoryUrl>
     <PackageTags>vlingo-net-wire;vlingo-net-actors;.net;c#;f#;udp;tcp;reactive-programming;actor-model</PackageTags>
   </PropertyGroup>

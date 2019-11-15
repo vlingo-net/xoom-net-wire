@@ -161,7 +161,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 try
                 {
                     // if receiving, give him a time to finish the operation.
-                    _receiveDone.WaitOne(10000);
+                    _receiveDone.WaitOne(100000);
                     _channel.Close();
                 }
                 catch (Exception e)
@@ -275,6 +275,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         {
             if (_closed || _disposed)
             {
+                _receiveDone.Set();
                 _logger.Error("The underlying socket is already disposed but there is still an ongoing receive callback");
                 return;
             }

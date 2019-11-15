@@ -161,7 +161,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 try
                 {
                     // if receiving, give him a time to finish the operation.
-                    _receiveDone.WaitOne(10000);
+                    _receiveDone.WaitOne(100000);
                     _channel.Close();
                 }
                 catch (Exception e)
@@ -273,6 +273,11 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
         private void ReceiveCallback(IAsyncResult ar)
         {
+            if (_closed || _disposed)
+            {
+                _logger.Error("The underlying socket is already disposed but there is still an ongoing receive callback");    
+            }
+            
             // Retrieve the state object and the client socket   
             // from the asynchronous state object.  
             var state = (StateObject)ar.AsyncState;

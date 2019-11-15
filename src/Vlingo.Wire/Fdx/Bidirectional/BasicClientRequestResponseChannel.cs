@@ -138,7 +138,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             {
                 Close();
             }
-      
+
             _disposed = true;
             _connectDone.Dispose();
             _receiveDone.Dispose();
@@ -161,7 +161,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 try
                 {
                     // if receiving, give him a time to finish the operation.
-                    _receiveDone.WaitOne(100000);
+                    _receiveDone.WaitOne(1000);
                     _channel.Close();
                 }
                 catch (Exception e)
@@ -275,7 +275,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         {
             if (_closed || _disposed)
             {
-                _receiveDone.Set();
                 _logger.Error("The underlying socket is already disposed but there is still an ongoing receive callback");
                 return;
             }
@@ -303,8 +302,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 {
                     // Get the rest of the data.  
                     client.BeginReceive(readBuffer,0,readBuffer.Length,0, ReceiveCallback, state);
-                    _receiveDone.WaitOne();
-                    _receiveDone.Reset();
                 }
                 else
                 {

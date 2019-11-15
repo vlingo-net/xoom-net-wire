@@ -161,7 +161,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 try
                 {
                     // if receiving, give him a time to finish the operation.
-                    _receiveDone.WaitOne(100000);
+                    _receiveDone.WaitOne(10000);
                     _channel.Close();
                 }
                 catch (Exception e)
@@ -220,7 +220,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             try
             {
                 // Create the state object.  
-                StateObject state = new StateObject(channel, readBuffer, pooledBuffer);
+                var state = new StateObject(channel, readBuffer, pooledBuffer);
                 channel.BeginReceive(readBuffer, 0, readBuffer.Length, 0, ReceiveCallback, state);
                 _receiveDone.WaitOne();
             }
@@ -236,7 +236,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             try
             {
                 // Retrieve the socket from the state object.  
-                Socket client = (Socket)ar.AsyncState;
+                var client = (Socket)ar.AsyncState;
 
                 // Complete the connection.  
                 client.EndConnect(ar);
@@ -275,7 +275,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         {
             if (_closed || _disposed)
             {
-                _logger.Error("The underlying socket is already disposed but there is still an ongoing receive callback");    
+                _logger.Error("The underlying socket is already disposed but there is still an ongoing receive callback");
+                return;
             }
             
             // Retrieve the state object and the client socket   

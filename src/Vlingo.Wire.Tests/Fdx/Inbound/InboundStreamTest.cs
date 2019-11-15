@@ -34,6 +34,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
                 .WritingWith<int>("count", value => counter += value)
                 .ReadingWith("count", () => counter);
             _interest.TestResult.UntilStops = accessSafely;
+            _interest.TestResult.Happenings = happenings;
 
             ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("count") < 1, _reader);
 
@@ -63,7 +64,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
 
             _world = TestWorld.Start("test-inbound-stream");
 
-            _interest = new MockInboundStreamInterest();
+            _interest = new MockInboundStreamInterest(output);
 
             _reader = new MockChannelReader();
 

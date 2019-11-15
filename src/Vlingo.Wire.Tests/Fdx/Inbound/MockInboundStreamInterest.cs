@@ -13,13 +13,17 @@ using Vlingo.Wire.Fdx.Inbound;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Node;
 using Vlingo.Wire.Tests.Message;
+using Xunit.Abstractions;
 
 namespace Vlingo.Wire.Tests.Fdx.Inbound
 {
     public class MockInboundStreamInterest : AbstractMessageTool, IInboundStreamInterest
     {
-        public MockInboundStreamInterest()
+        private readonly ITestOutputHelper _output;
+
+        public MockInboundStreamInterest(ITestOutputHelper output)
         {
+            _output = output;
             TestResult = new TestResults();
         }
 
@@ -30,7 +34,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             var textMessage = message.AsTextMessage();
             TestResult.Messages.Add(textMessage);
             TestResult.MessageCount.IncrementAndGet();
-            Debug.WriteLine($"INTEREST: {textMessage} list-size: {TestResult.Messages.Count} count: {TestResult.MessageCount.Get()} count-down: {TestResult.MessageCount.Get() - TestResult.UntilStops.TotalWrites}");
+            _output.WriteLine($"INTEREST: {textMessage} list-size: {TestResult.Messages.Count} count: {TestResult.MessageCount.Get()} count-down: {TestResult.Happenings - TestResult.UntilStops.TotalWrites}");
             TestResult.UntilStops.WriteUsing("count", 1);            
         }
 
@@ -39,6 +43,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             public readonly AtomicInteger MessageCount = new AtomicInteger(0);
             public readonly ConcurrentBag<string> Messages = new ConcurrentBag<string>();
             public AccessSafely UntilStops;
+            public int Happenings;
         }
     }
 }

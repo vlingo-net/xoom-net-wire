@@ -21,8 +21,9 @@ namespace Vlingo.Wire.Channel
         private readonly Address _address;
         private readonly ILogger _logger;
         private readonly ManualResetEvent _sendDone;
-        private readonly ManualResetEvent _readDone;
-        private readonly ManualResetEvent _connectDone;
+        private readonly AutoResetEvent _readDone;
+        private readonly AutoResetEvent _connectDone;
+        private int _retries;
 
         public SocketChannelWriter(Address address, ILogger logger)
         {
@@ -30,8 +31,9 @@ namespace Vlingo.Wire.Channel
             _logger = logger;
             _channel = null;
             _sendDone = new ManualResetEvent(false);
-            _readDone = new ManualResetEvent(false);
-            _connectDone = new ManualResetEvent(false);
+            _readDone = new AutoResetEvent(false);
+            _connectDone = new AutoResetEvent(false);
+            _retries = 0;
         }
 
         public void Close()
@@ -63,12 +65,6 @@ namespace Vlingo.Wire.Channel
 
         public int Write(RawMessage message, MemoryStream buffer)
         {
-            if (IsClosed)
-            {
-                _logger.Debug("Cannot write because the socket is already closed.");
-                return 0;
-            }
-            
             buffer.Clear();
             message.CopyBytesTo(buffer);
             buffer.Flip();
@@ -77,12 +73,6 @@ namespace Vlingo.Wire.Channel
 
         public int Write(MemoryStream buffer)
         {
-            if (IsClosed)
-            {
-                _logger.Debug("Cannot write because the socket is already closed.");
-                return 0;
-            }
-            
             _channel = PreparedChannel();
 
             var totalBytesWritten = 0;
@@ -93,18 +83,26 @@ namespace Vlingo.Wire.Channel
 
             try
             {
-                while (buffer.HasRemaining())
+                if (_channel.IsSocketConnected())
                 {
-                    var bytes = new byte[buffer.Length];
-                    buffer.BeginRead(bytes, 0, bytes.Length, ReadCallback, buffer);
-                    _readDone.WaitOne();
-                    _readDone.Reset();
+                    while (buffer.HasRemaining())
+                    {
+                        var bytes = new byte[buffer.Length];
+                        buffer.BeginRead(bytes, 0, bytes.Length, ReadCallback, buffer);
+                        _readDone.WaitOne();
 
-                    totalBytesWritten += bytes.Length;
-
-                    _channel.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, SendCallback, _channel);
-                    _sendDone.WaitOne();
-                    _sendDone.Reset();
+                        totalBytesWritten += bytes.Length;
+                        _channel.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, SendCallback, _channel);
+                        _sendDone.WaitOne();
+                    }
+                }
+                else
+                {
+                    if (_retries < 10)
+                    {
+                        _retries++;
+                        Write(buffer);   
+                    }
                 }
             }
             catch (Exception e)
@@ -154,7 +152,7 @@ namespace Vlingo.Wire.Channel
         {
             try
             {
-                if (_channel != null)
+                if (!IsClosed && _channel != null)
                 {
                     if (_channel.Poll(10000, SelectMode.SelectWrite))
                     {
@@ -184,8 +182,9 @@ namespace Vlingo.Wire.Channel
             {
                 var channel = (Socket)ar.AsyncState;
                 channel.EndConnect(ar);
-                _logger.Error($"{this}: Socket End Connect {channel.RemoteEndPoint}");
+                _logger.Debug($"{this}: Socket End Connect {channel.RemoteEndPoint}");
                 _connectDone.Set();
+                IsClosed = false;
             }
             catch (Exception e)
             {

@@ -33,6 +33,7 @@ namespace Vlingo.Wire.Multicast
         private readonly List<Socket> _clientReadChannels;
         private bool _disposed;
         private readonly ManualResetEvent _acceptDone;
+        private readonly ManualResetEvent _sendDone;
 
         public MulticastPublisherReader(
             string name,
@@ -47,6 +48,7 @@ namespace Vlingo.Wire.Multicast
             _consumer = consumer;
             _logger = logger;
             _acceptDone = new ManualResetEvent(false);
+            _sendDone = new ManualResetEvent(false);
             _groupAddress = new IPEndPoint(IPAddress.Parse(group.Address), group.Port);
             _messageQueue = new Queue<RawMessage>();
             
@@ -273,6 +275,7 @@ namespace Vlingo.Wire.Multicast
 
                 var buffer = message.AsBuffer(new MemoryStream(_maxMessageSize));
                 _publisherChannel.BeginSendTo(buffer, 0, buffer.Length, SocketFlags.None, _groupAddress, SendToCallback, _publisherChannel);
+                _sendDone.WaitOne();
             }
         }
         
@@ -290,6 +293,7 @@ namespace Vlingo.Wire.Multicast
             var publisherChannel = (Socket)ar.AsyncState;
 
             var sent = publisherChannel.EndSendTo(ar);
+            _sendDone.Set();
             
             if (sent > 0)
             {

@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Threading;
 using Vlingo.Actors;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
@@ -29,6 +30,7 @@ namespace Vlingo.Wire.Multicast
         private readonly string _name;
         private EndPoint _ipEndPoint;
         private bool _disposed;
+        private readonly ManualResetEvent _readDone;
 
         public MulticastSubscriber(
             string name,
@@ -47,6 +49,7 @@ namespace Vlingo.Wire.Multicast
             int maxReceives,
             ILogger logger)
         {
+            _readDone = new ManualResetEvent(false);
             _name = name;
             _maxReceives = maxReceives;
             _logger = logger;
@@ -137,6 +140,7 @@ namespace Vlingo.Wire.Multicast
                     {
                         var state = new StateObject(_channel, bytes);
                         _channel.BeginReceiveFrom(bytes, 0, bytes.Length, SocketFlags.None, ref _ipEndPoint, ReceiveCallback, state);
+                        _readDone.WaitOne();
                     }
                 }
             }
@@ -234,6 +238,7 @@ namespace Vlingo.Wire.Multicast
             try
             {
                 var bytesRead = channel.EndReceiveFrom(ar, ref _ipEndPoint);
+                _readDone.Set();
                 if (bytesRead > 0)
                 {
                     _buffer.Clear();

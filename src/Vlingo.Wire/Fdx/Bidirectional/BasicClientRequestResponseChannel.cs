@@ -276,7 +276,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             try
             {
                 // Read data from the remote device.  
-                int bytesRead = client.EndReceive(ar);
+                var bytesRead = client.EndReceive(ar);
 
                 if (bytesRead > 0)
                 {
@@ -289,6 +289,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 {
                     // Get the rest of the data.  
                     client.BeginReceive(readBuffer,0,readBuffer.Length,0, ReceiveCallback, state);
+                    _receiveDone.WaitOne();
+                    _receiveDone.Reset();
                 }
                 else
                 {

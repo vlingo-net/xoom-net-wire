@@ -296,8 +296,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 {
                     // Get the rest of the data.  
                     client.BeginReceive(readBuffer,0,readBuffer.Length,0, ReceiveCallback, state);
-                    _receiveDone.WaitOne();
-                    _receiveDone.Reset();
+//                    _receiveDone.WaitOne();
+//                    _receiveDone.Reset();
                 }
                 else
                 {

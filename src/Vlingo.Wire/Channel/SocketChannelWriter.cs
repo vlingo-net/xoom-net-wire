@@ -73,7 +73,10 @@ namespace Vlingo.Wire.Channel
 
         public int Write(MemoryStream buffer)
         {
-            _channel = PreparedChannel();
+            while (_channel == null && _retries < 10)
+            {
+                _channel = PreparedChannel();
+            }
 
             var totalBytesWritten = 0;
             if (_channel == null)
@@ -93,23 +96,13 @@ namespace Vlingo.Wire.Channel
 
                         totalBytesWritten += bytes.Length;
                         _channel.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, SendCallback, _channel);
-                        _sendDone.WaitOne();
-                    }
-                }
-                else
-                {
-                    if (_retries < 10)
-                    {
-                        _retries++;
-                        Write(buffer);   
+                        // _sendDone.WaitOne();
                     }
                 }
             }
             catch (Exception e)
             {
                 _logger.Error($"Write to channel failed because: {e.Message}", e);
-                _readDone.Set();
-                _sendDone.Set();
                 Close();
             }
 
@@ -124,15 +117,12 @@ namespace Vlingo.Wire.Channel
             {
                 var ms = (MemoryStream) ar.AsyncState;
                 ms.EndRead(ar);
+                _readDone.Set();
             }
             catch (Exception e)
             {
                 _logger.Error($"{this}: Failed to read from memory stream because: {e.Message}", e);
                 Close();
-            }
-            finally
-            {
-                _readDone.Set();
             }
         }
 
@@ -142,15 +132,12 @@ namespace Vlingo.Wire.Channel
             {
                 var channel = (Socket) ar.AsyncState;
                 channel.EndSend(ar);
+                // _sendDone.Set();
             }
             catch (Exception e)
             {
                 _logger.Error($"{this}: Failed to send to channel because: {e.Message}", e);
                 Close();
-            }
-            finally
-            {
-                _sendDone.Set();
             }
         }
 
@@ -164,6 +151,7 @@ namespace Vlingo.Wire.Channel
                 {
                     if (_channel.Poll(10000, SelectMode.SelectWrite))
                     {
+                        _retries = 0;
                         return _channel;
                     }
 
@@ -173,12 +161,13 @@ namespace Vlingo.Wire.Channel
                 var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, channel);
                 _connectDone.WaitOne();
+                _retries = 0;
                 return channel;
             }
             catch (Exception e)
             {
+                ++_retries;
                 _logger.Error($"{this}: Failed to prepare channel because: {e.Message}", e);
-                _connectDone.Set();
                 Close();
             }
 
@@ -192,16 +181,13 @@ namespace Vlingo.Wire.Channel
                 var channel = (Socket) ar.AsyncState;
                 channel.EndConnect(ar);
                 _logger.Debug($"{this}: Socket End Connect {channel.RemoteEndPoint}");
+                IsClosed = false;
+                _connectDone.Set();
             }
             catch (Exception e)
             {
                 _logger.Error($"{this}: Failed to connect to channel because: {e.Message}", e);
                 Close();
-            }
-            finally
-            {
-                _connectDone.Set();
-                IsClosed = false;
             }
         }
     }

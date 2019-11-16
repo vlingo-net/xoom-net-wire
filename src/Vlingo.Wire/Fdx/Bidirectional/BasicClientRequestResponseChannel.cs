@@ -78,13 +78,12 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 try
                 {
                     preparedChannel.BeginSend(buffer, 0, buffer.Length, 0, SendCallback, preparedChannel);
-                    _sendDone.WaitOne();
+                    // _sendDone.WaitOne();
                 }
                 catch (Exception e)
                 {
                     _logger.Error($"Write to socket failed because: {e.Message}", e);
                     CloseChannel();
-                    _sendDone.Set();
                 }
             }
         }
@@ -209,8 +208,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 {
                     _logger.Info($"AGAIN: {message}");
                 }
-
-                _connectDone.Set();
             }
             ++_previousPrepareFailures;
             return null;
@@ -245,15 +242,13 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 client.EndConnect(ar);
 
                 _logger.Info($"Socket connected to {client.RemoteEndPoint}");
+                
+                // Signal that the connection has been made.  
+                _connectDone.Set();
             }
             catch (Exception e)
             {
                 _logger.Error("Cannot connect", e);
-            }
-            finally
-            {
-                // Signal that the connection has been made.  
-                _connectDone.Set();
             }
         }
 
@@ -266,15 +261,13 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
                 // Complete sending the data to the remote device.  
                 client.EndSend(ar);
+                
+                // Signal that all bytes have been sent.  
+                // _sendDone.Set();
             }
             catch (Exception e)
             {
                 _logger.Error("Error while sending bytes", e);
-            }
-            finally
-            {
-                // Signal that all bytes have been sent.  
-                _sendDone.Set();
             }
         }
 

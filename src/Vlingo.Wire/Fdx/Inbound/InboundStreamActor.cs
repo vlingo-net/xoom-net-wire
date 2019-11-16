@@ -64,7 +64,7 @@ namespace Vlingo.Wire.Fdx.Inbound
             catch (Exception e)
             {
                 _reader.Close();
-                Console.WriteLine(e.ToString());
+                Logger.Error("OpenFor failed", e);
                 throw new InvalidOperationException(e.Message, e);
             }
             

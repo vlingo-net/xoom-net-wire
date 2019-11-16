@@ -34,7 +34,6 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         public void Consume(ReadOnlySequence<byte> buffer)
         {
             var responsePart = buffer.ToArray().BytesToText(0, (int)buffer.Length);
-            // Console.WriteLine("RESPONSE: " + responsePart);
             _responseBuilder.Append(responsePart);
             
             if (_responseBuilder.Length >= CurrentExpectedResponseLength)
@@ -55,7 +54,6 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                     Responses.Add(request);
         
                     last = startIndex == combinedLength;
-                    // Console.WriteLine("CONSUMING CLIENT " + request + " : " + _count);
                     UntilConsume.WriteUsing("clientConsume", 1);
                 }
             }

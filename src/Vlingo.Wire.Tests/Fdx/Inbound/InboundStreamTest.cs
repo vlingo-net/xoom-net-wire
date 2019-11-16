@@ -69,7 +69,6 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             _reader = new MockChannelReader();
 
             var definition = Definition.Has<InboundStreamActor>(Definition.Parameters(_interest, AddressType.Op, _reader, 10), "test-inbound");
-
             _inboundStream = _world.ActorFor<IInboundStream>(definition);
         }
 

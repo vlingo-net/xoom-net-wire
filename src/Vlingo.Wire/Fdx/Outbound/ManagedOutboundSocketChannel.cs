@@ -65,13 +65,12 @@ namespace Vlingo.Wire.Fdx.Outbound
                     var bytes = new byte[buffer.Length];
                     buffer.Read(bytes, 0, bytes.Length); // TODO: can be done async
                     _channel.BeginSend(bytes, 0, bytes.Length, 0, SendCallback, _channel);
-                    _sendDone.WaitOne();
+                    // _sendDone.WaitOne();
                 }
             }
             catch (Exception e)
             {
                 _logger.Error($"Write to {_node} failed because: {e.Message}", e);
-                _sendDone.Set();
                 Close();
             }
         }
@@ -119,7 +118,6 @@ namespace Vlingo.Wire.Fdx.Outbound
             catch (Exception e)
             {
                 _logger.Error($"{GetType().Name}: Cannot prepare/open channel because: {e.Message}");
-                _connectDone.Set();
                 Close();
             }
 
@@ -131,21 +129,19 @@ namespace Vlingo.Wire.Fdx.Outbound
             try
             {
                 // Retrieve the socket from the state object.  
-                Socket client = (Socket) ar.AsyncState;
+                var client = (Socket) ar.AsyncState;
 
                 // Complete the connection.  
                 client.EndConnect(ar);
 
                 _logger.Debug($"Socket connected to {client.RemoteEndPoint}");
+                
+                // Signal that the connection has been made.  
+                _connectDone.Set();
             }
             catch (Exception e)
             {
                 _logger.Error("Cannot connect", e);
-            }
-            finally
-            {
-                // Signal that the connection has been made.  
-                _connectDone.Set();
             }
         }
         
@@ -158,15 +154,13 @@ namespace Vlingo.Wire.Fdx.Outbound
 
                 // Complete sending the data to the remote device.  
                 client.EndSend(ar);
+                
+                // Signal that all bytes have been sent.  
+                // _sendDone.Set();
             }
             catch (Exception e)
             {
                 _logger.Error("Error while sending bytes", e);
-            }
-            finally
-            {
-                // Signal that all bytes have been sent.  
-                _sendDone.Set();
             }
         }
     }

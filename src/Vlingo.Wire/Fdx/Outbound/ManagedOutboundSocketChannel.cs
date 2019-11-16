@@ -71,6 +71,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             catch (Exception e)
             {
                 _logger.Error($"Write to {_node} failed because: {e.Message}", e);
+                _sendDone.Set();
                 Close();
             }
         }
@@ -117,8 +118,9 @@ namespace Vlingo.Wire.Fdx.Outbound
             }
             catch (Exception e)
             {
-                Close();
                 _logger.Error($"{GetType().Name}: Cannot prepare/open channel because: {e.Message}");
+                _connectDone.Set();
+                Close();
             }
 
             return null;
@@ -129,19 +131,21 @@ namespace Vlingo.Wire.Fdx.Outbound
             try
             {
                 // Retrieve the socket from the state object.  
-                Socket client = (Socket)ar.AsyncState;
+                Socket client = (Socket) ar.AsyncState;
 
                 // Complete the connection.  
                 client.EndConnect(ar);
 
                 _logger.Debug($"Socket connected to {client.RemoteEndPoint}");
-
-                // Signal that the connection has been made.  
-                _connectDone.Set();
             }
             catch (Exception e)
             {
                 _logger.Error("Cannot connect", e);
+            }
+            finally
+            {
+                // Signal that the connection has been made.  
+                _connectDone.Set();
             }
         }
         
@@ -150,17 +154,19 @@ namespace Vlingo.Wire.Fdx.Outbound
             try
             {
                 // Retrieve the socket from the state object.  
-                var client = (Socket)ar.AsyncState;
+                var client = (Socket) ar.AsyncState;
 
                 // Complete sending the data to the remote device.  
                 client.EndSend(ar);
-
-                // Signal that all bytes have been sent.  
-                _sendDone.Set();
             }
             catch (Exception e)
             {
                 _logger.Error("Error while sending bytes", e);
+            }
+            finally
+            {
+                // Signal that all bytes have been sent.  
+                _sendDone.Set();
             }
         }
     }

@@ -108,6 +108,8 @@ namespace Vlingo.Wire.Channel
             catch (Exception e)
             {
                 _logger.Error($"Write to channel failed because: {e.Message}", e);
+                _readDone.Set();
+                _sendDone.Set();
                 Close();
             }
 
@@ -120,14 +122,17 @@ namespace Vlingo.Wire.Channel
         {
             try
             {
-                var ms = (MemoryStream)ar.AsyncState;
+                var ms = (MemoryStream) ar.AsyncState;
                 ms.EndRead(ar);
-                _readDone.Set();
             }
             catch (Exception e)
             {
                 _logger.Error($"{this}: Failed to read from memory stream because: {e.Message}", e);
                 Close();
+            }
+            finally
+            {
+                _readDone.Set();
             }
         }
 
@@ -135,14 +140,17 @@ namespace Vlingo.Wire.Channel
         {
             try
             {
-                var channel = (Socket)ar.AsyncState;
+                var channel = (Socket) ar.AsyncState;
                 channel.EndSend(ar);
-                _sendDone.Set();
             }
             catch (Exception e)
             {
                 _logger.Error($"{this}: Failed to send to channel because: {e.Message}", e);
                 Close();
+            }
+            finally
+            {
+                _sendDone.Set();
             }
         }
 
@@ -170,6 +178,7 @@ namespace Vlingo.Wire.Channel
             catch (Exception e)
             {
                 _logger.Error($"{this}: Failed to prepare channel because: {e.Message}", e);
+                _connectDone.Set();
                 Close();
             }
 
@@ -180,16 +189,19 @@ namespace Vlingo.Wire.Channel
         {
             try
             {
-                var channel = (Socket)ar.AsyncState;
+                var channel = (Socket) ar.AsyncState;
                 channel.EndConnect(ar);
                 _logger.Debug($"{this}: Socket End Connect {channel.RemoteEndPoint}");
-                _connectDone.Set();
-                IsClosed = false;
             }
             catch (Exception e)
             {
                 _logger.Error($"{this}: Failed to connect to channel because: {e.Message}", e);
                 Close();
+            }
+            finally
+            {
+                _connectDone.Set();
+                IsClosed = false;
             }
         }
     }

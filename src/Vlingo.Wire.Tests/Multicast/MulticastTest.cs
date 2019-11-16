@@ -76,7 +76,7 @@ namespace Vlingo.Wire.Tests.Multicast
         {
             var publisherCount = 0;
             var accessSafely = AccessSafely.AfterCompleting(1)
-                .WritingWith<int>("publisherCount", (value) => publisherCount += value)
+                .WritingWith<int>("publisherCount", value => publisherCount += value)
                 .ReadingWith("publisherCount", () => publisherCount);
             
             var publisherConsumer = new MockChannelReaderConsumer("publisherCount");

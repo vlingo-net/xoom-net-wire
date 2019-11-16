@@ -147,6 +147,7 @@ namespace Vlingo.Wire.Multicast
             catch (SocketException e)
             {
                 _logger.Error($"Failed to read channel selector for: '{_name}'", e);
+                _readDone.Set();
             }
         }
 
@@ -234,11 +235,10 @@ namespace Vlingo.Wire.Multicast
             var state = (StateObject) ar.AsyncState;  
             var channel = state.WorkSocket;
             var buffer = state.Buffer;
-            
+
             try
             {
                 var bytesRead = channel.EndReceiveFrom(ar, ref _ipEndPoint);
-                _readDone.Set();
                 if (bytesRead > 0)
                 {
                     _buffer.Clear();
@@ -246,13 +246,17 @@ namespace Vlingo.Wire.Multicast
                     _buffer.Write(buffer, 0, bytesRead);
                     _buffer.Flip();
                     _message.From(_buffer);
-                    
+
                     _consumer!.Consume(_message);
                 }
             }
             catch (SocketException e)
             {
                 _logger.Error($"Failed to receive callback: '{_name}'", e);
+            }
+            finally
+            {
+                _readDone.Set();
             }
         }
         

@@ -100,6 +100,7 @@ namespace Vlingo.Wire.Multicast
             {
                 _channel.Close();
                 _buffer.Dispose();
+                _readDone.Dispose();
                 Dispose(true);
             }
             catch (Exception e)
@@ -147,7 +148,6 @@ namespace Vlingo.Wire.Multicast
             catch (SocketException e)
             {
                 _logger.Error($"Failed to read channel selector for: '{_name}'", e);
-                _readDone.Set();
             }
         }
 
@@ -249,14 +249,12 @@ namespace Vlingo.Wire.Multicast
 
                     _consumer!.Consume(_message);
                 }
+                
+                _readDone.Set();
             }
             catch (SocketException e)
             {
                 _logger.Error($"Failed to receive callback: '{_name}'", e);
-            }
-            finally
-            {
-                _readDone.Set();
             }
         }
         

@@ -181,6 +181,8 @@ namespace Vlingo.Wire.Multicast
         public override ILogger Logger => _logger;
 
         public override string Name => _name;
+
+        public bool IsClosed => _closed;
         
         //====================================
         // internal implementation
@@ -275,7 +277,7 @@ namespace Vlingo.Wire.Multicast
 
                 var buffer = message.AsBuffer(new MemoryStream(_maxMessageSize));
                 _publisherChannel.BeginSendTo(buffer, 0, buffer.Length, SocketFlags.None, _groupAddress, SendToCallback, _publisherChannel);
-                _sendDone.WaitOne();
+                // _sendDone.WaitOne();
             }
         }
         
@@ -293,7 +295,7 @@ namespace Vlingo.Wire.Multicast
             var publisherChannel = (Socket)ar.AsyncState;
 
             var sent = publisherChannel.EndSendTo(ar);
-            _sendDone.Set();
+            // _sendDone.Set();
             
             if (sent > 0)
             {

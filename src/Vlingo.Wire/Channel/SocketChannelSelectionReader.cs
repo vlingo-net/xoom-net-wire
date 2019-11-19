@@ -57,7 +57,7 @@ namespace Vlingo.Wire.Channel
             {
                 if (bytesRead == 0)
                 {
-                    CloseClientResources(client);
+                    // CloseClientResources(client);
                 }
                 else
                 {

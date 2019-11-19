@@ -34,7 +34,7 @@ namespace Vlingo.Wire.Multicast
         private bool _disposed;
         private readonly ManualResetEvent _acceptDone;
         private readonly ManualResetEvent _sendDone;
-        private SocketChannelSelectionReader _socketChannelSelectionReader;
+        //private SocketChannelSelectionReader _socketChannelSelectionReader;
 
         public MulticastPublisherReader(
             string name,
@@ -69,7 +69,7 @@ namespace Vlingo.Wire.Multicast
             _publisherAddress = (IPEndPoint)_readChannel.LocalEndPoint;
             
             _clientReadChannels = new List<Socket>();
-            _socketChannelSelectionReader = new SocketChannelSelectionReader(this);
+            //_socketChannelSelectionReader = new SocketChannelSelectionReader(this, _logger);
             
             _availability = AvailabilityMessage();
         }
@@ -201,10 +201,11 @@ namespace Vlingo.Wire.Multicast
                 _logger.Debug($"{this}: Available client channels - {_clientReadChannels.Count}...");
                 foreach (var clientReadChannel in _clientReadChannels.ToArray())
                 {
+                    _logger.Debug($"{this}: Read available '{clientReadChannel.Available}'...");
                     if (clientReadChannel.Available > 0)
                     {
                         _logger.Debug($"{this}: SocketChannelSelectionReader Read...");
-                        _socketChannelSelectionReader.Read(clientReadChannel, new RawMessageBuilder(_maxMessageSize));
+                        new SocketChannelSelectionReader(this, _logger).Read(clientReadChannel, new RawMessageBuilder(_maxMessageSize));
                     }
                     
                     _logger.Debug($"{this}: State of client channel after the read : is connected ? {clientReadChannel.IsSocketConnected()}...");

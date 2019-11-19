@@ -155,10 +155,12 @@ namespace Vlingo.Wire.Channel
                         return _channel;
                     }
 
+                    _logger.Info($"{this}: Closing socket...");
                     Close();
                 }
 
                 var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                _logger.Info($"{this}: Creating socket...");
                 channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, channel);
                 _connectDone.WaitOne();
                 _retries = 0;

@@ -40,19 +40,19 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
 
             _inboundStream.Actor.Stop();
 
-            int count = 0;
+            _interest.TestResult.UntilStops.ReadFromExpecting("count", happenings);
+            
+            var count = 0;
             var tempArray = _interest.TestResult.Messages.ToArray();
 
-            for (int i = 1; i < _interest.TestResult.Messages.Count + 1; i++)
+            for (var i = 1; i < _interest.TestResult.Messages.Count + 1; i++)
             {
                 if (tempArray.Contains($"{MockChannelReader.MessagePrefix}{i}"))
                 {
                     count++;
                 }
             }
-
-            _interest.TestResult.UntilStops.ReadFromExpecting("count", happenings);
-
+            
             Assert.True(_interest.TestResult.MessageCount.Get() > 0);
             Assert.Equal(count, _reader.ProbeChannelCount.Get());
         }

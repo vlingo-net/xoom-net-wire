@@ -34,7 +34,8 @@ namespace Vlingo.Wire.Multicast
         private bool _disposed;
         private readonly ManualResetEvent _acceptDone;
         private readonly ManualResetEvent _sendDone;
-        //private SocketChannelSelectionReader _socketChannelSelectionReader;
+
+        private readonly SocketChannelSelectionReader _socketChannelSelectionReader;
 
         public MulticastPublisherReader(
             string name,
@@ -69,7 +70,7 @@ namespace Vlingo.Wire.Multicast
             _publisherAddress = (IPEndPoint)_readChannel.LocalEndPoint;
             
             _clientReadChannels = new List<Socket>();
-            //_socketChannelSelectionReader = new SocketChannelSelectionReader(this, _logger);
+            _socketChannelSelectionReader = new SocketChannelSelectionReader(this, _logger);
             
             _availability = AvailabilityMessage();
         }
@@ -202,11 +203,11 @@ namespace Vlingo.Wire.Multicast
                 foreach (var clientReadChannel in _clientReadChannels.ToArray())
                 {
                     _logger.Debug($"{this}: Read available '{clientReadChannel.Available}'...");
-                    if (clientReadChannel.Available > 0)
-                    {
+                    //if (clientReadChannel.Available > 0)
+                    //{
                         _logger.Debug($"{this}: SocketChannelSelectionReader Read...");
-                        new SocketChannelSelectionReader(this, _logger).Read(clientReadChannel, new RawMessageBuilder(_maxMessageSize));
-                    }
+                        _socketChannelSelectionReader.Read(clientReadChannel, new RawMessageBuilder(_maxMessageSize));
+                    //}
                     
                     _logger.Debug($"{this}: State of client channel after the read : is connected ? {clientReadChannel.IsSocketConnected()}...");
                     
@@ -294,7 +295,7 @@ namespace Vlingo.Wire.Multicast
         {
             // Get the socket that handles the client request.  
             var listener = (Socket)ar.AsyncState;
-            var clientChannel = listener.EndAccept(ar);  
+            var clientChannel = listener.EndAccept(ar);
             _clientReadChannels.Add(clientChannel);
             _logger.Debug($"{this}: Accepted Callback {clientChannel.RemoteEndPoint}");
             _acceptDone.Set();

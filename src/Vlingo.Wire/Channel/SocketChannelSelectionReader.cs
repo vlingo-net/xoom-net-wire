@@ -45,7 +45,17 @@ namespace Vlingo.Wire.Channel
             var bytes = state.Bytes;
             var builder = state.Builder;
 
-            var bytesRead = client.EndReceive(ar);
+            int bytesRead = 0;
+            try
+            {
+                bytesRead = client.EndReceive(ar);
+            }
+            catch (SocketException e)
+            {
+                // nothing to read.
+                _logger.Error($"{this}: ReceiveCallback failed because of '{e.Message}...", e);
+            }
+            
             _logger.Debug($"{this}: ReceiveCallback succeed...");
 
             if (bytesRead > 0)

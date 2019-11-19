@@ -203,19 +203,20 @@ namespace Vlingo.Wire.Multicast
                 foreach (var clientReadChannel in _clientReadChannels.ToArray())
                 {
                     _logger.Debug($"{this}: Read available '{clientReadChannel.Available}'...");
-                    //if (clientReadChannel.Available > 0)
-                    //{
+                    if (clientReadChannel.Available > 0)
+                    {
                         _logger.Debug($"{this}: SocketChannelSelectionReader Read...");
                         _socketChannelSelectionReader.Read(clientReadChannel, new RawMessageBuilder(_maxMessageSize));
-                    //}
+                    }
                     
                     _logger.Debug($"{this}: State of client channel after the read : is connected ? {clientReadChannel.IsSocketConnected()}...");
                     
-//                    if (!clientReadChannel.IsSocketConnected())
-//                    {
-//                        clientReadChannel.Close();
-//                        _clientReadChannels.Remove(clientReadChannel);
-//                    }
+                    if (!clientReadChannel.IsSocketConnected())
+                    {
+                        _logger.Info($"{this} Closing client channel because it is no longer connected...");
+                        clientReadChannel.Close();
+                        _clientReadChannels.Remove(clientReadChannel);
+                    }
                 }
             }
             catch (Exception e)

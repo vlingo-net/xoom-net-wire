@@ -86,6 +86,8 @@ namespace Vlingo.Wire.Multicast
             }
 
             _closed = true;
+            
+            _logger.Debug($"{this}: Closing the channel...");
 
             try
             {
@@ -196,12 +198,16 @@ namespace Vlingo.Wire.Multicast
             {
                 Accept();
 
+                _logger.Debug($"{this}: Available client channels - {_clientReadChannels.Count}...");
                 foreach (var clientReadChannel in _clientReadChannels.ToArray())
                 {
                     if (clientReadChannel.Available > 0)
                     {
+                        _logger.Debug($"{this}: SocketChannelSelectionReader Read...");
                         _socketChannelSelectionReader.Read(clientReadChannel, new RawMessageBuilder(_maxMessageSize));
                     }
+                    
+                    _logger.Debug($"{this}: State of client channel after the read : is connected ? {clientReadChannel.IsSocketConnected()}...");
                     
 //                    if (!clientReadChannel.IsSocketConnected())
 //                    {
@@ -289,6 +295,7 @@ namespace Vlingo.Wire.Multicast
             var listener = (Socket)ar.AsyncState;
             var clientChannel = listener.EndAccept(ar);  
             _clientReadChannels.Add(clientChannel);
+            _logger.Debug($"{this}: Accepted Callback {clientChannel.RemoteEndPoint}");
             _acceptDone.Set();
         }
 
@@ -297,6 +304,7 @@ namespace Vlingo.Wire.Multicast
             var publisherChannel = (Socket)ar.AsyncState;
 
             var sent = publisherChannel.EndSendTo(ar);
+            _logger.Debug($"{this}: Sent to callback for UDP...");
             // _sendDone.Set();
             
             if (sent > 0)

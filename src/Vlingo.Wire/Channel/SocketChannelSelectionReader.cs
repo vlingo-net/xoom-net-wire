@@ -47,7 +47,7 @@ namespace Vlingo.Wire.Channel
 
             var bytesRead = client.EndReceive(ar);
 
-            _logger.Debug($"{this}: ReceiveCallback succeed...");
+            _logger.Debug($"{this}: ReceiveCallback succeed from {client.RemoteEndPoint}...");
 
             if (bytesRead > 0)
             {

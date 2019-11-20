@@ -298,7 +298,7 @@ namespace Vlingo.Wire.Multicast
             var listener = (Socket)ar.AsyncState;
             var clientChannel = listener.EndAccept(ar);
             _clientReadChannels.Add(clientChannel);
-            _logger.Debug($"{this}: Accepted Callback {clientChannel.RemoteEndPoint}");
+            _logger.Debug($"{this}: Accepted callback from {clientChannel.RemoteEndPoint} on {clientChannel.LocalEndPoint}");
             _acceptDone.Set();
         }
 

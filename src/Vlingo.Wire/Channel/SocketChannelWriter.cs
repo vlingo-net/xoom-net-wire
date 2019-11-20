@@ -160,7 +160,7 @@ namespace Vlingo.Wire.Channel
                 }
 
                 var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                _logger.Info($"{this}: Creating socket...");
+                _logger.Info($"{this}: Creating socket to {_address.HostName}:{_address.Port}...");
                 channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, channel);
                 _connectDone.WaitOne();
                 _retries = 0;
@@ -182,7 +182,7 @@ namespace Vlingo.Wire.Channel
             {
                 var channel = (Socket) ar.AsyncState;
                 channel.EndConnect(ar);
-                _logger.Debug($"{this}: Socket End Connect {channel.RemoteEndPoint}");
+                _logger.Debug($"{this}: Socket successfully connected to remote enpoint {channel.RemoteEndPoint}");
                 IsClosed = false;
                 _connectDone.Set();
             }

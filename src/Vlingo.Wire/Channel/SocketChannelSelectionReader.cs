@@ -8,20 +8,16 @@
 using System;
 using System.IO;
 using System.Net.Sockets;
-using System.Threading;
-using Vlingo.Actors;
 using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Channel
 {
     public class SocketChannelSelectionReader: SelectionReader
     {
-        private readonly ILogger _logger;
         // private readonly AutoResetEvent _readDone;
         
-        public SocketChannelSelectionReader(ChannelMessageDispatcher dispatcher, ILogger logger) : base(dispatcher)
+        public SocketChannelSelectionReader(ChannelMessageDispatcher dispatcher) : base(dispatcher)
         {
-            _logger = logger;
             // _readDone = new AutoResetEvent(false);
         }
 
@@ -33,7 +29,6 @@ namespace Vlingo.Wire.Channel
             channel.BeginReceive(bytes, 0, bytes.Length, SocketFlags.None, ReceiveCallback, state);
             // _readDone.WaitOne();
 
-            _logger.Debug($"{this}: Dispatching to consumer...");
             Dispatcher.DispatchMessageFor(builder);
         }
 
@@ -46,8 +41,6 @@ namespace Vlingo.Wire.Channel
             var builder = state.Builder;
 
             var bytesRead = client.EndReceive(ar);
-
-            _logger.Debug($"{this}: ReceiveCallback succeed from {client.RemoteEndPoint}...");
 
             if (bytesRead > 0)
             {
@@ -62,11 +55,7 @@ namespace Vlingo.Wire.Channel
             }
             else
             {
-                if (bytesRead == 0)
-                {
-                    // CloseClientResources(client);
-                }
-                else
+                if (bytesRead > 0)
                 {
                     Dispatcher.DispatchMessageFor(builder);
                 }

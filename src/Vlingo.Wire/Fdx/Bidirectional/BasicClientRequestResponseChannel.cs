@@ -153,7 +153,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         {
             if (_closed)
             {
-                _logger.Debug($"Cannot close the channel because it's already closed. Disposed: {_disposed}");    
+                return;
             }
             
             if (_channel != null)

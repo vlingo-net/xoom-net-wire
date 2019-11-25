@@ -40,7 +40,6 @@ namespace Vlingo.Wire.Channel
         {
             if (IsClosed)
             {
-                _logger.Debug("The socket is already closed. Try to open a new connection");
                 return;
             }
             
@@ -160,7 +159,6 @@ namespace Vlingo.Wire.Channel
                 }
 
                 var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                _logger.Info($"{this}: Creating socket to {_address.HostName}:{_address.Port}...");
                 channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, channel);
                 _connectDone.WaitOne();
                 _retries = 0;

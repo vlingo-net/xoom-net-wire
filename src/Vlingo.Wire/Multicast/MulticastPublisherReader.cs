@@ -70,7 +70,7 @@ namespace Vlingo.Wire.Multicast
             _publisherAddress = (IPEndPoint)_readChannel.LocalEndPoint;
             
             _clientReadChannels = new List<Socket>();
-            _socketChannelSelectionReader = new SocketChannelSelectionReader(this, _logger);
+            _socketChannelSelectionReader = new SocketChannelSelectionReader(this);
             
             _availability = AvailabilityMessage();
         }
@@ -88,8 +88,6 @@ namespace Vlingo.Wire.Multicast
 
             _closed = true;
             
-            _logger.Debug($"{this}: Closing the channel...");
-
             try
             {
                 _messageQueue.Clear(); // messages are lost anyway
@@ -199,21 +197,15 @@ namespace Vlingo.Wire.Multicast
             {
                 Accept();
 
-                _logger.Debug($"{this}: Available client channels - {_clientReadChannels.Count}...");
                 foreach (var clientReadChannel in _clientReadChannels.ToArray())
                 {
-                    _logger.Debug($"{this}: Read available '{clientReadChannel.Available}'...");
                     if (clientReadChannel.Available > 0)
                     {
-                        _logger.Debug($"{this}: SocketChannelSelectionReader Read...");
                         _socketChannelSelectionReader.Read(clientReadChannel, new RawMessageBuilder(_maxMessageSize));
                     }
                     
-                    _logger.Debug($"{this}: State of client channel after the read : is connected ? {clientReadChannel.IsSocketConnected()}...");
-                    
                     if (!clientReadChannel.IsSocketConnected())
                     {
-                        _logger.Info($"{this} Closing client channel because it is no longer connected...");
                         clientReadChannel.Close();
                         _clientReadChannels.Remove(clientReadChannel);
                     }
@@ -307,7 +299,6 @@ namespace Vlingo.Wire.Multicast
             var publisherChannel = (Socket)ar.AsyncState;
 
             var sent = publisherChannel.EndSendTo(ar);
-            _logger.Debug($"{this}: Sent to callback for UDP...");
             // _sendDone.Set();
             
             if (sent > 0)

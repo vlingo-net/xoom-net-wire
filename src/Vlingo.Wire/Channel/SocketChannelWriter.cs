@@ -20,7 +20,6 @@ namespace Vlingo.Wire.Channel
         private Socket? _channel;
         private readonly Address _address;
         private readonly ILogger _logger;
-        private readonly ManualResetEvent _sendDone;
         private readonly AutoResetEvent _readDone;
         private readonly AutoResetEvent _connectDone;
         private int _retries;
@@ -30,7 +29,6 @@ namespace Vlingo.Wire.Channel
             _address = address;
             _logger = logger;
             _channel = null;
-            _sendDone = new ManualResetEvent(false);
             _readDone = new AutoResetEvent(false);
             _connectDone = new AutoResetEvent(false);
             _retries = 0;
@@ -95,7 +93,6 @@ namespace Vlingo.Wire.Channel
 
                         totalBytesWritten += bytes.Length;
                         _channel.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, SendCallback, _channel);
-                        // _sendDone.WaitOne();
                     }
                 }
             }
@@ -131,7 +128,6 @@ namespace Vlingo.Wire.Channel
             {
                 var channel = (Socket) ar.AsyncState;
                 channel.EndSend(ar);
-                // _sendDone.Set();
             }
             catch (Exception e)
             {

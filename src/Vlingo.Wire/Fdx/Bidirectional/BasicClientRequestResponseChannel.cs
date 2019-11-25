@@ -26,7 +26,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private readonly ByteBufferPool _readBufferPool;
         private bool _disposed;
         private readonly ManualResetEvent _connectDone;
-        private readonly ManualResetEvent _sendDone;
         private readonly ManualResetEvent _receiveDone;
 
         public BasicClientRequestResponseChannel(
@@ -44,7 +43,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _previousPrepareFailures = 0;
             _readBufferPool = new ByteBufferPool(maxBufferPoolSize, maxMessageSize);
             _connectDone = new ManualResetEvent(false);
-            _sendDone = new ManualResetEvent(false);
             _receiveDone = new ManualResetEvent(false);
         }
         
@@ -78,7 +76,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 try
                 {
                     preparedChannel.BeginSend(buffer, 0, buffer.Length, 0, SendCallback, preparedChannel);
-                    // _sendDone.WaitOne();
                 }
                 catch (Exception e)
                 {
@@ -142,7 +139,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _disposed = true;
             _connectDone.Dispose();
             _receiveDone.Dispose();
-            _sendDone.Dispose();
         }
 
         //=========================================
@@ -261,9 +257,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
                 // Complete sending the data to the remote device.  
                 client.EndSend(ar);
-                
-                // Signal that all bytes have been sent.  
-                // _sendDone.Set();
             }
             catch (Exception e)
             {

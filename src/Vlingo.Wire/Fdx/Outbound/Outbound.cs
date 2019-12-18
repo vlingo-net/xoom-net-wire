@@ -14,10 +14,10 @@ namespace Vlingo.Wire.Fdx.Outbound
     
     public class Outbound
     {
-        private readonly ByteBufferPool _pool;
+        private readonly ConsumerByteBufferPool _pool;
         private readonly IManagedOutboundChannelProvider _provider;
 
-        public Outbound(IManagedOutboundChannelProvider provider, ByteBufferPool byteBufferPool)
+        public Outbound(IManagedOutboundChannelProvider provider, ConsumerByteBufferPool byteBufferPool)
         {
             _provider = provider;
             _pool = byteBufferPool;
@@ -25,7 +25,7 @@ namespace Vlingo.Wire.Fdx.Outbound
 
         public void Broadcast(RawMessage message)
         {
-            var buffer = _pool.Access();
+            var buffer = _pool.Acquire();
             Broadcast(BytesFrom(message, buffer));
         }
 
@@ -38,7 +38,7 @@ namespace Vlingo.Wire.Fdx.Outbound
 
         public void Broadcast(IEnumerable<Node> selectNodes, RawMessage message)
         {
-            var buffer = _pool.Access();
+            var buffer = _pool.Acquire();
             Broadcast(selectNodes, BytesFrom(message, buffer));
         }
 
@@ -59,11 +59,11 @@ namespace Vlingo.Wire.Fdx.Outbound
 
         public void Open(Id id) => _provider.ChannelFor(id);
 
-        public ByteBufferPool.PooledByteBuffer PooledByteBuffer() => _pool.Access();
+        public IConsumerByteBuffer PooledByteBuffer() => _pool.Acquire();
 
         public void SendTo(RawMessage message, Id id)
         {
-            var buffer = _pool.Access();
+            var buffer = _pool.Acquire();
             SendTo(BytesFrom(message, buffer), id);
         }
 

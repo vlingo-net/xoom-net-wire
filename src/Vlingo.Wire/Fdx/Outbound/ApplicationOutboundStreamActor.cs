@@ -15,7 +15,7 @@ namespace Vlingo.Wire.Fdx.Outbound
     {
         private readonly Outbound _outbound;
 
-        public ApplicationOutboundStreamActor(IManagedOutboundChannelProvider provider, ByteBufferPool byteBufferPool)
+        public ApplicationOutboundStreamActor(IManagedOutboundChannelProvider provider, ConsumerByteBufferPool byteBufferPool)
         {
             _outbound = new Outbound(provider, byteBufferPool);
         }

@@ -9,6 +9,8 @@ using System;
 using System.Net.Sockets;
 using System.Threading;
 using Vlingo.Actors;
+using Vlingo.Common;
+using Vlingo.Common.Pool;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Node;
@@ -23,7 +25,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private readonly IResponseChannelConsumer _consumer;
         private readonly ILogger _logger;
         private int _previousPrepareFailures;
-        private readonly ByteBufferPool _readBufferPool;
+        private readonly ConsumerByteBufferPool _readBufferPool;
         private bool _disposed;
         private readonly ManualResetEvent _connectDone;
         private readonly ManualResetEvent _receiveDone;
@@ -41,7 +43,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _closed = false;
             _channel = null;
             _previousPrepareFailures = 0;
-            _readBufferPool = new ByteBufferPool(maxBufferPoolSize, maxMessageSize);
+            _readBufferPool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, Nothing>.Config.Of(maxBufferPoolSize), maxMessageSize);
             _connectDone = new ManualResetEvent(false);
             _receiveDone = new ManualResetEvent(false);
         }
@@ -211,10 +213,10 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         
         private void ReadConsume(Socket channel)
         {
-            ByteBufferPool.PooledByteBuffer? pooledBuffer = null;
+            IConsumerByteBuffer pooledBuffer = null;
             try
             {
-                pooledBuffer = _readBufferPool.AccessFor("client-response", 25);
+                pooledBuffer = _readBufferPool.Acquire();
                 var readBuffer = pooledBuffer.ToArray();
                 // Create the state object.  
                 var state = new StateObject(channel, readBuffer, pooledBuffer);
@@ -223,7 +225,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             }
             catch (Exception e)
             {
-                if (pooledBuffer != null && pooledBuffer.IsInUse())
+                if (pooledBuffer != null)
                 {
                     pooledBuffer.Release();
                     throw;
@@ -328,7 +330,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
         private class StateObject
         {
-            public StateObject(Socket workSocket, byte[] buffer, ByteBufferPool.PooledByteBuffer pooledByteBuffer)
+            public StateObject(Socket workSocket, byte[] buffer, IConsumerByteBuffer pooledByteBuffer)
             {
                 WorkSocket = workSocket;
                 Buffer = buffer;
@@ -339,7 +341,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
             public byte[] Buffer { get; }
 
-            public ByteBufferPool.PooledByteBuffer PooledByteBuffer { get; }
+            public IConsumerByteBuffer PooledByteBuffer { get; }
         }
     }
 }

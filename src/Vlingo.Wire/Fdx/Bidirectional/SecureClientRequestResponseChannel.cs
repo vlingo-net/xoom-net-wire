@@ -409,7 +409,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
             public byte[] Buffer { get; }
 
-            public ByteBufferPool.PooledByteBuffer PooledByteBuffer { get; }
+            public IConsumerByteBuffer PooledByteBuffer { get; }
         }
     }
 }

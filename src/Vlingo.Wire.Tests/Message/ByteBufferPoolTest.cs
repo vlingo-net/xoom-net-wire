@@ -11,6 +11,7 @@ using Vlingo.Common;
 using Vlingo.Wire.Message;
 using Xunit;
 using Xunit.Abstractions;
+#pragma warning disable 618
 
 namespace Vlingo.Wire.Tests.Message
 {

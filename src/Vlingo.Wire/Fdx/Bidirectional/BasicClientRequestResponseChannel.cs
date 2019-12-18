@@ -211,10 +211,11 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         
         private void ReadConsume(Socket channel)
         {
-            var pooledBuffer = _readBufferPool.AccessFor("client-response", 25);
-            var readBuffer = pooledBuffer.ToArray();
+            ByteBufferPool.PooledByteBuffer? pooledBuffer = null;
             try
             {
+                pooledBuffer = _readBufferPool.AccessFor("client-response", 25);
+                var readBuffer = pooledBuffer.ToArray();
                 // Create the state object.  
                 var state = new StateObject(channel, readBuffer, pooledBuffer);
                 channel.BeginReceive(readBuffer, 0, readBuffer.Length, 0, ReceiveCallback, state);
@@ -222,8 +223,13 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             }
             catch (Exception e)
             {
-                _logger.Error("Cannot begin receiving on the channel", e);
-                throw;
+                if (pooledBuffer != null && pooledBuffer.IsInUse())
+                {
+                    pooledBuffer.Release();
+                    throw;
+                }
+                
+                throw new InvalidOperationException($"No pooled buffers remaining: {e.Message}", e);
             }
         }
 

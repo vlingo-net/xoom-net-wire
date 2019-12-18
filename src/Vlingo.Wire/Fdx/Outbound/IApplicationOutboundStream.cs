@@ -23,7 +23,7 @@ namespace Vlingo.Wire.Fdx.Outbound
         public static IApplicationOutboundStream Instance(
             Stage stage,
             IManagedOutboundChannelProvider provider,
-            ByteBufferPool byteBufferPool)
+            ConsumerByteBufferPool byteBufferPool)
         {
             var definition = Definition.Has<ApplicationOutboundStreamActor>(
                 Definition.Parameters(provider, byteBufferPool), "application-outbound-stream");

@@ -50,7 +50,7 @@ namespace Vlingo.Wire.Message
         
         private sealed class PoolAwareConsumerByteBuffer : BasicConsumerByteBuffer
         {
-            private ConsumerByteBufferPool _pool;
+            private ConsumerByteBufferPool? _pool;
             
             public PoolAwareConsumerByteBuffer(int id, int maxBufferSize) : base(id, maxBufferSize)
             {
@@ -58,7 +58,7 @@ namespace Vlingo.Wire.Message
 
             public void SetPool(ConsumerByteBufferPool pool) => _pool = pool;
 
-            public override void Release() => _pool.Release(this);
+            public override void Release() => _pool?.Release(this);
 
             public override string ToString() => $"PooledByteBuffer[id={Id}]";
         }

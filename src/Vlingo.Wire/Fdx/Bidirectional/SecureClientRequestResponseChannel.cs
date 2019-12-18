@@ -11,6 +11,8 @@ using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Vlingo.Actors;
+using Vlingo.Common;
+using Vlingo.Common.Pool;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Node;
@@ -27,7 +29,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private readonly IResponseChannelConsumer _consumer;
         private readonly ILogger _logger;
         private int _previousPrepareFailures;
-        private readonly ByteBufferPool _readBufferPool;
+        private readonly ConsumerByteBufferPool _readBufferPool;
         private bool _disposed;
         private readonly ManualResetEvent _connectDone;
         private readonly ManualResetEvent _authenticateDone;
@@ -47,7 +49,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _closed = false;
             _channel = null;
             _previousPrepareFailures = 0;
-            _readBufferPool = new ByteBufferPool(maxBufferPoolSize, maxMessageSize);
+            _readBufferPool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, Nothing>.Config.Of(maxBufferPoolSize), maxMessageSize);
             _connectDone = new ManualResetEvent(false);
             _authenticateDone = new ManualResetEvent(false);
             _sendDone = new ManualResetEvent(false);
@@ -217,7 +219,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
         private void ReadConsume(SslStream sslStream)
         {
-            var pooledBuffer = _readBufferPool.AccessFor("client-response", 25);
+            var pooledBuffer = _readBufferPool.Acquire();
             var readBuffer = pooledBuffer.ToArray();
             try
             {
@@ -382,7 +384,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             
             if (stream.RemoteCertificate != null)
             {
-                _logger.Debug($"Remote cert was issued to {remoteCertificate.Subject} and is valid from {remoteCertificate.GetEffectiveDateString()} until {remoteCertificate.GetExpirationDateString()}.");
+                _logger.Debug($"Remote cert was issued to {remoteCertificate?.Subject} and is valid from {remoteCertificate?.GetEffectiveDateString()} until {remoteCertificate?.GetExpirationDateString()}.");
             }
             else
             {
@@ -398,7 +400,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
         private class StateObject
         {
-            public StateObject(SslStream sslStream, byte[] buffer, ByteBufferPool.PooledByteBuffer pooledByteBuffer)
+            public StateObject(SslStream sslStream, byte[] buffer, IConsumerByteBuffer pooledByteBuffer)
             {
                 SslStream = sslStream;
                 Buffer = buffer;

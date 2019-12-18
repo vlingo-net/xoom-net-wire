@@ -213,7 +213,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         
         private void ReadConsume(Socket channel)
         {
-            IConsumerByteBuffer pooledBuffer = null;
+            IConsumerByteBuffer? pooledBuffer = null;
             try
             {
                 pooledBuffer = _readBufferPool.Acquire();

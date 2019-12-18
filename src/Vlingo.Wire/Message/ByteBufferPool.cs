@@ -10,6 +10,7 @@ using Vlingo.Common;
 
 namespace Vlingo.Wire.Message
 {
+    [Obsolete("Use ConsumerByteBufferPool instead")]
     public class ByteBufferPool
     {
         // TODO: This should be converted to ArrayPool<T>

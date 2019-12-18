@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using Vlingo.Actors;
+using Vlingo.Common.Pool;
 using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Channel
@@ -20,7 +21,6 @@ namespace Vlingo.Wire.Channel
                                                         IResponseSenderChannel<Socket>,
                                                         IScheduled<object>
     {
-        private int _bufferId;
         private readonly ICancellable _cancellable;
         private int _contextId;
         private readonly int _messageBufferSize;
@@ -28,6 +28,8 @@ namespace Vlingo.Wire.Channel
         private readonly IRequestChannelConsumerProvider _provider;
         private readonly IResponseSenderChannel<Socket> _responder;
         private Context? _context;
+        
+        private IResourcePool<IConsumerByteBuffer, Nothing> _requestBufferPool;
         
         public SocketChannelSelectionProcessorActor(
             IRequestChannelConsumerProvider provider,
@@ -39,6 +41,7 @@ namespace Vlingo.Wire.Channel
             _provider = provider;
             _name = name;
             _messageBufferSize = messageBufferSize;
+            _requestBufferPool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, Nothing>.Config.Of(maxBufferPoolSize), messageBufferSize);
             _responder = SelfAs<IResponseSenderChannel<Socket>>();
             _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled<object?>>(),
                 null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(probeInterval));
@@ -326,7 +329,7 @@ namespace Vlingo.Wire.Channel
                 _parent = parent;
                 _clientChannel = clientChannel;
                 _consumer = parent._provider.RequestChannelConsumer();
-                _buffer = BasicConsumerByteBuffer.Allocate(++_parent._bufferId, _parent._messageBufferSize);
+                _buffer = parent._requestBufferPool.Acquire();
                 _id = $"{++_parent._contextId}";
                 _writables = new Queue<IConsumerByteBuffer>();
             }

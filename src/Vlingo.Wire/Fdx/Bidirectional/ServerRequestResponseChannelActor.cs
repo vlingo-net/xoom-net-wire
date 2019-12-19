@@ -34,12 +34,13 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             int processorPoolSize,
             int maxBufferPoolSize,
             int maxMessageSize,
-            long probeInterval)
+            long probeInterval,
+            long probeTimeout)
         {
             _name = name;
             _port = port;
             _requestBufferPool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, Nothing>.Config.Of(maxBufferPoolSize), maxMessageSize);
-            _processors = StartProcessors(provider, name, processorPoolSize, _requestBufferPool, probeInterval);
+            _processors = StartProcessors(provider, name, processorPoolSize, _requestBufferPool, probeInterval, probeTimeout);
 
             try
             {
@@ -70,10 +71,11 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             int processorPoolSize,
             int maxBufferPoolSize,
             int maxMessageSize,
-            long probeInterval)
+            long probeInterval,
+            long probeTimeout)
         {
             return ServerRequestResponseChannelFactory.Start(stage, provider, port, name, processorPoolSize,
-                maxBufferPoolSize, maxMessageSize, probeInterval);
+                maxBufferPoolSize, maxMessageSize, probeInterval, probeTimeout);
         }
 
         IServerRequestResponseChannel IServerRequestResponseChannel.Start(
@@ -86,10 +88,11 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             int processorPoolSize,
             int maxBufferPoolSize,
             int maxMessageSize,
-            long probeInterval)
+            long probeInterval,
+            long probeTimeout)
         {
             return ServerRequestResponseChannelFactory.Start(stage, address, mailboxName, provider, port, name, processorPoolSize,
-                maxBufferPoolSize, maxMessageSize, probeInterval);
+                maxBufferPoolSize, maxMessageSize, probeInterval, probeTimeout);
         }
         
         public void Close()
@@ -178,7 +181,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             string name,
             int processorPoolSize,
             IResourcePool<IConsumerByteBuffer, Nothing> requestBufferPool,
-            long probeInterval)
+            long probeInterval,
+            long probeTimeout)
         {
             var processors = new ISocketChannelSelectionProcessor[processorPoolSize];
 
@@ -186,7 +190,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             {
                 processors[idx] = ChildActorFor<ISocketChannelSelectionProcessor>(
                     Definition.Has<SocketChannelSelectionProcessorActor>(
-                        Definition.Parameters(provider, $"{name}-processor-{idx}", requestBufferPool, probeInterval)));
+                        Definition.Parameters(provider, $"{name}-processor-{idx}", requestBufferPool, probeInterval, probeTimeout)));
             }
 
             return processors;

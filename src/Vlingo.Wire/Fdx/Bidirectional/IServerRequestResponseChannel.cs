@@ -20,7 +20,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             int processorPoolSize,
             int maxBufferPoolSize,
             int maxMessageSize,
-            long probeInterval);
+            long probeInterval,
+            long probeTimeout);
 
         IServerRequestResponseChannel Start(
             Stage stage,
@@ -32,7 +33,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             int processorPoolSize,
             int maxBufferPoolSize,
             int maxMessageSize,
-            long probeInterval);
+            long probeInterval,
+            long probeTimeout);
 
         void Close();
 
@@ -50,9 +52,10 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             int processorPoolSize,
             int maxBufferPoolSize,
             int maxMessageSize,
-            long probeInterval)
+            long probeInterval,
+            long probeTimeout)
         {
-            var parameters = Definition.Parameters(provider, port, name, processorPoolSize, maxBufferPoolSize, maxMessageSize, probeInterval);
+            var parameters = Definition.Parameters(provider, port, name, processorPoolSize, maxBufferPoolSize, maxMessageSize, probeInterval, probeTimeout);
 
             var channel =
                 stage.ActorFor<IServerRequestResponseChannel>(
@@ -71,9 +74,10 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             int processorPoolSize,
             int maxBufferPoolSize,
             int maxMessageSize,
-            long probeInterval)
+            long probeInterval,
+            long probeTimeout)
         {
-            var parameters = Definition.Parameters(provider, port, name, processorPoolSize, maxBufferPoolSize, maxMessageSize, probeInterval);
+            var parameters = Definition.Parameters(provider, port, name, processorPoolSize, maxBufferPoolSize, maxMessageSize, probeInterval, probeTimeout);
 
             var channel =
                 stage.ActorFor<IServerRequestResponseChannel>(

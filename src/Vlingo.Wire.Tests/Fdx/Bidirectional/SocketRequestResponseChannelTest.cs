@@ -240,7 +240,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 1,
                 PoolSize,
                 10240,
-                10L);
+                10L,
+                1L);
             
             _clientConsumer = new TestResponseChannelConsumer();
             

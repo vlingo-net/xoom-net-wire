@@ -132,7 +132,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         }
 
         public IServerRequestResponseChannel Start(Stage stage, IRequestChannelConsumerProvider provider, int port,
-            string name, int processorPoolSize, int maxBufferPoolSize, int maxMessageSize, long probeInterval)
+            string name, int processorPoolSize, int maxBufferPoolSize, int maxMessageSize, long probeInterval, long probeTimeout)
         {
             return ServerRequestResponseChannelFactory.Start(
                 stage,
@@ -142,12 +142,13 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 processorPoolSize,
                 maxMessageSize,
                 maxMessageSize,
-                probeInterval);
+                probeInterval,
+                probeTimeout);
         }
 
         public IServerRequestResponseChannel Start(Stage stage, IAddress address, string mailboxName,
             IRequestChannelConsumerProvider provider, int port, string name, int processorPoolSize,
-            int maxBufferPoolSize, int maxMessageSize, long probeInterval)
+            int maxBufferPoolSize, int maxMessageSize, long probeInterval, long probeTimeout)
         {
             return ServerRequestResponseChannelFactory.Start(
                 stage,
@@ -159,7 +160,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 processorPoolSize,
                 maxMessageSize,
                 maxMessageSize,
-                probeInterval);
+                probeInterval,
+                probeTimeout);
         }
     }
 }

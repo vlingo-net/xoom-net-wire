@@ -11,9 +11,9 @@ namespace Vlingo.Wire.Channel
 {
     public static class SocketExtensions
     {
-        public static bool IsSocketConnected(this Socket s)
+        public static bool IsSocketConnected(this Socket s, int probeTimeout = 1)
         {
-            return !(s.Poll(1000, SelectMode.SelectRead) && s.Available == 0 || !s.Connected);
+            return !(s.Poll(probeTimeout * 1000, SelectMode.SelectRead) && s.Available == 0 || !s.Connected);
         }
     }
 }

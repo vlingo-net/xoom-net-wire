@@ -24,6 +24,7 @@ namespace Vlingo.Wire.Channel
         private readonly ICancellable _cancellable;
         private int _contextId;
         private readonly string _name;
+        private readonly long _probeTimeout;
         private readonly IRequestChannelConsumerProvider _provider;
         private readonly IResponseSenderChannel<Socket> _responder;
         private Context? _context;
@@ -34,11 +35,13 @@ namespace Vlingo.Wire.Channel
             IRequestChannelConsumerProvider provider,
             string name,
             IResourcePool<IConsumerByteBuffer, Nothing> requestBufferPool,
-            long probeInterval)
+            long probeInterval,
+            long probeTimeout)
         {
             _provider = provider;
             _name = name;
             _requestBufferPool = requestBufferPool;
+            _probeTimeout = probeTimeout;
             _responder = SelfAs<IResponseSenderChannel<Socket>>();
             _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled<object?>>(),
                 null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(probeInterval));
@@ -71,7 +74,7 @@ namespace Vlingo.Wire.Channel
         {
             try
             {
-                if (channel.Poll(10000, SelectMode.SelectRead))
+                if (channel.Poll((int)_probeTimeout * 1000, SelectMode.SelectRead))
                 {
                     channel.BeginAccept(AcceptCallback, channel);
                 }

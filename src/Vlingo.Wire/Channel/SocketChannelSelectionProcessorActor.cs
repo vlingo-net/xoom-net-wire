@@ -23,7 +23,6 @@ namespace Vlingo.Wire.Channel
     {
         private readonly ICancellable _cancellable;
         private int _contextId;
-        private readonly int _messageBufferSize;
         private readonly string _name;
         private readonly IRequestChannelConsumerProvider _provider;
         private readonly IResponseSenderChannel<Socket> _responder;
@@ -34,14 +33,12 @@ namespace Vlingo.Wire.Channel
         public SocketChannelSelectionProcessorActor(
             IRequestChannelConsumerProvider provider,
             string name,
-            int maxBufferPoolSize,
-            int messageBufferSize,
+            IResourcePool<IConsumerByteBuffer, Nothing> requestBufferPool,
             long probeInterval)
         {
             _provider = provider;
             _name = name;
-            _messageBufferSize = messageBufferSize;
-            _requestBufferPool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, Nothing>.Config.Of(maxBufferPoolSize), messageBufferSize);
+            _requestBufferPool = requestBufferPool;
             _responder = SelfAs<IResponseSenderChannel<Socket>>();
             _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled<object?>>(),
                 null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(probeInterval));
@@ -188,8 +185,8 @@ namespace Vlingo.Wire.Channel
             }
             
             // Create the state object.  
-            var state = new StateObject(channel, readable, new byte[_messageBufferSize], readable.RequestBuffer.Clear());
-            channel.BeginReceive(state.Buffer, 0, _messageBufferSize, 0, ReadCallback, state);
+            var state = new StateObject(channel, readable, new byte[readable.RequestBuffer.Limit()], readable.RequestBuffer.Clear());
+            channel.BeginReceive(state.Buffer, 0, (int)readable.RequestBuffer.Limit(), 0, ReadCallback, state);
         }
         
         private void Write(Context writable)
@@ -365,6 +362,10 @@ namespace Vlingo.Wire.Channel
                 catch (Exception e)
                 {
                     _parent.Logger.Error($"Failed to close client channel for {_parent._name} because: {e.Message}", e);
+                }
+                finally
+                {
+                    _buffer.Release();
                 }
             }
 

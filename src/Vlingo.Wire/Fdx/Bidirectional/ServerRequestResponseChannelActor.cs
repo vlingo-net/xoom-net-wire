@@ -9,7 +9,9 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using Vlingo.Actors;
+using Vlingo.Common.Pool;
 using Vlingo.Wire.Channel;
+using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Fdx.Bidirectional
 {
@@ -22,6 +24,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private readonly string _name;
         private readonly ISocketChannelSelectionProcessor[] _processors;
         private readonly int _port;
+        private readonly IResourcePool<IConsumerByteBuffer, Nothing> _requestBufferPool;
         private int _processorPoolIndex;
 
         public ServerRequestResponseChannelActor(
@@ -35,7 +38,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         {
             _name = name;
             _port = port;
-            _processors = StartProcessors(provider, name, processorPoolSize, maxBufferPoolSize, maxMessageSize, probeInterval);
+            _requestBufferPool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, Nothing>.Config.Of(maxBufferPoolSize), maxMessageSize);
+            _processors = StartProcessors(provider, name, processorPoolSize, _requestBufferPool, probeInterval);
 
             try
             {
@@ -173,8 +177,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             IRequestChannelConsumerProvider provider,
             string name,
             int processorPoolSize,
-            int maxBufferPoolSize,
-            int maxMessageSize,
+            IResourcePool<IConsumerByteBuffer, Nothing> requestBufferPool,
             long probeInterval)
         {
             var processors = new ISocketChannelSelectionProcessor[processorPoolSize];
@@ -183,7 +186,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             {
                 processors[idx] = ChildActorFor<ISocketChannelSelectionProcessor>(
                     Definition.Has<SocketChannelSelectionProcessorActor>(
-                        Definition.Parameters(provider, $"{name}-processor-{idx}", maxBufferPoolSize, maxMessageSize, probeInterval)));
+                        Definition.Parameters(provider, $"{name}-processor-{idx}", requestBufferPool, probeInterval)));
             }
 
             return processors;

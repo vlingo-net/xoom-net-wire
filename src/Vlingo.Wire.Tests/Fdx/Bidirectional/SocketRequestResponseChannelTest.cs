@@ -25,7 +25,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
     {
         private readonly ITestOutputHelper _output;
         private static readonly int PoolSize = 100;
-        private static AtomicInteger _testPort = new AtomicInteger(37471);
+        private static readonly AtomicInteger _testPort = new AtomicInteger(37470);
 
         private readonly MemoryStream _buffer;
         private readonly IClientRequestResponseChannel _client;
@@ -231,7 +231,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             var provider = new TestRequestChannelConsumerProvider();
             _serverConsumer = (TestRequestChannelConsumer)provider.Consumer;
 
-            var testPort = _testPort.GetAndIncrement();
+            var testPort = _testPort.IncrementAndGet();
             _server = ServerRequestResponseChannelFactory.Start(
                 _world.Stage,
                 provider,

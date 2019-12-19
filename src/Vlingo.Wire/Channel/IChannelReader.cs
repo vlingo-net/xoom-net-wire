@@ -11,6 +11,7 @@ namespace Vlingo.Wire.Channel
     {
         void Close();
         string Name { get; }
+        int Port { get; }
         void OpenFor(IChannelReaderConsumer consumer);
         void ProbeChannel();
     }

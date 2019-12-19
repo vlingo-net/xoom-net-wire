@@ -1,5 +1,6 @@
 using System;
 using Vlingo.Actors;
+using Vlingo.Common;
 using Vlingo.Wire.Channel;
 
 namespace Vlingo.Wire.Fdx.Bidirectional
@@ -10,6 +11,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private const string StartRepresentation1 = "Start()";
         private const string StopRepresentation2 = "Stop()";
         private const string CloseRepresentation3 = "Close()";
+        private const string RepresentationPort4 = "Port()";
 
         private readonly Actor actor;
         private readonly IMailbox mailbox;
@@ -103,6 +105,30 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             {
                 actor.DeadLetters.FailedDelivery(new DeadLetter(actor, StopRepresentation2));
             }
+        }
+
+        public ICompletes<int> Port()
+        {
+            if (!actor.IsStopped)
+            {
+                var completes = Completes.Using<int>(actor.Scheduler);
+                Action<IServerRequestResponseChannel> consumer = x => x.Port();
+                if (mailbox.IsPreallocated)
+                {
+                    mailbox.Send(actor, consumer, completes, RepresentationPort4);
+                }
+                else
+                {
+                    mailbox.Send(new LocalMessage<IServerRequestResponseChannel>(actor, consumer, completes, RepresentationPort4));
+                }
+                return completes;
+            }
+            else
+            {
+                actor.DeadLetters.FailedDelivery(new DeadLetter(actor, RepresentationPort4));
+            }
+
+            return null!;
         }
 
         public IServerRequestResponseChannel Start(Stage stage, IRequestChannelConsumerProvider provider, int port,

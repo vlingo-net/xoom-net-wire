@@ -31,6 +31,7 @@ namespace Vlingo.Wire.Multicast
         private EndPoint _ipEndPoint;
         private bool _disposed;
         private readonly ManualResetEvent _readDone;
+        private int _port;
 
         public MulticastSubscriber(
             string name,
@@ -57,6 +58,7 @@ namespace Vlingo.Wire.Multicast
             _channel.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             _channel.ExclusiveAddressUse = false;
             _channel.Blocking = false;
+            _port = group.Port;
             _ipEndPoint = new IPEndPoint(IPAddress.Any, group.Port);
             _channel.Bind(_ipEndPoint);
             var networkInterface = AssignNetworkInterfaceTo(_channel, networkInterfaceName);
@@ -86,6 +88,8 @@ namespace Vlingo.Wire.Multicast
         //=========================================
         
         public override string Name => _name;
+        
+        public int Port => _port;
 
         public void Close()
         {

@@ -21,6 +21,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private readonly Socket _channel;
         private readonly string _name;
         private readonly ISocketChannelSelectionProcessor[] _processors;
+        private readonly int _port;
         private int _processorPoolIndex;
 
         public ServerRequestResponseChannelActor(
@@ -33,6 +34,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             long probeInterval)
         {
             _name = name;
+            _port = port;
             _processors = StartProcessors(provider, name, processorPoolSize, maxBufferPoolSize, maxMessageSize, probeInterval);
 
             try
@@ -95,7 +97,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             
             SelfAs<IStoppable>().Stop();
         }
-        
+
+        public ICompletes<int> Port() => Completes().With(_port);
+
         //=========================================
         // Scheduled
         //=========================================

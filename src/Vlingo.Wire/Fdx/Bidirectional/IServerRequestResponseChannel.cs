@@ -6,6 +6,7 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using Vlingo.Actors;
+using Vlingo.Common;
 using Vlingo.Wire.Channel;
 
 namespace Vlingo.Wire.Fdx.Bidirectional
@@ -34,6 +35,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             long probeInterval);
 
         void Close();
+
+        ICompletes<int> Port();
     }
 
     // TODO: This is an workaround because C# doesn't allow implementation of default methods in interfaces. Should be fixed with C# 8

@@ -69,7 +69,9 @@ namespace Vlingo.Wire.Fdx.Inbound
         }
 
         public override string Name => _name;
-        
+
+        public int Port => _port;
+
         public void OpenFor(IChannelReaderConsumer consumer)
         {
             // for some tests it's possible to receive close() before start()

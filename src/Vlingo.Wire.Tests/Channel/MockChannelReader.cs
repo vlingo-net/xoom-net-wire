@@ -31,6 +31,8 @@ namespace Vlingo.Wire.Tests.Channel
 
         public string Name { get; } = "mock";
         
+        public int Port { get; } = 0;
+        
         public void OpenFor(IChannelReaderConsumer consumer)
         {
             _consumer = consumer;

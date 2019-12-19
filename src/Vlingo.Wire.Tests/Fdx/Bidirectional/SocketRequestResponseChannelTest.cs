@@ -11,6 +11,7 @@ using System.Threading;
 using Vlingo.Actors;
 using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Actors.TestKit;
+using Vlingo.Common;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Fdx.Bidirectional;
 using Vlingo.Wire.Message;
@@ -24,7 +25,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
     {
         private readonly ITestOutputHelper _output;
         private static readonly int PoolSize = 100;
-        private static int _testPort = 37471;
+        private static AtomicInteger _testPort = new AtomicInteger(37471);
 
         private readonly MemoryStream _buffer;
         private readonly IClientRequestResponseChannel _client;
@@ -230,10 +231,11 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             var provider = new TestRequestChannelConsumerProvider();
             _serverConsumer = (TestRequestChannelConsumer)provider.Consumer;
 
+            var testPort = _testPort.GetAndIncrement();
             _server = ServerRequestResponseChannelFactory.Start(
                 _world.Stage,
                 provider,
-                _testPort,
+                testPort,
                 "test-server",
                 1,
                 PoolSize,
@@ -242,10 +244,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             _clientConsumer = new TestResponseChannelConsumer();
             
-            _client = new BasicClientRequestResponseChannel(Address.From(Host.Of("localhost"), _testPort, AddressType.None),
+            _client = new BasicClientRequestResponseChannel(Address.From(Host.Of("localhost"), testPort, AddressType.None),
                 _clientConsumer, PoolSize, 10240, logger);
-
-            ++_testPort;
         }
 
         public void Dispose()

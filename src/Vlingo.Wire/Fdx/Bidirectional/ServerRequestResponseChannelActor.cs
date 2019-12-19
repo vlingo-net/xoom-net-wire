@@ -24,7 +24,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private readonly string _name;
         private readonly ISocketChannelSelectionProcessor[] _processors;
         private readonly int _port;
-        private readonly IResourcePool<IConsumerByteBuffer, Nothing> _requestBufferPool;
         private int _processorPoolIndex;
 
         public ServerRequestResponseChannelActor(
@@ -39,8 +38,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         {
             _name = name;
             _port = port;
-            _requestBufferPool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, Nothing>.Config.Of(maxBufferPoolSize), maxMessageSize);
-            _processors = StartProcessors(provider, name, processorPoolSize, _requestBufferPool, probeInterval, probeTimeout);
+            var requestBufferPool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, Nothing>.Config.Of(maxBufferPoolSize), maxMessageSize);
+            _processors = StartProcessors(provider, name, processorPoolSize, requestBufferPool, probeInterval, probeTimeout);
 
             try
             {

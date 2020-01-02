@@ -9,13 +9,13 @@ using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Channel
 {
-    public abstract class RequestResponseContext<T>
+    public abstract class RequestResponseContext
     {
         public abstract TR ConsumerData<TR>();
         public abstract TR ConsumerData<TR>(TR data);
         public abstract bool HasConsumerData { get; }
         public abstract string Id { get; }
-        public abstract IResponseSenderChannel<T> Sender { get; }
+        public abstract IResponseSenderChannel Sender { get; }
         public abstract void WhenClosing(object data);
 
         public void Abandon() => Sender.Abandon(this);

@@ -7,7 +7,7 @@ using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Channel
 {
-    public class ResponseSenderChannel__Proxy<T> : IResponseSenderChannel<T>
+    public class ResponseSenderChannel__Proxy : IResponseSenderChannel
     {
         private const string AbandonRepresentation1 = "Abandon(RequestResponseContext<T>)";
         private const string RespondWithRepresentation2 = "RespondWith(RequestResponseContext<T>, IConsumerByteBuffer)";
@@ -21,11 +21,11 @@ namespace Vlingo.Wire.Channel
             this.mailbox = mailbox;
         }
 
-        public void Abandon(RequestResponseContext<T> context)
+        public void Abandon(RequestResponseContext context)
         {
             if (!this.actor.IsStopped)
             {
-                Action<IResponseSenderChannel<T>> consumer = __ => __.Abandon(context);
+                Action<IResponseSenderChannel> consumer = __ => __.Abandon(context);
                 if (this.mailbox.IsPreallocated)
                 {
                     this.mailbox.Send(this.actor, consumer, null, AbandonRepresentation1);
@@ -33,7 +33,7 @@ namespace Vlingo.Wire.Channel
                 else
                 {
                     this.mailbox.Send(
-                        new LocalMessage<IResponseSenderChannel<T>>(this.actor, consumer, AbandonRepresentation1));
+                        new LocalMessage<IResponseSenderChannel>(this.actor, consumer, AbandonRepresentation1));
                 }
             }
             else
@@ -42,18 +42,18 @@ namespace Vlingo.Wire.Channel
             }
         }
 
-        public void RespondWith(RequestResponseContext<T> context, IConsumerByteBuffer buffer)
+        public void RespondWith(RequestResponseContext context, IConsumerByteBuffer buffer)
         {
             if (!this.actor.IsStopped)
             {
-                Action<IResponseSenderChannel<T>> consumer = __ => __.RespondWith(context, buffer);
+                Action<IResponseSenderChannel> consumer = __ => __.RespondWith(context, buffer);
                 if (this.mailbox.IsPreallocated)
                 {
                     this.mailbox.Send(this.actor, consumer, null, RespondWithRepresentation2);
                 }
                 else
                 {
-                    this.mailbox.Send(new LocalMessage<IResponseSenderChannel<T>>(this.actor, consumer,
+                    this.mailbox.Send(new LocalMessage<IResponseSenderChannel>(this.actor, consumer,
                         RespondWithRepresentation2));
                 }
             }

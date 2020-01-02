@@ -11,7 +11,7 @@ namespace Vlingo.Wire.Channel
 {
     public interface IRequestChannelConsumer
     {
-        void CloseWith<T>(RequestResponseContext<T> requestResponseContext, object? data);
-        void Consume<T>(RequestResponseContext<T> context, IConsumerByteBuffer buffer);
+        void CloseWith(RequestResponseContext requestResponseContext, object? data);
+        void Consume(RequestResponseContext context, IConsumerByteBuffer buffer);
     }
 }

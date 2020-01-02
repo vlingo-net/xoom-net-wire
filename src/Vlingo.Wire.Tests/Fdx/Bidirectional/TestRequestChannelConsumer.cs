@@ -27,16 +27,16 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         
         public AccessSafely UntilConsume { get; set; }
 
-        public void CloseWith<T>(RequestResponseContext<T> requestResponseContext, object data) => UntilClosed.WriteUsing("closed", 1);
+        public void CloseWith(RequestResponseContext requestResponseContext, object data) => UntilClosed.WriteUsing("closed", 1);
 
-        public void Consume<T>(RequestResponseContext<T> context, IConsumerByteBuffer buffer)
+        public void Consume(RequestResponseContext context, IConsumerByteBuffer buffer)
         {
             var bytes = buffer.ToArray();
             buffer.Release();
-            Consume(context, new ReadOnlySequence<byte>(bytes));
+            Consume(context,new ReadOnlySequence<byte>(bytes));
         }
 
-        public void Consume<T>(RequestResponseContext<T> context, ReadOnlySequence<byte> buffer)
+        public void Consume(RequestResponseContext context, ReadOnlySequence<byte> buffer)
         {
             var requestPart = buffer.ToArray().BytesToText(0, (int)buffer.Length);
             _requestBuilder.Append(_remaining).Append(requestPart);

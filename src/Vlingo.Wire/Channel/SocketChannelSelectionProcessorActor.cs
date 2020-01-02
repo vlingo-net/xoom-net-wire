@@ -18,7 +18,7 @@ namespace Vlingo.Wire.Channel
     
     public sealed class SocketChannelSelectionProcessorActor : Actor,
                                                         ISocketChannelSelectionProcessor,
-                                                        IResponseSenderChannel<Socket>,
+                                                        IResponseSenderChannel,
                                                         IScheduled<object>
     {
         private readonly ICancellable _cancellable;
@@ -26,7 +26,7 @@ namespace Vlingo.Wire.Channel
         private readonly string _name;
         private readonly long _probeTimeout;
         private readonly IRequestChannelConsumerProvider _provider;
-        private readonly IResponseSenderChannel<Socket> _responder;
+        private readonly IResponseSenderChannel _responder;
         private Context? _context;
         
         private IResourcePool<IConsumerByteBuffer, Nothing> _requestBufferPool;
@@ -42,7 +42,7 @@ namespace Vlingo.Wire.Channel
             _name = name;
             _requestBufferPool = requestBufferPool;
             _probeTimeout = probeTimeout;
-            _responder = SelfAs<IResponseSenderChannel<Socket>>();
+            _responder = SelfAs<IResponseSenderChannel>();
             _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled<object?>>(),
                 null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(probeInterval));
         }
@@ -61,9 +61,9 @@ namespace Vlingo.Wire.Channel
             SelfAs<IStoppable>().Stop();
         }
 
-        public void Abandon(RequestResponseContext<Socket> context) => ((Context)context).Close();
+        public void Abandon(RequestResponseContext context) => ((Context)context).Close();
 
-        public void RespondWith(RequestResponseContext<Socket> context, IConsumerByteBuffer buffer) =>
+        public void RespondWith(RequestResponseContext context, IConsumerByteBuffer buffer) =>
             ((Context) context).QueueWritable(buffer);
         
         //=========================================
@@ -313,7 +313,7 @@ namespace Vlingo.Wire.Channel
             }  
         }
 
-        private class Context : RequestResponseContext<Socket>
+        private class Context : RequestResponseContext
         {
             private readonly IConsumerByteBuffer _buffer;
             private readonly SocketChannelSelectionProcessorActor _parent;
@@ -346,7 +346,7 @@ namespace Vlingo.Wire.Channel
             
             public override string Id => _id;
             
-            public override IResponseSenderChannel<Socket> Sender => _parent._responder;
+            public override IResponseSenderChannel Sender => _parent._responder;
 
             public override void WhenClosing(object data) => _closingData = data;
 

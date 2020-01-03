@@ -298,7 +298,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                     pooledBuffer.Put(readBuffer, 0, bytesRead);
                 }
 
-                int bytesRemain = client.Available;
+                var bytesRemain = client.Available;
                 if (bytesRemain > 0)
                 {
                     // Get the rest of the data.  

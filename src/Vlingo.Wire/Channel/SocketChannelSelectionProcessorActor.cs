@@ -261,7 +261,7 @@ namespace Vlingo.Wire.Channel
                     Close(readable.Channel, readable);
                 }
 
-                int bytesRemain = channel.Available;
+                var bytesRemain = channel.Available;
                 if (bytesRemain > 0)
                 {
                     // Get the rest of the data.  
@@ -299,7 +299,8 @@ namespace Vlingo.Wire.Channel
 
         private void SendCallback(IAsyncResult ar)
         {  
-            try {  
+            try
+            {  
                 // Retrieve the socket from the state object.  
                 var state = (StateObject)ar.AsyncState;
                 var channel = state.WorkSocket;
@@ -307,7 +308,8 @@ namespace Vlingo.Wire.Channel
                 // Complete sending the data to the remote device.  
                 channel.EndSend(ar);  
 
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Logger.Error("Error while sending", e);
             }  

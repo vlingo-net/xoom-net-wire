@@ -159,7 +159,7 @@ namespace Vlingo.Wire.Channel
 
             try
             {
-                if (_context != null && _context.Channel.IsSocketConnected())
+                if (_context != null && !_context.IsClosed)
                 {
                     if (_context.Channel.Available > 0)
                     {
@@ -188,8 +188,9 @@ namespace Vlingo.Wire.Channel
             }
             
             // Create the state object.  
-            var state = new StateObject(channel, readable, new byte[readable.RequestBuffer.Limit()], readable.RequestBuffer.Clear());
-            channel.BeginReceive(state.Buffer, 0, (int)readable.RequestBuffer.Limit(), 0, ReadCallback, state);
+            var limit = readable.RequestBuffer.Limit();
+            var state = new StateObject(channel, readable, new byte[limit], readable.RequestBuffer.Clear());
+            channel.BeginReceive(state.Buffer, 0, (int)limit, 0, ReadCallback, state);
         }
         
         private void Write(Context writable)
@@ -371,6 +372,7 @@ namespace Vlingo.Wire.Channel
                 finally
                 {
                     _buffer.Release();
+                    IsClosed = true;
                 }
             }
 
@@ -393,6 +395,8 @@ namespace Vlingo.Wire.Channel
             public IConsumerByteBuffer RequestBuffer => _buffer;
 
             public Socket Channel => _clientChannel;
+            
+            public bool IsClosed { get; private set; }
         }
         
         private class StateObject

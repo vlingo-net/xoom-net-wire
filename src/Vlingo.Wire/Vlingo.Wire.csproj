@@ -30,7 +30,7 @@
     <None Include="..\..\vlingo-64x64.png" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Vlingo.Actors" Version="0.6.3.1" />
-    <PackageReference Include="Vlingo.Common" Version="0.6.3.1" />
+    <PackageReference Include="Vlingo.Actors" Version="0.6.3.2" />
+    <PackageReference Include="Vlingo.Common" Version="0.6.3.2" />
   </ItemGroup>
 </Project>

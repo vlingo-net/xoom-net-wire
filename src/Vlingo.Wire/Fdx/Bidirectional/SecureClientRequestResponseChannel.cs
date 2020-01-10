@@ -224,7 +224,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             try
             {
                 // Create the state object.  
-                StateObject state = new StateObject(sslStream, readBuffer, pooledBuffer);
+                var state = new StateObject(sslStream, readBuffer, pooledBuffer);
                 sslStream.BeginRead(readBuffer, 0, readBuffer.Length, ReceiveCallback, state);
                 _receiveDone.WaitOne();
             }

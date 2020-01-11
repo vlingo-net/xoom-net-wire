@@ -27,6 +27,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private int _previousPrepareFailures;
         private readonly ConsumerByteBufferPool _readBufferPool;
         private bool _disposed;
+        private bool _canStartProbing;
         private readonly ManualResetEvent _connectDone;
         private readonly AutoResetEvent _receiveDone;
 
@@ -67,6 +68,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
         public void RequestWith(byte[] buffer)
         {
+            _canStartProbing = true;
             Socket? preparedChannel = null;
             while (preparedChannel == null && _previousPrepareFailures < 10)
             {
@@ -93,7 +95,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
         public void ProbeChannel()
         {
-            if (_closed)
+            if (_closed || !_canStartProbing)
             {
                 return;
             }

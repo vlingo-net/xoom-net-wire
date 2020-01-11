@@ -31,6 +31,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private int _previousPrepareFailures;
         private readonly ConsumerByteBufferPool _readBufferPool;
         private bool _disposed;
+        private bool _canStartProbing;
         private readonly ManualResetEvent _connectDone;
         private readonly ManualResetEvent _authenticateDone;
         private readonly ManualResetEvent _sendDone;
@@ -80,6 +81,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 _sslStream = PreparedChannel();
             }
 
+            _canStartProbing = true;
+
             if (_sslStream != null)
             {
                 try
@@ -101,7 +104,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
         public void ProbeChannel()
         {
-            if (_closed)
+            if (_closed || !_canStartProbing)
             {
                 return;
             }

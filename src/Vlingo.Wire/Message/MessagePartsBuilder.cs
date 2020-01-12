@@ -138,7 +138,7 @@ namespace Vlingo.Wire.Message
         {
             var skinnyRecord = record.Trim();
 
-            var idIndex = skinnyRecord.IndexOf(fieldName, StringComparison.InvariantCulture);
+            var idIndex = skinnyRecord.IndexOf(fieldName, StringComparison.Ordinal);
 
             if (idIndex == -1)
             {

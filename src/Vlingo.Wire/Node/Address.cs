@@ -28,7 +28,7 @@ namespace Vlingo.Wire.Node
 
         public static Address From(string fullAddress, AddressType type)
         {
-            var lastColon = fullAddress.LastIndexOf(":", StringComparison.InvariantCulture);
+            var lastColon = fullAddress.LastIndexOf(":", StringComparison.Ordinal);
             if (lastColon == -1)
             {
                 throw new ArgumentException($"The address is not valid: {fullAddress}", fullAddress);

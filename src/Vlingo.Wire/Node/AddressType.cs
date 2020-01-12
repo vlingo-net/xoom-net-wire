@@ -41,7 +41,7 @@ namespace Vlingo.Wire.Node
             {
                 return 1;
             }
-            return String.Compare(Field, other.Field, StringComparison.InvariantCulture);
+            return string.Compare(Field, other.Field, StringComparison.Ordinal);
         }
         
         public override bool Equals(object obj)

@@ -34,8 +34,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private bool _canStartProbing;
         private readonly ManualResetEvent _connectDone;
         private readonly ManualResetEvent _authenticateDone;
-        private readonly ManualResetEvent _sendDone;
-        private readonly ManualResetEvent _receiveDone;
+        private readonly AutoResetEvent _sendDone;
+        private readonly AutoResetEvent _receiveDone;
 
         public SecureClientRequestResponseChannel(
             Address address,
@@ -53,8 +53,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _readBufferPool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, Nothing>.Config.Of(maxBufferPoolSize), maxMessageSize);
             _connectDone = new ManualResetEvent(false);
             _authenticateDone = new ManualResetEvent(false);
-            _sendDone = new ManualResetEvent(false);
-            _receiveDone = new ManualResetEvent(false);
+            _sendDone = new AutoResetEvent(false);
+            _receiveDone = new AutoResetEvent(false);
         }
         
         //=========================================

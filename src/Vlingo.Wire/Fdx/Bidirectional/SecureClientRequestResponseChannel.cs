@@ -81,14 +81,13 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 _sslStream = PreparedChannel();
             }
 
-            _canStartProbing = true;
-
             if (_sslStream != null)
             {
                 try
                 {
                     _sslStream.BeginWrite(buffer, 0, buffer.Length, SendCallback, _sslStream);
                     _sendDone.WaitOne();
+                    _canStartProbing = true;
                 }
                 catch (Exception e)
                 {

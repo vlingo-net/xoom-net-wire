@@ -68,7 +68,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
         public void RequestWith(byte[] buffer)
         {
-            _canStartProbing = true;
             Socket? preparedChannel = null;
             while (preparedChannel == null && _previousPrepareFailures < 10)
             {
@@ -80,6 +79,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 try
                 {
                     preparedChannel.BeginSend(buffer, 0, buffer.Length, 0, SendCallback, preparedChannel);
+                    _canStartProbing = true;
                 }
                 catch (Exception e)
                 {

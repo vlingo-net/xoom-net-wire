@@ -31,7 +31,7 @@ namespace Vlingo.Wire.Multicast
         private EndPoint _ipEndPoint;
         private bool _disposed;
         private readonly AutoResetEvent _readDone;
-        private int _port;
+        private readonly int _port;
 
         public MulticastSubscriber(
             string name,

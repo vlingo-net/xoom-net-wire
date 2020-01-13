@@ -28,6 +28,7 @@ namespace Vlingo.Wire.Channel
         private readonly IRequestChannelConsumerProvider _provider;
         private readonly IResponseSenderChannel _responder;
         private Context? _context;
+        private bool _canStartProbing;
         
         private IResourcePool<IConsumerByteBuffer, Nothing> _requestBufferPool;
         
@@ -78,6 +79,8 @@ namespace Vlingo.Wire.Channel
                 {
                     channel.BeginAccept(AcceptCallback, channel);
                 }
+                
+                _canStartProbing = true;
             }
             catch (ObjectDisposedException e)
             {
@@ -152,7 +155,7 @@ namespace Vlingo.Wire.Channel
 
         private void ProbeChannel()
         {
-            if (IsStopped)
+            if (IsStopped || !_canStartProbing)
             {
                 return;
             }

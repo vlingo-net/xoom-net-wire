@@ -30,7 +30,7 @@ namespace Vlingo.Wire.Multicast
         private readonly string _name;
         private EndPoint _ipEndPoint;
         private bool _disposed;
-        private readonly ManualResetEvent _readDone;
+        private readonly AutoResetEvent _readDone;
         private int _port;
 
         public MulticastSubscriber(
@@ -50,7 +50,7 @@ namespace Vlingo.Wire.Multicast
             int maxReceives,
             ILogger logger)
         {
-            _readDone = new ManualResetEvent(false);
+            _readDone = new AutoResetEvent(false);
             _name = name;
             _maxReceives = maxReceives;
             _logger = logger;

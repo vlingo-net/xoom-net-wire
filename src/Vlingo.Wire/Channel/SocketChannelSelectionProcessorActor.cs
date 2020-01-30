@@ -27,10 +27,10 @@ namespace Vlingo.Wire.Channel
         private readonly long _probeTimeout;
         private readonly IRequestChannelConsumerProvider _provider;
         private readonly IResponseSenderChannel _responder;
-        private readonly List<Context> _contexts;
+        private Context? _context;
         private bool _canStartProbing;
         
-        private readonly IResourcePool<IConsumerByteBuffer, Nothing> _requestBufferPool;
+        private IResourcePool<IConsumerByteBuffer, Nothing> _requestBufferPool;
         
         public SocketChannelSelectionProcessorActor(
             IRequestChannelConsumerProvider provider,
@@ -43,7 +43,6 @@ namespace Vlingo.Wire.Channel
             _name = name;
             _requestBufferPool = requestBufferPool;
             _probeTimeout = probeTimeout;
-            _contexts = new List<Context>();
             _responder = SelfAs<IResponseSenderChannel>();
             _cancellable = Stage.Scheduler.Schedule(SelfAs<IScheduled<object?>>(),
                 null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(probeInterval));
@@ -76,7 +75,12 @@ namespace Vlingo.Wire.Channel
         {
             try
             {
-                channel.BeginAccept(AcceptCallback, channel);
+                if (channel.Poll((int)_probeTimeout * 1000, SelectMode.SelectRead))
+                {
+                    channel.BeginAccept(AcceptCallback, channel);
+                }
+                
+                _canStartProbing = true;
             }
             catch (ObjectDisposedException e)
             {
@@ -113,20 +117,14 @@ namespace Vlingo.Wire.Channel
         public override void Stop()
         {
             _cancellable.Cancel();
-            var currentClosingContextId = string.Empty;
+
             try
             {
-                foreach (var context in _contexts.ToArray())
-                {
-                    currentClosingContextId = context.Id;
-                    context.Close();
-                }
-                
-                _contexts.Clear();
+                _context?.Close();
             }
             catch (Exception e)
             {
-                Logger.Error($"Failed to close client context '{currentClosingContextId}' socket for {_name} while stopping because: {e.Message}", e);
+                Logger.Error($"Failed to close client context '{_context?.Id}' socket for {_name} while stopping because: {e.Message}", e);
             }
         }
         
@@ -164,19 +162,16 @@ namespace Vlingo.Wire.Channel
 
             try
             {
-                foreach (var context in _contexts.ToArray())
+                if (_context != null && !_context.IsClosed)
                 {
-                    if (context != null && !context.IsClosed)
+                    if (_context.Channel.Available > 0)
                     {
-                        if (context.Channel.Available > 0)
-                        {
-                            Read(context);
-                        }
-                        else
-                        {
-                            Write(context);
-                        }
-                    }   
+                        Read(_context);
+                    }
+                    else
+                    {
+                        Write(_context);
+                    }
                 }
             }
             catch (Exception e)
@@ -192,14 +187,13 @@ namespace Vlingo.Wire.Channel
             {
                 readable.Close();
                 channel.Close();
-                _contexts.Remove(readable);
                 return;
             }
             
             // Create the state object.  
-            var limit = readable.Channel.Available;
+            var limit = readable.RequestBuffer.Limit();
             var state = new StateObject(channel, readable, new byte[limit], readable.RequestBuffer.Clear());
-            channel.BeginReceive(state.Buffer, 0, limit, 0, ReadCallback, state);
+            channel.BeginReceive(state.Buffer, 0, (int)limit, 0, ReadCallback, state);
         }
         
         private void Write(Context writable)
@@ -209,7 +203,6 @@ namespace Vlingo.Wire.Channel
             {
                 writable.Close();
                 channel.Close();
-                _contexts.Remove(writable);
                 return;
             }
             
@@ -232,6 +225,7 @@ namespace Vlingo.Wire.Channel
             try
             {
                 var responseBuffer = buffer.ToArray();
+                // Logger.Log("SENDING FROM SERVER: " + responseBuffer.BytesToText(0, responseBuffer.Length) + " | " + responseBuffer.Length);
                 var stateObject = new StateObject(clientChannel, context, null, buffer);
                 // Begin sending the data to the remote device.  
                 clientChannel.BeginSend(responseBuffer, 0, responseBuffer.Length, 0, SendCallback, stateObject); 
@@ -275,10 +269,11 @@ namespace Vlingo.Wire.Channel
                 if (bytesRemain > 0)
                 {
                     // Get the rest of the data.  
-                    channel.BeginReceive(readBuffer,0,bytesRemain,0, ReadCallback, state);
+                    channel.BeginReceive(readBuffer,0,readBuffer.Length,0, ReadCallback, state);
                 }
                 else
                 {
+                    // Logger.Log("RECEIVED on SERVER: " + readBuffer.BytesToText(0, bytesRead) + " | " + bytesRead);
                     // All the data has arrived; put it in response.  
                     if (buffer.Limit() >= 1)
                     {
@@ -301,20 +296,9 @@ namespace Vlingo.Wire.Channel
         private void AcceptCallback(IAsyncResult ar)
         {
             // Get the socket that handles the client request.  
-            var listener = (Socket)ar.AsyncState;
-            try
-            {
-                var clientChannel = listener.EndAccept(ar);  
-                _contexts.Add(new Context(this, clientChannel));
-            }
-            catch (ObjectDisposedException e)
-            {
-                Logger.Error($"The underlying channel for {_name} is closed. This is certainly because Actor was stopped.", e);
-            }
-            finally
-            {
-                _canStartProbing = true;
-            }
+            var listener = (Socket)ar.AsyncState;  
+            var clientChannel = listener.EndAccept(ar);  
+            _context = new Context(this, clientChannel);
         }
 
         private void SendCallback(IAsyncResult ar)
@@ -326,7 +310,7 @@ namespace Vlingo.Wire.Channel
                 var channel = state.WorkSocket;
 
                 // Complete sending the data to the remote device.  
-                channel.EndSend(ar);
+                channel.EndSend(ar);  
 
             }
             catch (Exception e)

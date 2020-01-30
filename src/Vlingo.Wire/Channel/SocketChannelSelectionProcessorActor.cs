@@ -309,7 +309,7 @@ namespace Vlingo.Wire.Channel
             }
             catch (ObjectDisposedException e)
             {
-                Logger.Error("The chanel was already disposed. Probably the owning actor is closed.", e);
+                Logger.Error($"The underlying channel for {_name} is closed. This is certainly because Actor was stopped.", e);
             }
             finally
             {
@@ -326,7 +326,7 @@ namespace Vlingo.Wire.Channel
                 var channel = state.WorkSocket;
 
                 // Complete sending the data to the remote device.  
-                channel.EndSend(ar);  
+                channel.EndSend(ar);
 
             }
             catch (Exception e)

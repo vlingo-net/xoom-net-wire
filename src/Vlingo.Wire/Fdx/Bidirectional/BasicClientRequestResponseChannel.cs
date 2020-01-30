@@ -29,7 +29,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private bool _disposed;
         private bool _canStartProbing;
         private readonly ManualResetEvent _connectDone;
-        private readonly ManualResetEvent _receiveDone;
 
         public BasicClientRequestResponseChannel(
             Address address,
@@ -46,7 +45,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _previousPrepareFailures = 0;
             _readBufferPool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, Nothing>.Config.Of(maxBufferPoolSize), maxMessageSize);
             _connectDone = new ManualResetEvent(false);
-            _receiveDone = new ManualResetEvent(false);
         }
         
         //=========================================
@@ -141,7 +139,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
             _disposed = true;
             _connectDone.Dispose();
-            _receiveDone.Dispose();
         }
 
         //=========================================
@@ -159,8 +156,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             {
                 try
                 {
-                    // if receiving, give him a time to finish the operation.
-                    _receiveDone.WaitOne(1000);
                     _channel.Close();
                 }
                 catch (Exception e)
@@ -222,7 +217,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 // Create the state object.  
                 var state = new StateObject(channel, readBuffer, pooledBuffer);
                 channel.BeginReceive(readBuffer, 0, readBuffer.Length, 0, ReceiveCallback, state);
-                _receiveDone.WaitOne();
             }
             catch (Exception e)
             {
@@ -320,9 +314,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                     {
                         pooledBuffer.Release();
                     }
-
-                    // Signal that all bytes have been received.  
-                    _receiveDone.Set();
                 }
             }
             catch (Exception e)

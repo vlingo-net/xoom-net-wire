@@ -171,8 +171,7 @@ namespace Vlingo.Wire.Fdx.Inbound
             }
             catch (ObjectDisposedException e)
             {
-                Logger.Error(
-                    $"The underlying channel for {_name} is closed. This is certainly because Actor was stopped.", e);
+                Logger.Error($"The underlying channel for {_name} is closed. This is certainly because Actor was stopped.", e);
             }
             finally
             {

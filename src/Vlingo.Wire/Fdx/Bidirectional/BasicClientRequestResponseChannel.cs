@@ -266,11 +266,14 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
                 // Complete sending the data to the remote device.  
                 client.EndSend(ar);
-                _canStartProbing = true;
             }
             catch (Exception e)
             {
                 _logger.Error("Error while sending bytes", e);
+            }
+            finally
+            {
+                _canStartProbing = true;
             }
         }
 

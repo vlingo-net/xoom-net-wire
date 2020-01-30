@@ -76,12 +76,7 @@ namespace Vlingo.Wire.Channel
         {
             try
             {
-                if (channel.Poll((int)_probeTimeout * 1000, SelectMode.SelectRead))
-                {
-                    channel.BeginAccept(AcceptCallback, channel);
-                }
-                
-                _canStartProbing = true;
+                channel.BeginAccept(AcceptCallback, channel);
             }
             catch (ObjectDisposedException e)
             {
@@ -306,9 +301,20 @@ namespace Vlingo.Wire.Channel
         private void AcceptCallback(IAsyncResult ar)
         {
             // Get the socket that handles the client request.  
-            var listener = (Socket)ar.AsyncState;  
-            var clientChannel = listener.EndAccept(ar);  
-            _contexts.Add(new Context(this, clientChannel));
+            var listener = (Socket)ar.AsyncState;
+            try
+            {
+                var clientChannel = listener.EndAccept(ar);  
+                _contexts.Add(new Context(this, clientChannel));
+            }
+            catch (ObjectDisposedException e)
+            {
+                Logger.Error("The chanel was already disposed. Probably the owning actor is closed.", e);
+            }
+            finally
+            {
+                _canStartProbing = true;
+            }
         }
 
         private void SendCallback(IAsyncResult ar)

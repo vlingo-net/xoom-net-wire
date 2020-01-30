@@ -80,6 +80,8 @@ namespace Vlingo.Wire.Channel
                 {
                     channel.BeginAccept(AcceptCallback, channel);
                 }
+                
+                _canStartProbing = true;
             }
             catch (ObjectDisposedException e)
             {
@@ -307,7 +309,6 @@ namespace Vlingo.Wire.Channel
             var listener = (Socket)ar.AsyncState;  
             var clientChannel = listener.EndAccept(ar);  
             _contexts.Add(new Context(this, clientChannel));
-            _canStartProbing = true;
         }
 
         private void SendCallback(IAsyncResult ar)

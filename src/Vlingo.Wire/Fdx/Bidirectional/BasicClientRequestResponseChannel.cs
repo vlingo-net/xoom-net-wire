@@ -29,7 +29,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private bool _disposed;
         private bool _canStartProbing;
         private readonly ManualResetEvent _connectDone;
-        private readonly AutoResetEvent _receiveDone;
+        private readonly ManualResetEvent _receiveDone;
 
         public BasicClientRequestResponseChannel(
             Address address,
@@ -46,7 +46,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _previousPrepareFailures = 0;
             _readBufferPool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, Nothing>.Config.Of(maxBufferPoolSize), maxMessageSize);
             _connectDone = new ManualResetEvent(false);
-            _receiveDone = new AutoResetEvent(false);
+            _receiveDone = new ManualResetEvent(false);
         }
         
         //=========================================

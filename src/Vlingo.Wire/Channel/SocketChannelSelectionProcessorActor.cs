@@ -76,12 +76,7 @@ namespace Vlingo.Wire.Channel
         {
             try
             {
-                if (channel.Poll((int)_probeTimeout * 1000, SelectMode.SelectRead))
-                {
-                    channel.BeginAccept(AcceptCallback, channel);
-                }
-                
-                _canStartProbing = true;
+                channel.BeginAccept(AcceptCallback, channel);
             }
             catch (ObjectDisposedException e)
             {
@@ -306,9 +301,20 @@ namespace Vlingo.Wire.Channel
         private void AcceptCallback(IAsyncResult ar)
         {
             // Get the socket that handles the client request.  
-            var listener = (Socket)ar.AsyncState;  
-            var clientChannel = listener.EndAccept(ar);  
-            _contexts.Add(new Context(this, clientChannel));
+            var listener = (Socket)ar.AsyncState;
+            try
+            {
+                var clientChannel = listener.EndAccept(ar);  
+                _contexts.Add(new Context(this, clientChannel));
+            }
+            catch (ObjectDisposedException e)
+            {
+                Logger.Error($"The underlying channel for {_name} is closed. This is certainly because Actor was stopped.", e);
+            }
+            finally
+            {
+                _canStartProbing = true;
+            }
         }
 
         private void SendCallback(IAsyncResult ar)
@@ -320,7 +326,7 @@ namespace Vlingo.Wire.Channel
                 var channel = state.WorkSocket;
 
                 // Complete sending the data to the remote device.  
-                channel.EndSend(ar);  
+                channel.EndSend(ar);
 
             }
             catch (Exception e)

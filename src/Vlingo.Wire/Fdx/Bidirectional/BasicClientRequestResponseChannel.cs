@@ -79,7 +79,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 try
                 {
                     preparedChannel.BeginSend(buffer, 0, buffer.Length, 0, SendCallback, preparedChannel);
-                    _canStartProbing = true;
                 }
                 catch (Exception e)
                 {
@@ -267,6 +266,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
                 // Complete sending the data to the remote device.  
                 client.EndSend(ar);
+                _canStartProbing = true;
             }
             catch (Exception e)
             {

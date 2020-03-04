@@ -7,7 +7,7 @@
 
     <!-- NuGet Metadata -->
     <IsPackable>true</IsPackable>
-    <PackageVersion>0.6.4.6</PackageVersion>
+    <PackageVersion>$(VlingoVersion)</PackageVersion>
     <PackageId>Vlingo.Wire</PackageId>
     <Authors>Vlingo</Authors>
     <Description>
@@ -19,6 +19,7 @@
     <PackageIcon>vlingo-64x64.png</PackageIcon>
     <RepositoryUrl>https://github.com/vlingo-net/vlingo-net-wire</RepositoryUrl>
     <PackageTags>vlingo-net-wire;vlingo-net-actors;.net;c#;f#;udp;tcp;reactive-programming;actor-model</PackageTags>
+    <Configurations>Debug;Release;Debug With Project References</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
@@ -29,8 +30,18 @@
     <None Include="..\..\LICENSE" Pack="true" PackagePath="" />
     <None Include="..\..\vlingo-64x64.png" Pack="true" PackagePath="\" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Vlingo.Actors" Version="0.6.4.6" />
-    <PackageReference Include="Vlingo.Common" Version="0.6.4.6" />
-  </ItemGroup>
+  <Choose>
+    <When Condition="'$(Configuration)' == 'Debug With Project References'">
+      <ItemGroup>
+        <ProjectReference Include="..\..\..\vlingo-net-actors\src\Vlingo.Actors\Vlingo.Actors.csproj" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <PackageReference Include="Vlingo.Actors" Version="$(VlingoVersion)" />
+        <PackageReference Include="Vlingo.Common" Version="$(VlingoVersion)" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+
 </Project>

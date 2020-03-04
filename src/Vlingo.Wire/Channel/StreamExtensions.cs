@@ -21,6 +21,7 @@ namespace Vlingo.Wire.Channel
 
         public static void Clear(this MemoryStream buffer)
         {
+            buffer.SetLength(0);
             buffer.Position = 0;
             buffer.SetLength(buffer.Capacity);
         }

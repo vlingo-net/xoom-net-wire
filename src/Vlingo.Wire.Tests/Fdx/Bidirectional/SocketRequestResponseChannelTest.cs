@@ -25,7 +25,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
     {
         private readonly ITestOutputHelper _output;
         private static readonly int PoolSize = 100;
-        private static readonly AtomicInteger _testPort = new AtomicInteger(37470);
+        private static readonly AtomicInteger TestPort = new AtomicInteger(37470);
 
         private readonly MemoryStream _buffer;
         private readonly IClientRequestResponseChannel _client;
@@ -189,13 +189,11 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             _serverConsumer.UntilConsume = accessSafely;
             _clientConsumer.UntilConsume = accessSafely;
     
-            for (int idx = 0; idx < total; ++idx)
+            for (var idx = 0; idx < total; ++idx)
             {
                 Request(request + idx.ToString("D3"));
             }
             
-            Thread.Sleep(100);
-
             while (_clientConsumer.UntilConsume.ReadFrom<int>("clientConsume") < total)
             {
                 _client.ProbeChannel();
@@ -212,7 +210,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             Assert.Equal(total, clientConsumeCount);
             Assert.Equal(clientConsumeCount, _clientConsumer.Responses.Count);
 
-            for (int idx = 0; idx < total; ++idx) 
+            for (var idx = 0; idx < total; ++idx) 
             {
                 Assert.Equal(_clientConsumer.Responses[idx], _serverConsumer.Requests[idx]);
             }
@@ -231,7 +229,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             var provider = new TestRequestChannelConsumerProvider();
             _serverConsumer = (TestRequestChannelConsumer)provider.Consumer;
 
-            var testPort = _testPort.IncrementAndGet();
+            var testPort = TestPort.IncrementAndGet();
             _server = ServerRequestResponseChannelFactory.Start(
                 _world.Stage,
                 provider,

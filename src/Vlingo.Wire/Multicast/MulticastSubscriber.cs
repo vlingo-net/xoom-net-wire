@@ -136,13 +136,14 @@ namespace Vlingo.Wire.Multicast
                 // and possibly some number of receives
                 for (var receives = 0; receives < _maxReceives; ++receives)
                 {
-                    _buffer.SetLength(0); // clear
-                    var bytes = new byte [_buffer.Capacity];
-                    // check for availability because otherwise surprisingly
-                    // the call to _channel.ReceiveFromAsync is blocking and
-                    // _channel.Blocking = false; is not taken into account
                     if (_channel.Available > 0)
                     {
+                        _buffer.SetLength(0); // clear
+                        var bytes = new byte [_channel.Available];
+                        // check for availability because otherwise surprisingly
+                        // the call to _channel.ReceiveFromAsync is blocking and
+                        // _channel.Blocking = false; is not taken into account
+                        
                         var state = new StateObject(_channel, bytes);
                         _channel.BeginReceiveFrom(bytes, 0, bytes.Length, SocketFlags.None, ref _ipEndPoint, ReceiveCallback, state);
                         _readDone.WaitOne();

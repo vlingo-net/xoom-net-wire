@@ -149,11 +149,8 @@ namespace Vlingo.Wire.Fdx.Inbound
         {
             try
             {
-                if (_channel.Poll(10000, SelectMode.SelectRead))
-                {
-                    _channel.BeginAccept(AcceptCallback, _channel);
-                    _acceptDone.WaitOne();
-                }
+                _channel.BeginAccept(AcceptCallback, _channel);
+                _acceptDone.WaitOne();
             }
             catch (Exception e)
             {
@@ -166,10 +163,20 @@ namespace Vlingo.Wire.Fdx.Inbound
         private void AcceptCallback(IAsyncResult ar)
         {
             // Get the socket that handles the client request.  
-            var listener = (Socket)ar.AsyncState;  
-            var clientChannel = listener.EndAccept(ar);  
-            _clientChannels.Add(clientChannel);
-            _acceptDone.Set();
+            var listener = (Socket)ar.AsyncState;
+            try
+            {
+                var clientChannel = listener.EndAccept(ar);
+                _clientChannels.Add(clientChannel);
+            }
+            catch (ObjectDisposedException e)
+            {
+                Logger.Error($"The underlying channel for {_name} is closed. This is certainly because Actor was stopped.", e);
+            }
+            finally
+            {
+                _acceptDone.Set();   
+            }
         }
     }
 }

@@ -55,11 +55,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             long probeInterval,
             long probeTimeout)
         {
-            var parameters = Definition.Parameters(provider, port, name, processorPoolSize, maxBufferPoolSize, maxMessageSize, probeInterval, probeTimeout);
-
             var channel =
                 stage.ActorFor<IServerRequestResponseChannel>(
-                    Definition.Has<ServerRequestResponseChannelActor>(parameters));
+                    () => new ServerRequestResponseChannelActor(provider, port, name, processorPoolSize, maxBufferPoolSize, maxMessageSize, probeInterval, probeTimeout));
 
             return channel;
         }
@@ -77,12 +75,10 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             long probeInterval,
             long probeTimeout)
         {
-            var parameters = Definition.Parameters(provider, port, name, processorPoolSize, maxBufferPoolSize, maxMessageSize, probeInterval, probeTimeout);
-
             var channel =
                 stage.ActorFor<IServerRequestResponseChannel>(
-                    Definition.Has<ServerRequestResponseChannelActor>(parameters, mailboxName, address.Name),
-                    address, stage.World.DefaultLogger);
+                    () => new ServerRequestResponseChannelActor(provider, port, name, processorPoolSize,
+                        maxBufferPoolSize, maxMessageSize, probeInterval, probeTimeout), mailboxName, address.Name, address, stage.World.DefaultLogger);
 
             return channel;
         }

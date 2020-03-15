@@ -26,11 +26,8 @@ namespace Vlingo.Wire.Fdx.Inbound
             long probeInterval)
         {
             var reader = new SocketChannelInboundReader(port, inboundName, maxMessageSize, stage.World.DefaultLogger);
-            
-            var definition =
-                Definition.Has<InboundStreamActor>(Definition.Parameters(interest, addressType, reader, probeInterval),$"{inboundName}-inbound");
 
-            var inboundStream = stage.ActorFor<IInboundStream>(definition);
+            var inboundStream = stage.ActorFor<IInboundStream>(() => new InboundStreamActor(interest, addressType, reader, probeInterval), $"{inboundName}-inbound");
 
             return inboundStream;
         }

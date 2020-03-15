@@ -25,11 +25,9 @@ namespace Vlingo.Wire.Fdx.Outbound
             IManagedOutboundChannelProvider provider,
             ConsumerByteBufferPool byteBufferPool)
         {
-            var definition = Definition.Has<ApplicationOutboundStreamActor>(
-                Definition.Parameters(provider, byteBufferPool), "application-outbound-stream");
-            
             var applicationOutboundStream =
-                stage.ActorFor<IApplicationOutboundStream>(definition);
+                stage.ActorFor<IApplicationOutboundStream>(
+                    () => new ApplicationOutboundStreamActor(provider, byteBufferPool), "application-outbound-stream");
 
             return applicationOutboundStream;
         }

@@ -7,7 +7,6 @@
 
 using System;
 using System.Linq;
-using Vlingo.Actors;
 using Vlingo.Actors.TestKit;
 using Vlingo.Wire.Fdx.Inbound;
 using Vlingo.Wire.Node;
@@ -19,10 +18,10 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
 {
     public class InboundStreamTest : IDisposable
     {
-        private TestActor<IInboundStream> _inboundStream;
-        private MockInboundStreamInterest _interest;
-        private MockChannelReader _reader;
-        private TestWorld _world;
+        private readonly TestActor<IInboundStream> _inboundStream;
+        private readonly MockInboundStreamInterest _interest;
+        private readonly MockChannelReader _reader;
+        private readonly TestWorld _world;
 
         [Theory]
         [InlineData(1)]
@@ -67,9 +66,9 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             _interest = new MockInboundStreamInterest(output);
 
             _reader = new MockChannelReader();
-
-            var definition = Definition.Has<InboundStreamActor>(Definition.Parameters(_interest, AddressType.Op, _reader, 10), "test-inbound");
-            _inboundStream = _world.ActorFor<IInboundStream>(definition);
+            
+            _inboundStream = _world.ActorFor<IInboundStream>(
+                () => new InboundStreamActor(_interest, AddressType.Op, _reader, 10), "test-inbound");
         }
 
         public void Dispose()

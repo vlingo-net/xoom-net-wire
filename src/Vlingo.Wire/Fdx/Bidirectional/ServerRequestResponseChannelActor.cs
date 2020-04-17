@@ -38,7 +38,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         {
             _name = name;
             _port = port;
-            var requestBufferPool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, Nothing>.Config.Of(maxBufferPoolSize), maxMessageSize);
+            var requestBufferPool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, string>.Config.Of(maxBufferPoolSize), maxMessageSize);
             _processors = StartProcessors(provider, name, processorPoolSize, requestBufferPool, probeInterval, probeTimeout);
 
             try
@@ -179,7 +179,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             IRequestChannelConsumerProvider provider,
             string name,
             int processorPoolSize,
-            IResourcePool<IConsumerByteBuffer, Nothing> requestBufferPool,
+            IResourcePool<IConsumerByteBuffer, string> requestBufferPool,
             long probeInterval,
             long probeTimeout)
         {

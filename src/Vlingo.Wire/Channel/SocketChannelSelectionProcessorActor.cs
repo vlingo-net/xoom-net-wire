@@ -30,12 +30,12 @@ namespace Vlingo.Wire.Channel
         private readonly List<Context> _contexts;
         private bool _canStartProbing;
         
-        private readonly IResourcePool<IConsumerByteBuffer, Nothing> _requestBufferPool;
+        private readonly IResourcePool<IConsumerByteBuffer, string> _requestBufferPool;
         
         public SocketChannelSelectionProcessorActor(
             IRequestChannelConsumerProvider provider,
             string name,
-            IResourcePool<IConsumerByteBuffer, Nothing> requestBufferPool,
+            IResourcePool<IConsumerByteBuffer, string> requestBufferPool,
             long probeInterval,
             long probeTimeout)
         {

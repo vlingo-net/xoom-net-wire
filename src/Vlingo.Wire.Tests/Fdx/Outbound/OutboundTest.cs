@@ -150,9 +150,9 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
         {
             var converter = new Converter(output);
             Console.SetOut(converter);
-            _pool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, Nothing>.Config.Of(10), 1024);
+            _pool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, string>.Config.Of(10), 1024);
             _channelProvider = new MockManagedOutboundChannelProvider(Id.Of(1), Config);
-            _outbound = new Outbound(_channelProvider, new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, Nothing>.Config.Of(10), 10_000));
+            _outbound = new Outbound(_channelProvider, new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, string>.Config.Of(10), 10_000));
         }
     }
 }

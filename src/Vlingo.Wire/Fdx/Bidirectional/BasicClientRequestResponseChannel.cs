@@ -43,7 +43,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _closed = false;
             _channel = null;
             _previousPrepareFailures = 0;
-            _readBufferPool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, Nothing>.Config.Of(maxBufferPoolSize), maxMessageSize);
+            _readBufferPool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, string>.Config.Of(maxBufferPoolSize), maxMessageSize);
             _connectDone = new ManualResetEvent(false);
         }
         

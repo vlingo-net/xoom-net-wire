@@ -5,12 +5,13 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System.Diagnostics;
 using Vlingo.Common;
 using Vlingo.Common.Pool;
 
 namespace Vlingo.Wire.Message
 {
-    public class ConsumerByteBufferPool : ElasticResourcePool<IConsumerByteBuffer, Nothing>
+    public class ConsumerByteBufferPool : ElasticResourcePool<IConsumerByteBuffer, string>
     {
         public ConsumerByteBufferPool(Config config, int maxBufferSize) : base(config, new ConsumerByteBufferFactory(maxBufferSize))
         {
@@ -18,7 +19,7 @@ namespace Vlingo.Wire.Message
 
         public override IConsumerByteBuffer Acquire() => SetPool(base.Acquire());
 
-        public override IConsumerByteBuffer Acquire(Nothing arguments) => SetPool(base.Acquire(arguments));
+        public override IConsumerByteBuffer Acquire(string arguments) => SetPool(base.Acquire(arguments));
         
         private IConsumerByteBuffer SetPool(IConsumerByteBuffer buffer)
         {
@@ -29,7 +30,7 @@ namespace Vlingo.Wire.Message
             return buffer;
         }
 
-        private sealed class ConsumerByteBufferFactory : IResourceFactory<IConsumerByteBuffer, Nothing>
+        private sealed class ConsumerByteBufferFactory : IResourceFactory<IConsumerByteBuffer, string>
         {
             private readonly AtomicInteger _idSequence = new AtomicInteger(0);
             
@@ -37,20 +38,34 @@ namespace Vlingo.Wire.Message
 
             public ConsumerByteBufferFactory(int maxBufferSize) => _maxBufferSize = maxBufferSize;
 
-            public IConsumerByteBuffer Create(Nothing arguments) => new PoolAwareConsumerByteBuffer(_idSequence.IncrementAndGet(), _maxBufferSize);
+            public IConsumerByteBuffer Create(string arguments)
+            {
+                var poolAwareConsumerByteBuffer = new PoolAwareConsumerByteBuffer(_idSequence.IncrementAndGet(), _maxBufferSize);
+                poolAwareConsumerByteBuffer.Tag = arguments;
+                return poolAwareConsumerByteBuffer;
+            }
 
-            public IConsumerByteBuffer Reset(IConsumerByteBuffer resource, Nothing arguments) => resource.Clear();
+            public IConsumerByteBuffer Reset(IConsumerByteBuffer buffer, string arguments)
+            {
+                if (buffer is BasicConsumerByteBuffer basicConsumerByteBuffer)
+                {
+                    basicConsumerByteBuffer.Tag = arguments;
+                }
+                
+                return buffer.Clear();
+            }
 
             public void Destroy(IConsumerByteBuffer resource)
             {
             }
 
-            public Nothing DefaultArguments { get; } = Nothing.AtAll;
+            public string DefaultArguments { get; } = "notag";
         }
         
         private sealed class PoolAwareConsumerByteBuffer : BasicConsumerByteBuffer
         {
             private ConsumerByteBufferPool? _pool;
+            private readonly AtomicBoolean _active = new AtomicBoolean(true);
             
             public PoolAwareConsumerByteBuffer(int id, int maxBufferSize) : base(id, maxBufferSize)
             {
@@ -58,7 +73,20 @@ namespace Vlingo.Wire.Message
 
             public void SetPool(ConsumerByteBufferPool pool) => _pool = pool;
 
-            public override void Release() => _pool?.Release(this);
+            public void Activate() => _active.Set(true);
+
+            public override void Release()
+            {
+                if (_active.CompareAndSet(true, false))
+                {
+                    _pool?.Release(this);
+                }
+                else
+                {
+                    Debug.WriteLine($"Attempt to release the same buffer [{Id}:{Tag}] more than once");
+                }
+                _pool?.Release(this);
+            }
 
             public override string ToString() => $"PooledByteBuffer[id={Id}]";
         }

@@ -10,8 +10,7 @@ namespace Vlingo.Wire.Channel
     public class ResponseSenderChannel__Proxy : IResponseSenderChannel
     {
         private const string AbandonRepresentation1 = "Abandon(RequestResponseContext<T>)";
-        private const string ExplicitCloseRepresentation2 = "ExplicitClose(RequestResponseContext, bool)";
-        private const string RespondWithRepresentation3 = "RespondWith(RequestResponseContext<T>, IConsumerByteBuffer)";
+        private const string RespondWithRepresentation2 = "RespondWith(RequestResponseContext<T>, IConsumerByteBuffer)";
 
         private readonly Actor actor;
         private readonly IMailbox mailbox;
@@ -43,27 +42,6 @@ namespace Vlingo.Wire.Channel
             }
         }
 
-        public void ExplicitClose(RequestResponseContext context, bool option)
-        {
-            if (!this.actor.IsStopped)
-            {
-                Action<IResponseSenderChannel> consumer = __ => __.ExplicitClose(context, option);
-                if (this.mailbox.IsPreallocated)
-                {
-                    this.mailbox.Send(this.actor, consumer, null, ExplicitCloseRepresentation2);
-                }
-                else
-                {
-                    this.mailbox.Send(
-                        new LocalMessage<IResponseSenderChannel>(this.actor, consumer, ExplicitCloseRepresentation2));
-                }
-            }
-            else
-            {
-                this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, ExplicitCloseRepresentation2));
-            }
-        }
-
         public void RespondWith(RequestResponseContext context, IConsumerByteBuffer buffer)
         {
             if (!this.actor.IsStopped)
@@ -71,17 +49,17 @@ namespace Vlingo.Wire.Channel
                 Action<IResponseSenderChannel> consumer = __ => __.RespondWith(context, buffer);
                 if (this.mailbox.IsPreallocated)
                 {
-                    this.mailbox.Send(this.actor, consumer, null, RespondWithRepresentation3);
+                    this.mailbox.Send(this.actor, consumer, null, RespondWithRepresentation2);
                 }
                 else
                 {
                     this.mailbox.Send(new LocalMessage<IResponseSenderChannel>(this.actor, consumer,
-                        RespondWithRepresentation3));
+                        RespondWithRepresentation2));
                 }
             }
             else
             {
-                this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, RespondWithRepresentation3));
+                this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, RespondWithRepresentation2));
             }
         }
     }

@@ -12,7 +12,6 @@ namespace Vlingo.Wire.Channel
     public interface IResponseSenderChannel
     {
         void Abandon(RequestResponseContext context);
-        void ExplicitClose(RequestResponseContext context, bool option);
         void RespondWith(RequestResponseContext context, IConsumerByteBuffer buffer);
     }
 }

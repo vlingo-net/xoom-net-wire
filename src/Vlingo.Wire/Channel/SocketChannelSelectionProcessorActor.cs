@@ -65,9 +65,7 @@ namespace Vlingo.Wire.Channel
 
         public void Abandon(RequestResponseContext context) => ((Context)context).Close();
 
-        public void ExplicitClose(RequestResponseContext context, bool option) => ((Context) context).RequireExplicitClose(option);
-
-            public void RespondWith(RequestResponseContext context, IConsumerByteBuffer buffer) =>
+        public void RespondWith(RequestResponseContext context, IConsumerByteBuffer buffer) =>
             ((Context) context).QueueWritable(buffer);
         
         //=========================================
@@ -138,9 +136,6 @@ namespace Vlingo.Wire.Channel
 
         private void Close(Socket channel, Context context)
         {
-            Logger.Info("////////////////////////////////////");
-            Logger.Info("////// CLOSING FOR READ FAIL ///////");
-            Logger.Info("////////////////////////////////////");
             try
             {
                 channel.Close();
@@ -212,10 +207,6 @@ namespace Vlingo.Wire.Channel
             var channel = writable.Channel;
             if (!channel.IsSocketConnected())
             {
-                Logger.Info("////////////////////////////////////");
-                Logger.Info("////// WRITE: CHANNEL CLOSED ///////");
-                Logger.Info($"///////////// HAS WRITABLE DATA: {writable.WritablesCount}");
-                Logger.Info("////////////////////////////////////");
                 writable.Close();
                 channel.Close();
                 _contexts.Remove(writable);
@@ -226,8 +217,6 @@ namespace Vlingo.Wire.Channel
             {
                 WriteWithCachedData(writable, channel);
             }
-            
-            writable.EagerClose();
         }
 
         private void WriteWithCachedData(Context context, Socket channel)
@@ -355,7 +344,6 @@ namespace Vlingo.Wire.Channel
             private readonly IRequestChannelConsumer _consumer;
             private object? _consumerData;
             private readonly string _id;
-            private bool _requireExplicitClose;
             private readonly Queue<IConsumerByteBuffer> _writables;
 
             public Context(SocketChannelSelectionProcessorActor parent, Socket clientChannel)
@@ -365,7 +353,6 @@ namespace Vlingo.Wire.Channel
                 _consumer = parent._provider.RequestChannelConsumer();
                 _buffer = parent._requestBufferPool.Acquire();
                 _id = $"{++_parent._contextId}";
-                _requireExplicitClose = true;
                 _writables = new Queue<IConsumerByteBuffer>();
             }
 
@@ -399,7 +386,7 @@ namespace Vlingo.Wire.Channel
                 }
                 catch (Exception e)
                 {
-                    _parent.Logger.Error($"Failed to close client channel for {_parent._name} because: {e.Message}. Channel has writable data : {HasNextWritable.ToString()}", e);
+                    _parent.Logger.Error($"Failed to close client channel for {_parent._name} because: {e.Message}", e);
                 }
                 finally
                 {
@@ -408,17 +395,9 @@ namespace Vlingo.Wire.Channel
                 }
             }
 
-            public void RequireExplicitClose(bool option)
-            {
-                _parent.Logger.Info($"######### REQUIRE EXPLICIT CLOSE ######### >>> {option}");
-                _requireExplicitClose = option;
-            }
-
             public IRequestChannelConsumer Consumer => _consumer;
 
             public bool HasNextWritable => _writables.Count > 0;
-
-            public int WritablesCount => _writables.Count;
 
             public IConsumerByteBuffer? NextWritable()
             {
@@ -429,37 +408,6 @@ namespace Vlingo.Wire.Channel
 
                 return null;
             }
-            
-            public void EagerClose()
-            {
-                if (_requireExplicitClose)
-                {
-                    return;
-                }
-
-                if (IsOpen)
-                {
-                    _parent.Logger.Info("////////////////////////////////////");
-                    _parent.Logger.Info("////// CLOSING NOT KEEP ALIVE //////");
-                    _parent.Logger.Info("////////////////////////////////////");
-                    Close();
-                }
-                else
-                {
-                    if (_requireExplicitClose)
-                    {
-                        _parent.Logger.Info("####################################");
-                        _parent.Logger.Info("############ KEEP ALIVE ############");
-                        _parent.Logger.Info("#####################################");
-                    }
-                    if (!IsClosed)
-                    {
-                        _parent.Logger.Info("####################################");
-                        _parent.Logger.Info("######### CHANNEL NOT OPEN #########");
-                        _parent.Logger.Info("#####################################");
-                    }
-                }
-            }
 
             public void QueueWritable(IConsumerByteBuffer buffer) => _writables.Enqueue(buffer);
 
@@ -468,8 +416,6 @@ namespace Vlingo.Wire.Channel
             public Socket Channel => _clientChannel;
             
             public bool IsClosed { get; private set; }
-
-            public bool IsOpen => !IsClosed;
         }
         
         private class StateObject

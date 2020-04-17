@@ -20,6 +20,8 @@ namespace Vlingo.Wire.Channel
 
         public void Abandon() => Sender.Abandon(this);
 
+        public void ExplicitClose(bool option) => Sender.ExplicitClose(this, option);
+
         public void RespondWith(IConsumerByteBuffer buffer) => Sender.RespondWith(this, buffer);
     }
 }

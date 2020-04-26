@@ -18,9 +18,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
 {
     public class NettyChannelResponseHandler : ChannelHandlerAdapter
     {
-        private IResponseChannelConsumer _consumer;
+        private readonly IResponseChannelConsumer _consumer;
         private readonly ILogger _logger;
-        private ConsumerByteBufferPool _readBufferPool;
+        private readonly ConsumerByteBufferPool _readBufferPool;
         
         internal NettyChannelResponseHandler(IResponseChannelConsumer consumer, int maxBufferPoolSize, int maxMessageSize, ILogger logger)
         {

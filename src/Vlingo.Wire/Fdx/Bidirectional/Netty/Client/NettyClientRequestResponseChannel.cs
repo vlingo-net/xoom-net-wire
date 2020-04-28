@@ -43,6 +43,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
         private TimeSpan _connectionTimeout;
         private Bootstrap? _bootstrap;
         private IChannel? _channel;
+        private Exception? _connectException;
         private IEventLoopGroup? _workerGroup;
         private readonly TimeSpan _gracefulShutdownQuietPeriod;
         private readonly TimeSpan _gracefulShutdownTimeout;
@@ -114,6 +115,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
             }
             
             _connectDone.Reset();
+            _connectException = null;
         }
 
         public void RequestWith(byte[] buffer)
@@ -170,6 +172,10 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
                     .BeginConnect(_address.HostName, _address.Port, ConnectCallback, _bootstrap);
                 if (!_connectDone.WaitOne(_connectionTimeout))
                 {
+                    if (_connectException != null)
+                    {
+                        throw _connectException;
+                    }
                     throw new Exception($"Connection timeout {_connectionTimeout.TotalMilliseconds}ms expired before the connection could be established.");
                 }
             }
@@ -187,7 +193,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
             catch (Exception e)
             {
                 _logger.Error($"Failed to create client channel (DotNetty): {e.Message}", e);
-                throw;
+                _connectException = e;
             }
         }
 

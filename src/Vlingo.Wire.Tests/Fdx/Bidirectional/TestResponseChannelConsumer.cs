@@ -23,8 +23,6 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 
         public IList<string> Responses { get; } = new List<string>();
 
-        public AccessSafely UntilConsume { get; set; }
-
         public State CurrentState { get; set; }
 
         public void Consume(IConsumerByteBuffer buffer)

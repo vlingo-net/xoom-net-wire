@@ -9,6 +9,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
 using Vlingo.Actors.TestKit;
+using Vlingo.Common;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
 
@@ -23,11 +24,11 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 
         public IList<string> Requests { get; } = new List<string>();
         
-        public AccessSafely UntilClosed { get; }
-        
-        public AccessSafely UntilConsume { get; set; }
+        public State CurrentState { get; set; }
 
-        public void CloseWith(RequestResponseContext requestResponseContext, object data) => UntilClosed.WriteUsing("closed", 1);
+        public void CloseWith(RequestResponseContext requestResponseContext, object data)
+        {
+        }
 
         public void Consume(RequestResponseContext context, IConsumerByteBuffer buffer)
         {
@@ -65,14 +66,31 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                     startIndex = startIndex + CurrentExpectedRequestLength;
 
                     Requests.Add(request);
+                    CurrentState.Access.WriteUsing("consumeCount", 1);
 
                     var responseBuffer = new BasicConsumerByteBuffer(1, CurrentExpectedRequestLength);
                     context.RespondWith(responseBuffer.Clear().Put(Converters.TextToBytes(request)).Flip()); // echo back
         
                     last = currentIndex == combinedLength;
-
-                    UntilConsume.WriteUsing("serverConsume", 1);
                 }
+            }
+        }
+        
+        public class State
+        {
+            public AccessSafely Access { get; private set; }
+
+            private readonly AtomicInteger _consumeCount = new AtomicInteger(0);
+
+            public State(int totalWrites) => Access = AfterCompleting(totalWrites);
+
+            private AccessSafely AfterCompleting(int totalWrites)
+            {
+                Access = AccessSafely
+                    .AfterCompleting(totalWrites)
+                    .WritingWith<int>("consumeCount", _ => _consumeCount.Set(_consumeCount.IncrementAndGet()))
+                    .ReadingWith("consumeCount", _consumeCount.Get);
+                return Access;
             }
         }
     }

@@ -52,7 +52,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Server
                 b.Group(_bossGroup, _workerGroup)
                     .Channel<TcpServerSocketChannel>()
                     .ChildHandler(
-                        new ActionChannelInitializer<TcpServerSocketChannel>(channel =>
+                        new ActionChannelInitializer<TcpSocketChannel>(channel =>
                             channel.Pipeline.AddLast(new NettyInboundHandler(provider, maxBufferPoolSize,
                                 maxMessageSize, Logger))))
                     .BeginBind(port, BindCallback, b);

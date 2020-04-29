@@ -13,5 +13,7 @@ namespace Vlingo.Wire.Channel
     {
         void Abandon(RequestResponseContext context);
         void RespondWith(RequestResponseContext context, IConsumerByteBuffer buffer);
+        void RespondWith(RequestResponseContext context, IConsumerByteBuffer buffer, bool closeFollowing);
+        void RespondWith(RequestResponseContext context, object response, bool closeFollowing);
     }
 }

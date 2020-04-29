@@ -31,7 +31,7 @@ namespace Vlingo.Wire.Channel
         private bool _canStartProbing;
         
         private readonly IResourcePool<IConsumerByteBuffer, string> _requestBufferPool;
-        
+
         public SocketChannelSelectionProcessorActor(
             IRequestChannelConsumerProvider provider,
             string name,
@@ -66,8 +66,25 @@ namespace Vlingo.Wire.Channel
         public void Abandon(RequestResponseContext context) => ((Context)context).Close();
 
         public void RespondWith(RequestResponseContext context, IConsumerByteBuffer buffer) =>
+            RespondWith(context, buffer, false);
+
+        public void RespondWith(RequestResponseContext context, IConsumerByteBuffer buffer, bool closeFollowing)
+        {
             ((Context) context).QueueWritable(buffer);
-        
+            ((Context) context).RequireExplicitClose(!closeFollowing);
+        }
+
+        public void RespondWith(RequestResponseContext context, object response, bool closeFollowing)
+        {
+            var textResponse = response.ToString();
+
+            var buffer =
+                new BasicConsumerByteBuffer(0, textResponse.Length + 1024)
+                    .Put(Converters.TextToBytes(textResponse)).Flip();
+
+            RespondWith(context, buffer, closeFollowing);
+        }
+
         //=========================================
         // SocketChannelSelectionProcessor
         //=========================================
@@ -345,6 +362,7 @@ namespace Vlingo.Wire.Channel
             private object? _consumerData;
             private readonly string _id;
             private readonly Queue<IConsumerByteBuffer> _writables;
+            private bool _requireExplicitClose;
 
             public Context(SocketChannelSelectionProcessorActor parent, Socket clientChannel)
             {
@@ -354,6 +372,7 @@ namespace Vlingo.Wire.Channel
                 _buffer = parent._requestBufferPool.Acquire();
                 _id = $"{++_parent._contextId}";
                 _writables = new Queue<IConsumerByteBuffer>();
+                _requireExplicitClose = true;
             }
 
             public override T ConsumerData<T>() => (T) _consumerData!;
@@ -374,6 +393,11 @@ namespace Vlingo.Wire.Channel
 
             public void Close()
             {
+                if (_requireExplicitClose)
+                {
+                    return;
+                }
+                
                 if (!_clientChannel.IsSocketConnected())
                 {
                     return;
@@ -410,6 +434,8 @@ namespace Vlingo.Wire.Channel
             }
 
             public void QueueWritable(IConsumerByteBuffer buffer) => _writables.Enqueue(buffer);
+
+            public void RequireExplicitClose(bool option) => _requireExplicitClose = option;
 
             public IConsumerByteBuffer RequestBuffer => _buffer;
 

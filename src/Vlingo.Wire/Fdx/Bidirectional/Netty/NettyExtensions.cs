@@ -29,5 +29,20 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty
                 throw ae.InnerException;
             } 
         }
+        
+        public static IAsyncResult BeginBind(this ServerBootstrap bootstrap, int port, AsyncCallback callback, object state)
+            => bootstrap.BindAsync(port).ToApm(callback, state);
+        
+        public static IChannel EndBind(this ServerBootstrap _, IAsyncResult asyncResult)
+        {
+            try
+            {
+                return ((Task<IChannel>) asyncResult).Result;
+            }
+            catch (AggregateException ae)
+            {
+                throw ae.InnerException;
+            } 
+        }
     }
 }

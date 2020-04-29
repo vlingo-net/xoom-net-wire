@@ -29,7 +29,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Server
 
         protected override IServerRequestResponseChannel GetServer(Stage stage, IRequestChannelConsumerProvider provider, string name,
             int processorPoolSize, int maxBufferPoolSize, int maxMessageSize, long probeInterval, long probeTimeout) =>
-            ServerRequestResponseChannelFactory.Start(
+            ServerRequestResponseChannelFactory.StartNetty(
                 stage,
                 provider,
                 TestPort.IncrementAndGet(),

@@ -31,9 +31,6 @@
     <None Include="..\..\vlingo-64x64.png" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Fdx\Bidirectional\Netty\Server" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="DotNettyAll" Version="2.6.0" />
   </ItemGroup>
   <Choose>

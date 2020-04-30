@@ -55,7 +55,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, StartRepresentation1));
             }
 
-            return null;
+            return null!;
         }
 
         public Vlingo.Wire.Fdx.Bidirectional.IServerRequestResponseChannel Start(Vlingo.Actors.Stage stage,
@@ -84,7 +84,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, StartRepresentation2));
             }
 
-            return null;
+            return null!;
         }
 
         public void Close()
@@ -133,7 +133,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, PortRepresentation4));
             }
 
-            return null;
+            return null!;
         }
 
         public void Conclude()

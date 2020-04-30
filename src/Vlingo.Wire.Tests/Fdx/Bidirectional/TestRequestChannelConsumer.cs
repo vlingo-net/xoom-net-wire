@@ -55,12 +55,12 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
                 var last = false;
                 while (!last)
                 {
-                    if (startIndex > combinedRequests.Length)
+                    if (startIndex > combinedLength || startIndex + CurrentExpectedRequestLength > combinedLength)
                     {
                         _remaining = combinedRequests.Substring(currentIndex);
                         return;
                     }
-                    
+
                     var request = combinedRequests.Substring(startIndex, CurrentExpectedRequestLength);
                     currentIndex += CurrentExpectedRequestLength;
                     startIndex = startIndex + CurrentExpectedRequestLength;

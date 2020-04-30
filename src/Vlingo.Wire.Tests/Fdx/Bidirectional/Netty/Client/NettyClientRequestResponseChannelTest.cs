@@ -142,7 +142,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
                 .Channel<TcpServerSocketChannel>()
                 .Option(ChannelOption.SoBacklog, 100)
                 .Handler(new LoggingHandler("SRV-LSTN"))
-                .ChildHandler(new ActionChannelInitializer<IChannel>(
+                .ChildHandler(new ActionChannelInitializer<ISocketChannel>(
                     ch =>
                     {
                         ch.Pipeline.AddLast(new LoggingHandler("SRV-CONN"));

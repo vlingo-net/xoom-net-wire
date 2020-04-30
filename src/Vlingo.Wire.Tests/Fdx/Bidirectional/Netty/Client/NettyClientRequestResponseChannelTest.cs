@@ -72,8 +72,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
             var clientSentMessages = new List<string>();
 
             IChannel server = null;
-            var parentGroup = new MultithreadEventLoopGroup(2);
-            var childGroup = new MultithreadEventLoopGroup(2);
+            var parentGroup = new MultithreadEventLoopGroup(1);
+            var childGroup = new MultithreadEventLoopGroup();
 
             try
             {

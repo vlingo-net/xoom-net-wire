@@ -163,7 +163,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
                 _bootstrap    
                     .Group(_workerGroup)
                     .Channel<TcpSocketChannel>()
-                    .Option(ChannelOption.SoKeepalive, true)
+                    //.Option(ChannelOption.SoKeepalive, true)
+                    .Option(ChannelOption.TcpNodelay, true)
                     .Handler(new ActionChannelInitializer<ISocketChannel>(
                         ch => ch.Pipeline.AddLast(
                             //If DotNetty log level is configured as TRACE, will output the inbound/outbound data

@@ -40,7 +40,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
         private readonly IResponseChannelConsumer _consumer;
         private readonly int _maxBufferPoolSize;
         private readonly int _maxMessageSize;
-        private TimeSpan _connectionTimeout;
+        private readonly TimeSpan _connectionTimeout;
         private Bootstrap? _bootstrap;
         private IChannel? _channel;
         private Exception? _connectException;
@@ -88,7 +88,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
             int maxBufferPoolSize,
             int maxMessageSize,
             ILogger logger) : this(address, consumer, maxBufferPoolSize, maxMessageSize,
-            TimeSpan.FromMilliseconds(1000), TimeSpan.Zero, TimeSpan.Zero, logger)
+            TimeSpan.FromMilliseconds(10000), TimeSpan.Zero, TimeSpan.Zero, logger)
         {
         }
 

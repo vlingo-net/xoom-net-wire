@@ -36,7 +36,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
             var address = Address.From(Host.Of("localhost"), 8080, AddressType.Main);
             var clientChannel = new NettyClientRequestResponseChannel(address, new ThrowingResponseChannelConsumer(), 1,
                 1, TimeSpan.FromMilliseconds(1),
-                TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), new NoOpLogger());
+                TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), ConsoleLogger.TestInstance());
 
             var message = Assert.Throws<Exception>(() =>
                 clientChannel.RequestWith(Encoding.UTF8.GetBytes(Guid.NewGuid().ToString()))).Message;
@@ -49,7 +49,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
             var address = Address.From(Host.Of("localhost"), 8080, AddressType.Main);
             var clientChannel = new NettyClientRequestResponseChannel(address, new ThrowingResponseChannelConsumer(), 1,
                 1, TimeSpan.FromMilliseconds(100),
-                TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), new NoOpLogger());
+                TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), ConsoleLogger.TestInstance());
 
             Assert.Throws<ConnectException>(() =>
                 clientChannel.RequestWith(Encoding.UTF8.GetBytes(Guid.NewGuid().ToString())));

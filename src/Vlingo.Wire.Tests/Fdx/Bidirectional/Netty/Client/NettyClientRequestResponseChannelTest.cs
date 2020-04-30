@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -143,7 +144,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
                     ch => ch.Pipeline.AddLast(new ChannelHandlerAdapterMock(
                         requestMsgSize, connectionCount,
                         serverReceivedMessagesCount, serverReceivedMessage, serverSentMessages))))
-                .BindAsync(testPort);
+                .BindAsync(new IPEndPoint(IPAddress.Any, testPort));
         }
 
         private class ChannelHandlerAdapterMock : ChannelHandlerAdapter

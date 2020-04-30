@@ -78,7 +78,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Server
             }
             catch (Exception e)
             {
-                Logger.Error($"Failed to bind server channel (DotNetty): {e.Message}", e);
+                Logger.Error($"Failed to bind server channel (DotNetty) on port {_port}: {e.Message}", e);
             }
         }
 

@@ -16,7 +16,6 @@ using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
 using Vlingo.Actors.Plugin.Logging.Console;
-using Vlingo.Actors.Plugin.Logging.NoOp;
 using Vlingo.Common;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Fdx.Bidirectional.Netty.Client;
@@ -29,12 +28,12 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
 {
     public class NettyClientRequestResponseChannelTest
     {
-        private static AtomicInteger _testPort = new AtomicInteger(37370);
+        private static readonly AtomicInteger TestPort = new AtomicInteger(37370);
 
         [Fact]
         public void TestServerNotAvailableBecauseOfConnectionTimeout()
         {
-            var address = Address.From(Host.Of("localhost"), 8080, AddressType.Main);
+            var address = Address.From(Host.Of("localhost"), 8980, AddressType.Main);
             var clientChannel = new NettyClientRequestResponseChannel(address, new ThrowingResponseChannelConsumer(), 1,
                 1, TimeSpan.FromMilliseconds(1),
                 TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), ConsoleLogger.TestInstance());
@@ -47,7 +46,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
         [Fact]
         public void TestServerNotAvailable()
         {
-            var address = Address.From(Host.Of("localhost"), 8080, AddressType.Main);
+            var address = Address.From(Host.Of("localhost"), 8981, AddressType.Main);
             var clientChannel = new NettyClientRequestResponseChannel(address, new ThrowingResponseChannelConsumer(), 1,
                 1, TimeSpan.FromMilliseconds(100),
                 TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), ConsoleLogger.TestInstance());
@@ -77,7 +76,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
 
             try
             {
-                var testPort = _testPort.IncrementAndGet();
+                var testPort = TestPort.IncrementAndGet();
 
                 server = await BootstrapServer(requestMsgSize, connectionsCount, serverReceivedMessagesCount,
                     serverReceivedMessage, serverSentMessages, parentGroup,

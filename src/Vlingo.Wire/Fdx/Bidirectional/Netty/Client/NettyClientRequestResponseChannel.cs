@@ -193,7 +193,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
             }
             catch (Exception e)
             {
-                _logger.Error($"Failed to create client channel (DotNetty): {e.Message}", e);
+                _logger.Error($"Failed to create client channel (DotNetty) on address {_address}: {e.Message}", e);
                 _connectException = e;
             }
         }

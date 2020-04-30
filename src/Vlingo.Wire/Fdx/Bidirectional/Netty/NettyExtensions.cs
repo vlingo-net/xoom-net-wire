@@ -6,6 +6,7 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
@@ -31,7 +32,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty
         }
         
         public static IAsyncResult BeginBind(this ServerBootstrap bootstrap, int port, AsyncCallback callback, object state)
-            => bootstrap.BindAsync(port).ToApm(callback, state);
+            => bootstrap.BindAsync(new IPEndPoint(IPAddress.Any, port)).ToApm(callback, state);
         
         public static IChannel EndBind(this ServerBootstrap _, IAsyncResult asyncResult)
         {

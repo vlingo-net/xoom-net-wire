@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNetty.Buffers;
+using DotNetty.Handlers.Logging;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
@@ -139,10 +140,16 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
 
             return b.Group(parentGroup, childGroup)
                 .Channel<TcpServerSocketChannel>()
+                .Option(ChannelOption.SoBacklog, 100)
+                .Handler(new LoggingHandler("SRV-LSTN"))
                 .ChildHandler(new ActionChannelInitializer<IChannel>(
-                    ch => ch.Pipeline.AddLast(new ChannelHandlerAdapterMock(
-                        requestMsgSize, connectionCount,
-                        serverReceivedMessagesCount, serverReceivedMessage, serverSentMessages))))
+                    ch =>
+                    {
+                        ch.Pipeline.AddLast(new LoggingHandler("SRV-CONN"));
+                        ch.Pipeline.AddLast(new ChannelHandlerAdapterMock(
+                            requestMsgSize, connectionCount,
+                            serverReceivedMessagesCount, serverReceivedMessage, serverSentMessages));
+                    }))
                 .BindAsync(new IPEndPoint(IPAddress.Any, testPort));
         }
 

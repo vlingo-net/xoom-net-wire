@@ -90,7 +90,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
                 var address = Address.From(Host.Of("localhost"), testPort, AddressType.Main);
 
                 var clientChannel = new NettyClientRequestResponseChannel(address, clientConsumer, 10, replyMsSize,
-                    TimeSpan.FromMilliseconds(1000), ConsoleLogger.TestInstance());
+                    TimeSpan.FromMilliseconds(10000), ConsoleLogger.TestInstance());
 
                 for (var i = 0; i < nrExpectedMessages; i++)
                 {
@@ -141,11 +141,11 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
             return b.Group(parentGroup, childGroup)
                 .Channel<TcpServerSocketChannel>()
                 .Option(ChannelOption.SoBacklog, 100)
-                .Handler(new LoggingHandler("SRV-LSTN"))
+                .Handler(new LoggingHandler("SRV-LSTN", LogLevel.TRACE))
                 .ChildHandler(new ActionChannelInitializer<ISocketChannel>(
                     ch =>
                     {
-                        ch.Pipeline.AddLast(new LoggingHandler("SRV-CONN"));
+                        ch.Pipeline.AddLast(new LoggingHandler("SRV-CONN", LogLevel.TRACE));
                         ch.Pipeline.AddLast(new ChannelHandlerAdapterMock(
                             requestMsgSize, connectionCount,
                             serverReceivedMessagesCount, serverReceivedMessage, serverSentMessages));

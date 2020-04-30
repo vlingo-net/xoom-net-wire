@@ -17,7 +17,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Server
 {
     public sealed class NettyServerChannelActorTest : BaseServerChannelTest
     {
-        private static readonly AtomicInteger TestPort = new AtomicInteger(37480);
+        private static readonly AtomicInteger TestPort = new AtomicInteger(37490);
+        private readonly int _currentTestPort = TestPort.IncrementAndGet();
         
         public NettyServerChannelActorTest(ITestOutputHelper output) : base(output, 100)
         {
@@ -25,14 +26,14 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Server
 
         protected override IClientRequestResponseChannel GetClient(IResponseChannelConsumer consumer, int maxBufferPoolSize,
             int maxMessageSize, ILogger logger) =>
-            new NettyClientRequestResponseChannel(Address.From(Host.Of("localhost"), TestPort.Get(), AddressType.None), consumer, maxBufferPoolSize, maxMessageSize, logger);
+            new NettyClientRequestResponseChannel(Address.From(Host.Of("localhost"), _currentTestPort, AddressType.None), consumer, maxBufferPoolSize, maxMessageSize, logger);
 
         protected override IServerRequestResponseChannel GetServer(Stage stage, IRequestChannelConsumerProvider provider, string name,
             int processorPoolSize, int maxBufferPoolSize, int maxMessageSize, long probeInterval, long probeTimeout) =>
             ServerRequestResponseChannelFactory.StartNetty(
                 stage,
                 provider,
-                TestPort.IncrementAndGet(),
+                _currentTestPort,
                 "test-server",
                 processorPoolSize,
                 maxBufferPoolSize,

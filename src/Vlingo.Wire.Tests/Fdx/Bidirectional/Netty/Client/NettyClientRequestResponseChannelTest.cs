@@ -30,7 +30,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
     {
         private static readonly AtomicInteger TestPort = new AtomicInteger(37370);
 
-        [Fact]
+        [Fact(Skip = "Debugging CI")]
         public void TestServerNotAvailableBecauseOfConnectionTimeout()
         {
             var address = Address.From(Host.Of("localhost"), 8980, AddressType.Main);
@@ -43,7 +43,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
             Assert.Equal($"Connection timeout 1ms expired before the connection could be established.", message);
         }
 
-        [Fact]
+        [Fact(Skip = "Debugging CI")]
         public void TestServerNotAvailable()
         {
             var address = Address.From(Host.Of("localhost"), 8981, AddressType.Main);

@@ -5,6 +5,7 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System;
 using Vlingo.Actors;
 using Vlingo.Common;
 using Vlingo.Wire.Channel;
@@ -24,9 +25,12 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Server
         {
         }
 
-        protected override IClientRequestResponseChannel GetClient(IResponseChannelConsumer consumer, int maxBufferPoolSize,
+        protected override IClientRequestResponseChannel GetClient(IResponseChannelConsumer consumer,
+            int maxBufferPoolSize,
             int maxMessageSize, ILogger logger) =>
-            new NettyClientRequestResponseChannel(Address.From(Host.Of("localhost"), _currentTestPort, AddressType.None), consumer, maxBufferPoolSize, maxMessageSize, logger);
+            new NettyClientRequestResponseChannel(
+                Address.From(Host.Of("localhost"), _currentTestPort, AddressType.None), consumer, maxBufferPoolSize,
+                maxMessageSize, TimeSpan.FromMilliseconds(1000), logger);
 
         protected override IServerRequestResponseChannel GetServer(Stage stage, IRequestChannelConsumerProvider provider, string name,
             int processorPoolSize, int maxBufferPoolSize, int maxMessageSize, long probeInterval, long probeTimeout) =>

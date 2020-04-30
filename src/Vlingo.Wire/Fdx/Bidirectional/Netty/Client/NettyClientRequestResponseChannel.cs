@@ -87,8 +87,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
             IResponseChannelConsumer consumer,
             int maxBufferPoolSize,
             int maxMessageSize,
+            TimeSpan connectionTimeout,
             ILogger logger) : this(address, consumer, maxBufferPoolSize, maxMessageSize,
-            TimeSpan.FromMilliseconds(10000), TimeSpan.Zero, TimeSpan.Zero, logger)
+            connectionTimeout, TimeSpan.Zero, TimeSpan.Zero, logger)
         {
         }
 

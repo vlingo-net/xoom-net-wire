@@ -14,6 +14,7 @@ using DotNetty.Buffers;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
+using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Actors.Plugin.Logging.NoOp;
 using Vlingo.Common;
 using Vlingo.Wire.Channel;
@@ -87,7 +88,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
 
                 var address = Address.From(Host.Of("localhost"), testPort, AddressType.Main);
 
-                var clientChannel = new NettyClientRequestResponseChannel(address, clientConsumer, 10, replyMsSize, new NoOpLogger());
+                var clientChannel = new NettyClientRequestResponseChannel(address, clientConsumer, 10, replyMsSize,
+                    TimeSpan.FromMilliseconds(1000), ConsoleLogger.TestInstance());
 
                 for (var i = 0; i < nrExpectedMessages; i++)
                 {

@@ -7,12 +7,10 @@
 
 using System;
 using System.Net;
-using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using Vlingo.Actors;
-using Vlingo.Wire.Channel;
 
 namespace Vlingo.Wire.Fdx.Bidirectional.Netty
 {
@@ -20,7 +18,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty
     {
         public static IAsyncResult BeginConnect(this Bootstrap bootstrap, string hostName, int port, AsyncCallback callback, object state)
         {
-            if (hostName.IsLocalIpAddress())
+            if (hostName == "localhost")
             {
                 return bootstrap.ConnectAsync(new IPEndPoint(IPAddress.Loopback, port)).ToApm(callback, state);
             }

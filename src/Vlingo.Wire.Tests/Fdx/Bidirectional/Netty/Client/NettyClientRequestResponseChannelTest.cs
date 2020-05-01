@@ -48,7 +48,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
         {
             var address = Address.From(Host.Of("localhost"), 37888, AddressType.Main);
             var clientChannel = new NettyClientRequestResponseChannel(address, new ThrowingResponseChannelConsumer(), 1,
-                1, TimeSpan.FromSeconds(30),
+                1, TimeSpan.FromSeconds(60),
                 TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), ConsoleLogger.TestInstance());
 
             Assert.Throws<ConnectException>(() =>

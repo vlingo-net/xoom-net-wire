@@ -33,7 +33,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
         [Fact]
         public void TestServerNotAvailableBecauseOfConnectionTimeout()
         {
-            var address = Address.From(Host.Of("localhost"), 8980, AddressType.Main);
+            var address = Address.From(Host.Of("localhost2"), 8980, AddressType.Main);
             var clientChannel = new NettyClientRequestResponseChannel(address, new ThrowingResponseChannelConsumer(), 1,
                 1, TimeSpan.FromMilliseconds(1),
                 TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), ConsoleLogger.TestInstance());
@@ -48,7 +48,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
         {
             var address = Address.From(Host.Of("localhost"), 8981, AddressType.Main);
             var clientChannel = new NettyClientRequestResponseChannel(address, new ThrowingResponseChannelConsumer(), 1,
-                1, TimeSpan.FromSeconds(10),
+                1, TimeSpan.FromSeconds(30),
                 TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), ConsoleLogger.TestInstance());
 
             Assert.Throws<ConnectException>(() =>

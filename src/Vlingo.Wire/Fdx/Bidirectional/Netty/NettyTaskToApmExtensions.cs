@@ -11,14 +11,23 @@ using System.Threading.Tasks;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using Vlingo.Actors;
+using Vlingo.Wire.Channel;
 
 namespace Vlingo.Wire.Fdx.Bidirectional.Netty
 {
-    public static class NettyExtensions
+    public static class NettyTaskToApmExtensions
     {
         public static IAsyncResult BeginConnect(this Bootstrap bootstrap, string hostName, int port,
-            AsyncCallback callback, object state) => bootstrap.ConnectAsync(new IPEndPoint(IPAddress.Loopback, port)).ToApm(callback, state);
-        
+            AsyncCallback callback, object state)
+        {
+            if (hostName.IsLocalIpAddress())
+            {
+                return bootstrap.ConnectAsync(new IPEndPoint(IPAddress.Loopback, port)).ToApm(callback, state);
+            }
+            
+            return bootstrap.ConnectAsync(hostName, port).ToApm(callback, state);
+        }
+
         public static IChannel EndConnect(this Bootstrap _, IAsyncResult asyncResult)
         {
             try

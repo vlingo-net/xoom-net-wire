@@ -92,7 +92,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
 
                 
                 var clientChannel = new NettyClientRequestResponseChannel(address, clientConsumer, 10, replyMsSize,
-                    TimeSpan.FromMinutes(1), logger);
+                    TimeSpan.FromMilliseconds(1000), logger);
 
                 for (var i = 0; i < nrExpectedMessages; i++)
                 {

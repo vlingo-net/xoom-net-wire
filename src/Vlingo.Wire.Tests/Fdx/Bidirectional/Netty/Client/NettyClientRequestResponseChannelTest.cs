@@ -30,7 +30,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
     {
         private static readonly AtomicInteger TestPort = new AtomicInteger(37870);
 
-        [Fact(Skip = "Debugging CI")]
+        [Fact]
         public void TestServerNotAvailableBecauseOfConnectionTimeout()
         {
             var address = Address.From(Host.Of("localhost"), 8980, AddressType.Main);

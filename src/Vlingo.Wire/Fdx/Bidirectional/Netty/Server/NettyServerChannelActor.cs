@@ -41,8 +41,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Server
             _name = name;
             _gracefulShutdownQuietPeriod = TimeSpan.FromMilliseconds(gracefulShutdownQuietPeriod);
             _gracefulShutdownTimeout = TimeSpan.FromMilliseconds(gracefulShutdownTimeout);
-            _bossGroup = new MultithreadEventLoopGroup();
-            _workerGroup = new MultithreadEventLoopGroup(processorPoolSize);
+            _bossGroup = new MultithreadEventLoopGroup(processorPoolSize);
+            _workerGroup = new MultithreadEventLoopGroup();
             _bindDone = new ManualResetEvent(false);
 
             try
@@ -52,7 +52,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Server
                 b.Group(_bossGroup, _workerGroup)
                     .Channel<TcpServerSocketChannel>()
                     .ChildHandler(
-                        new ActionChannelInitializer<TcpSocketChannel>(channel =>
+                        new ActionChannelInitializer<ISocketChannel>(channel =>
                             channel.Pipeline.AddLast(new NettyInboundHandler(provider, maxBufferPoolSize,
                                 maxMessageSize, Logger))))
                     .BeginBind(port, BindCallback, b);

@@ -17,7 +17,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty
     public static class NettyExtensions
     {
         public static IAsyncResult BeginConnect(this Bootstrap bootstrap, string hostName, int port,
-            AsyncCallback callback, object state) => bootstrap.ConnectAsync(hostName, port).ToApm(callback, state);
+            AsyncCallback callback, object state) => bootstrap.ConnectAsync(new IPEndPoint(IPAddress.Loopback, port)).ToApm(callback, state);
         
         public static IChannel EndConnect(this Bootstrap _, IAsyncResult asyncResult)
         {

@@ -43,7 +43,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
             Assert.Equal($"Connection timeout 1ms expired before the connection could be established.", message);
         }
 
-        [Fact(Skip = "Debugging CI")]
+        [Fact]
         public void TestServerNotAvailable()
         {
             var address = Address.From(Host.Of("localhost"), 8981, AddressType.Main);

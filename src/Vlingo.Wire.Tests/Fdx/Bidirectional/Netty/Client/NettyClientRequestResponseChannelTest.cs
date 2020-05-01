@@ -12,11 +12,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNetty.Buffers;
-using DotNetty.Handlers.Logging;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
-using Vlingo.Actors;
 using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Common;
 using Vlingo.Wire.Channel;
@@ -50,7 +48,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
         {
             var address = Address.From(Host.Of("localhost"), 8981, AddressType.Main);
             var clientChannel = new NettyClientRequestResponseChannel(address, new ThrowingResponseChannelConsumer(), 1,
-                1, TimeSpan.FromMilliseconds(100),
+                1, TimeSpan.FromMilliseconds(1000),
                 TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), ConsoleLogger.TestInstance());
 
             Assert.Throws<ConnectException>(() =>
@@ -91,7 +89,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
 
                 
                 var clientChannel = new NettyClientRequestResponseChannel(address, clientConsumer, 10, replyMsSize,
-                    TimeSpan.FromSeconds(10), ConsoleLogger.TestInstance());
+                    TimeSpan.FromSeconds(20), ConsoleLogger.TestInstance());
 
                 for (var i = 0; i < nrExpectedMessages; i++)
                 {
@@ -145,8 +143,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
                 .Option(ChannelOption.SoBacklog, 100)
                 .ChildHandler(new ActionChannelInitializer<ISocketChannel>(
                     ch => ch.Pipeline.AddLast(new ChannelHandlerAdapterMock(
-                        requestMsgSize, connectionCount,
-                        serverReceivedMessagesCount, serverReceivedMessage, serverSentMessages))))
+                        requestMsgSize, connectionCount, serverReceivedMessagesCount, serverReceivedMessage, serverSentMessages))))
                 .BindAsync(new IPEndPoint(IPAddress.Any, testPort));
         }
 

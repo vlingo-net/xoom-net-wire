@@ -175,15 +175,15 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
                             new NettyChannelResponseHandler(_consumer, _maxBufferPoolSize, _maxMessageSize, _logger)
                         )))
                     .BeginConnect(_address.HostName, _address.Port, ConnectCallback, _bootstrap);
-                if (!_connectDone.WaitOne(_connectionTimeout))
-                {
-                    if (_connectException != null)
-                    {
-                        throw _connectException;
-                    }
-                    
-                    throw new Exception($"Connection timeout {_connectionTimeout.TotalMilliseconds.ToString(CultureInfo.InvariantCulture)}ms expired before the connection could be established.");
-                }
+                // if (!_connectDone.WaitOne(_connectionTimeout))
+                // {
+                //     if (_connectException != null)
+                //     {
+                //         throw _connectException;
+                //     }
+                //     
+                //     throw new Exception($"Connection timeout {_connectionTimeout.TotalMilliseconds.ToString(CultureInfo.InvariantCulture)}ms expired before the connection could be established.");
+                // }
             }
         }
 

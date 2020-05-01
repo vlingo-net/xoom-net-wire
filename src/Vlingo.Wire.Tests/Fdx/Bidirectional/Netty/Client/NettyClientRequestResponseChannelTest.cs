@@ -70,14 +70,12 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
 
             var clientSentMessages = new List<string>();
 
-            IChannel server = null;
-            NettyClientRequestResponseChannel client = null;
             var parentGroup = new MultithreadEventLoopGroup(1);
             var childGroup = new MultithreadEventLoopGroup();
 
             var testPort = TestPort.IncrementAndGet();
 
-            server = await BootstrapServer(requestMsgSize, connectionsCount, serverReceivedMessagesCount,
+            var server = await BootstrapServer(requestMsgSize, connectionsCount, serverReceivedMessagesCount,
                 serverReceivedMessage, serverSentMessages, parentGroup, childGroup, testPort);
 
             var clientConsumer = new TestResponseChannelConsumer();
@@ -87,7 +85,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
             var address = Address.From(Host.Of("localhost"), testPort, AddressType.Main);
 
             
-            client = new NettyClientRequestResponseChannel(address, clientConsumer, 10, replyMsSize,
+            var client = new NettyClientRequestResponseChannel(address, clientConsumer, 10, replyMsSize,
                 TimeSpan.FromMilliseconds(1000), ConsoleLogger.TestInstance());
 
             for (var i = 0; i < nrExpectedMessages; i++)
@@ -116,7 +114,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
                     parentGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1)),
                     childGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1)));
 
-                client?.Close();
+                client.Close();
             }
             catch (Exception)
             {

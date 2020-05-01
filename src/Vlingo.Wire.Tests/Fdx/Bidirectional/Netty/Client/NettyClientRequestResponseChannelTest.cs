@@ -92,7 +92,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
 
                 
                 var clientChannel = new NettyClientRequestResponseChannel(address, clientConsumer, 10, replyMsSize,
-                    TimeSpan.FromMilliseconds(1000), logger);
+                    TimeSpan.FromMinutes(1), logger);
 
                 for (var i = 0; i < nrExpectedMessages; i++)
                 {
@@ -117,8 +117,9 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
                     await server.CloseAsync();
                 }
 
-                parentGroup.ShutdownGracefullyAsync().Wait();
-                childGroup.ShutdownGracefullyAsync().Wait();
+                await Task.WhenAll(
+                    parentGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1)),
+                    childGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1)));
             }
         }
 

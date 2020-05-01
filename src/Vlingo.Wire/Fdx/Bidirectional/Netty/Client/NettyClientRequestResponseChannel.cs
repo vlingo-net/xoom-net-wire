@@ -163,8 +163,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
                 _bootstrap    
                     .Group(_workerGroup)
                     .Channel<TcpSocketChannel>()
-                    //.Option(ChannelOption.SoKeepalive, true)
-                    .Option(ChannelOption.TcpNodelay, true)
+                    .Option(ChannelOption.SoKeepalive, true)
+                    //.Option(ChannelOption.TcpNodelay, true)
                     .Handler(new ActionChannelInitializer<ISocketChannel>(
                         ch => ch.Pipeline.AddLast(
                             //If DotNetty log level is configured as TRACE, will output the inbound/outbound data
@@ -173,6 +173,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
                             new NettyChannelResponseHandler(_consumer, _maxBufferPoolSize, _maxMessageSize, _logger)
                         )))
                     .BeginConnect(_address.HostName, _address.Port, ConnectCallback, _bootstrap);
+                _logger.Info($"Connecting... {_address}");
                 if (!_connectDone.WaitOne(_connectionTimeout))
                 {
                     if (_connectException != null)
@@ -191,6 +192,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
                 var client = (Bootstrap) ar.AsyncState;
                 _channel = client.EndConnect(ar);
 
+                _logger.Info($"Connection successful to: {_address}");
                 _connectDone.Set();
             }
             catch (Exception e)

@@ -79,7 +79,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
             {
                 var testPort = TestPort.IncrementAndGet();
 
-                var serverTask = BootstrapServer(requestMsgSize, connectionsCount, serverReceivedMessagesCount,
+                server = await BootstrapServer(requestMsgSize, connectionsCount, serverReceivedMessagesCount,
                     serverReceivedMessage, serverSentMessages, parentGroup,
                     childGroup, testPort);
 
@@ -99,7 +99,6 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
                     clientChannel.RequestWith(Encoding.UTF8.GetBytes(request));
                 }
 
-                server = await serverTask;
                 connectionsCount.Wait();
                 serverReceivedMessagesCount.Wait();
 

@@ -154,7 +154,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
                             requestMsgSize, connectionCount,
                             serverReceivedMessagesCount, serverReceivedMessage, serverSentMessages, logger));
                     }))
-                .BindAsync(new IPEndPoint(IPAddress.Loopback, testPort));
+                .BindAsync(new IPEndPoint(IPAddress.Any, testPort));
         }
 
         private class ChannelHandlerAdapterMock : ChannelHandlerAdapter

@@ -116,8 +116,11 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
                 _logger.Error($"Netty client actor for {_address} was not closed properly", e);
             }
             
-            // _connectDone.Reset();
+            _bootstrap = null;
+            _channel = null;
+            _workerGroup = null;
             _connectException = null;
+            _connectDone.Reset();
         }
 
         public void RequestWith(byte[] buffer)
@@ -174,12 +177,12 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
                     .BeginConnect(_address.HostName, _address.Port, ConnectCallback, _bootstrap);
                 if (!_connectDone.WaitOne(_connectionTimeout))
                 {
+                    if (_connectException != null)
+                    {
+                        throw _connectException;
+                    }
+                    
                     throw new Exception($"Connection timeout {_connectionTimeout.TotalMilliseconds.ToString(CultureInfo.InvariantCulture)}ms expired before the connection could be established.");
-                }
-
-                if (_connectException != null)
-                {
-                    throw _connectException;
                 }
             }
         }
@@ -192,16 +195,13 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
                 _channel = client.EndConnect(ar);
 
                 _logger.Info($"Connection successful to: {_address}");
+                _connectDone.Set();
             }
             catch (Exception e)
             {
                 _logger.Error($"Failed to create client channel (DotNetty) on address {_address}: {e.Message}", e);
                 _connectException = e;
             }
-            finally
-            {
-                _connectDone.Set();
-            }          
         }
 
         private class MaxMessageSizeSplitter : ByteToMessageDecoder

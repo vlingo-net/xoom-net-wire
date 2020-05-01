@@ -116,7 +116,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
                 _logger.Error($"Netty client actor for {_address} was not closed properly", e);
             }
             
-            _connectDone.Reset();
+            // _connectDone.Reset();
             _connectException = null;
         }
 

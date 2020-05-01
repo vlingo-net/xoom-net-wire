@@ -51,6 +51,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Server
 
                 b.Group(_bossGroup, _workerGroup)
                     .Channel<TcpServerSocketChannel>()
+                    .Option(ChannelOption.SoBacklog, 100)
                     .ChildHandler(
                         new ActionChannelInitializer<ISocketChannel>(channel =>
                             channel.Pipeline.AddLast(new NettyInboundHandler(provider, maxBufferPoolSize,

@@ -17,8 +17,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty
 {
     public static class NettyTaskToApmExtensions
     {
-        public static IAsyncResult BeginConnect(this Bootstrap bootstrap, string hostName, int port,
-            AsyncCallback callback, object state)
+        public static IAsyncResult BeginConnect(this Bootstrap bootstrap, string hostName, int port, AsyncCallback callback, object state)
         {
             if (hostName.IsLocalIpAddress())
             {

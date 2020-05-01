@@ -76,13 +76,12 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
             var parentGroup = new MultithreadEventLoopGroup(1);
             var childGroup = new MultithreadEventLoopGroup();
 
-            var logger = ConsoleLogger.TestInstance();
             try
             {
                 var testPort = TestPort.IncrementAndGet();
 
                 server = await BootstrapServer(requestMsgSize, connectionsCount, serverReceivedMessagesCount,
-                    serverReceivedMessage, serverSentMessages, parentGroup, childGroup, testPort, logger);
+                    serverReceivedMessage, serverSentMessages, parentGroup, childGroup, testPort);
 
                 var clientConsumer = new TestResponseChannelConsumer();
                 clientConsumer.CurrentExpectedResponseLength = replyMsSize;
@@ -92,7 +91,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
 
                 
                 var clientChannel = new NettyClientRequestResponseChannel(address, clientConsumer, 10, replyMsSize,
-                    TimeSpan.FromMilliseconds(1000), logger);
+                    TimeSpan.FromMilliseconds(1000), ConsoleLogger.TestInstance());
 
                 for (var i = 0; i < nrExpectedMessages; i++)
                 {
@@ -137,23 +136,17 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
             List<string> serverSentMessages,
             IEventLoopGroup parentGroup,
             IEventLoopGroup childGroup,
-            int testPort,
-            ILogger logger)
+            int testPort)
         {
             var b = new ServerBootstrap();
 
             return b.Group(parentGroup, childGroup)
                 .Channel<TcpServerSocketChannel>()
                 .Option(ChannelOption.SoBacklog, 100)
-                .Handler(new LoggingHandler("SRV-LSTN", LogLevel.TRACE))
                 .ChildHandler(new ActionChannelInitializer<ISocketChannel>(
-                    ch =>
-                    {
-                        ch.Pipeline.AddLast(new LoggingHandler("SRV-CONN", LogLevel.TRACE));
-                        ch.Pipeline.AddLast(new ChannelHandlerAdapterMock(
-                            requestMsgSize, connectionCount,
-                            serverReceivedMessagesCount, serverReceivedMessage, serverSentMessages, logger));
-                    }))
+                    ch => ch.Pipeline.AddLast(new ChannelHandlerAdapterMock(
+                        requestMsgSize, connectionCount,
+                        serverReceivedMessagesCount, serverReceivedMessage, serverSentMessages))))
                 .BindAsync(new IPEndPoint(IPAddress.Any, testPort));
         }
 
@@ -165,29 +158,25 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
             private readonly CountdownEvent _serverReceivedMessagesCount;
             private readonly List<string> _serverReceivedMessage;
             private readonly List<string> _serverSentMessages;
-            private readonly ILogger _logger;
 
             public ChannelHandlerAdapterMock(
                 int requestMsgSize,
                 CountdownEvent connectionCount,
                 CountdownEvent serverReceivedMessagesCount,
                 List<string> serverReceivedMessage,
-                List<string> serverSentMessages,
-                ILogger logger)
+                List<string> serverSentMessages)
             {
                 _requestMsgSize = requestMsgSize;
                 _connectionCount = connectionCount;
                 _serverReceivedMessagesCount = serverReceivedMessagesCount;
                 _serverReceivedMessage = serverReceivedMessage;
                 _serverSentMessages = serverSentMessages;
-                _logger = logger;
             }
 
             public override void ChannelActive(IChannelHandlerContext context)
             {
                 base.ChannelActive(context);
                 _connectionCount.Signal();
-                _logger.Info($"Connection made for: {context.Name}");
             }
 
             public override void ChannelRead(IChannelHandlerContext context, object message)
@@ -221,7 +210,6 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
 
                     replyBuffer.WriteBytes(bytes);
 
-                    _logger.Info($"Write answer #{_serverReceivedMessage.Count}: {reply}");
                     context.WriteAndFlushAsync(replyBuffer);
                 }
 

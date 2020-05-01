@@ -104,7 +104,6 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
                 Assert.Equal(0, clientConsumer.CurrentState.Access.ReadFrom<int>("remaining"));
 
                 clientSentMessages.ForEach(clientRequest => Assert.Contains(clientRequest, serverReceivedMessage));
-
                 serverSentMessages.ForEach(serverReply => Assert.True(clientConsumer.Responses.Contains(serverReply)));
             }
             finally
@@ -114,9 +113,16 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
                     await server.CloseAsync();
                 }
 
-                await Task.WhenAll(
-                    parentGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1)),
-                    childGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1)));
+                try
+                {
+                    await Task.WhenAll(
+                        parentGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1)),
+                        childGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1)));
+                }
+                catch (Exception e)
+                {
+                    // ignore
+                }
             }
         }
 

@@ -119,7 +119,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
                         parentGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1)),
                         childGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1)));
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     // ignore
                 }

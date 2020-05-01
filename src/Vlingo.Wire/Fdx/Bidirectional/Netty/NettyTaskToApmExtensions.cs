@@ -36,8 +36,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty
             }
             catch (AggregateException ae)
             {
-                ExceptionDispatchInfo.Capture(ae.InnerException).Throw();
-                throw;
+                throw ae.InnerException;
             } 
         }
         
@@ -52,8 +51,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty
             }
             catch (AggregateException ae)
             {
-                ExceptionDispatchInfo.Capture(ae.InnerException).Throw();
-                throw;
+                throw ae.InnerException;
             } 
         }
     }

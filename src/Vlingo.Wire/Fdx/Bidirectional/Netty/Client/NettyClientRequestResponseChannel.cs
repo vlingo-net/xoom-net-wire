@@ -175,6 +175,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
                             new NettyChannelResponseHandler(_consumer, _maxBufferPoolSize, _maxMessageSize, _logger)
                         )))
                     .BeginConnect(_address.HostName, _address.Port, ConnectCallback, _bootstrap);
+                _connectDone.WaitOne();
                 // if (!_connectDone.WaitOne(_connectionTimeout))
                 // {
                 //     if (_connectException != null)

@@ -75,57 +75,52 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
             var parentGroup = new MultithreadEventLoopGroup(1);
             var childGroup = new MultithreadEventLoopGroup();
 
+            var testPort = TestPort.IncrementAndGet();
+
+            server = await BootstrapServer(requestMsgSize, connectionsCount, serverReceivedMessagesCount,
+                serverReceivedMessage, serverSentMessages, parentGroup, childGroup, testPort);
+
+            var clientConsumer = new TestResponseChannelConsumer();
+            clientConsumer.CurrentExpectedResponseLength = replyMsSize;
+            clientConsumer.CurrentState = new TestResponseChannelConsumer.State(nrExpectedMessages);
+
+            var address = Address.From(Host.Of("localhost"), testPort, AddressType.Main);
+
+            
+            client = new NettyClientRequestResponseChannel(address, clientConsumer, 10, replyMsSize,
+                TimeSpan.FromMilliseconds(1000), ConsoleLogger.TestInstance());
+
+            for (var i = 0; i < nrExpectedMessages; i++)
+            {
+                var request = Guid.NewGuid().ToString();
+                clientSentMessages.Add(request);
+                client.RequestWith(Encoding.UTF8.GetBytes(request));
+            }
+
+            connectionsCount.Wait();
+            serverReceivedMessagesCount.Wait();
+
+            Assert.Equal(0, clientConsumer.CurrentState.Access.ReadFrom<int>("remaining"));
+
+            clientSentMessages.ForEach(clientRequest => Assert.Contains(clientRequest, serverReceivedMessage));
+            serverSentMessages.ForEach(serverReply => Assert.True(clientConsumer.Responses.Contains(serverReply)));
+
+            if (server != null)
+            {
+                await server.CloseAsync();
+            }
+
             try
             {
-                var testPort = TestPort.IncrementAndGet();
+                await Task.WhenAll(
+                    parentGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1)),
+                    childGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1)));
 
-                server = await BootstrapServer(requestMsgSize, connectionsCount, serverReceivedMessagesCount,
-                    serverReceivedMessage, serverSentMessages, parentGroup, childGroup, testPort);
-
-                var clientConsumer = new TestResponseChannelConsumer();
-                clientConsumer.CurrentExpectedResponseLength = replyMsSize;
-                clientConsumer.CurrentState = new TestResponseChannelConsumer.State(nrExpectedMessages);
-
-                var address = Address.From(Host.Of("localhost"), testPort, AddressType.Main);
-
-                
-                client = new NettyClientRequestResponseChannel(address, clientConsumer, 10, replyMsSize,
-                    TimeSpan.FromMilliseconds(1000), ConsoleLogger.TestInstance());
-
-                for (var i = 0; i < nrExpectedMessages; i++)
-                {
-                    var request = Guid.NewGuid().ToString();
-                    clientSentMessages.Add(request);
-                    client.RequestWith(Encoding.UTF8.GetBytes(request));
-                }
-
-                connectionsCount.Wait();
-                serverReceivedMessagesCount.Wait();
-
-                Assert.Equal(0, clientConsumer.CurrentState.Access.ReadFrom<int>("remaining"));
-
-                clientSentMessages.ForEach(clientRequest => Assert.Contains(clientRequest, serverReceivedMessage));
-                serverSentMessages.ForEach(serverReply => Assert.True(clientConsumer.Responses.Contains(serverReply)));
+                client?.Close();
             }
-            finally
+            catch (Exception)
             {
-                if (server != null)
-                {
-                    await server.CloseAsync();
-                }
-
-                try
-                {
-                    await Task.WhenAll(
-                        parentGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1)),
-                        childGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1)));
-
-                    client?.Close();
-                }
-                catch (Exception)
-                {
-                    // ignore
-                }
+                // ignore
             }
         }
 

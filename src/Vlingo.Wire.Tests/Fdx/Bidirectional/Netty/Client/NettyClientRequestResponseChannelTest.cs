@@ -29,7 +29,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
 {
     public class NettyClientRequestResponseChannelTest
     {
-        private static readonly AtomicInteger TestPort = new AtomicInteger(37370);
+        private static readonly AtomicInteger TestPort = new AtomicInteger(37870);
 
         [Fact(Skip = "Debugging CI")]
         public void TestServerNotAvailableBecauseOfConnectionTimeout()

@@ -7,6 +7,7 @@
 
 using System;
 using System.Net;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
@@ -35,7 +36,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty
             }
             catch (AggregateException ae)
             {
-                throw ae.InnerException;
+                ExceptionDispatchInfo.Capture(ae.InnerException).Throw();
+                throw;
             } 
         }
         
@@ -50,7 +52,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty
             }
             catch (AggregateException ae)
             {
-                throw ae.InnerException;
+                ExceptionDispatchInfo.Capture(ae.InnerException).Throw();
+                throw;
             } 
         }
     }

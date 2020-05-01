@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using Vlingo.Actors;
 using Vlingo.Actors.Plugin.Logging.Console;
+using Vlingo.Common;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Fdx.Bidirectional;
 using Vlingo.Wire.Message;
@@ -21,6 +22,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 {
     public abstract class BaseServerChannelTest : IDisposable
     {
+        private static readonly AtomicInteger TestPort = new AtomicInteger(37470);
+        
         private readonly ITestOutputHelper _output;
         private readonly int _poolSize;
 
@@ -198,10 +201,13 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             var provider = new TestRequestChannelConsumerProvider();
             _serverConsumer = (TestRequestChannelConsumer)provider.Consumer;
 
+            var testPort = TestPort.IncrementAndGet();
+            
             _server = GetServer(
                 _world.Stage,
                 provider,
                 "test-server",
+                testPort,
                 1,
                 _poolSize,
                 10240,
@@ -210,7 +216,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             
             _clientConsumer = new TestResponseChannelConsumer();
             
-            _client = GetClient(_clientConsumer, _poolSize, 10240, logger);
+            _client = GetClient(_clientConsumer, _poolSize, 10240, testPort, logger);
         }
 
         public void Dispose()
@@ -235,12 +241,14 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             IResponseChannelConsumer consumer,
             int maxBufferPoolSize,
             int maxMessageSize,
+            int testPort,
             ILogger logger);
 
         protected abstract IServerRequestResponseChannel GetServer(
             Stage stage,
             IRequestChannelConsumerProvider provider,
             string name,
+            int testPort,
             int processorPoolSize,
             int maxBufferPoolSize,
             int maxMessageSize,

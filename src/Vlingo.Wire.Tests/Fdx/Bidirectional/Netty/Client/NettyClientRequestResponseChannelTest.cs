@@ -46,7 +46,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
         [Fact]
         public void TestServerNotAvailable()
         {
-            var address = Address.From(Host.Of("localhost2"), 8080, AddressType.Main);
+            var address = Address.From(Host.Of("localhost"), 37888, AddressType.Main);
             var clientChannel = new NettyClientRequestResponseChannel(address, new ThrowingResponseChannelConsumer(), 1,
                 1, TimeSpan.FromMilliseconds(1000),
                 TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), ConsoleLogger.TestInstance());
@@ -89,7 +89,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
 
                 
                 var clientChannel = new NettyClientRequestResponseChannel(address, clientConsumer, 10, replyMsSize,
-                    TimeSpan.FromSeconds(30), ConsoleLogger.TestInstance());
+                    TimeSpan.FromSeconds(60), ConsoleLogger.TestInstance());
 
                 for (var i = 0; i < nrExpectedMessages; i++)
                 {

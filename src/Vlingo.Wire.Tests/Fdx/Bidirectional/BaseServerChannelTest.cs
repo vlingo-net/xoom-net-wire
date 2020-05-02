@@ -34,7 +34,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
         private readonly TestRequestChannelConsumer _serverConsumer;
         private readonly World _world;
 
-        [Fact(Skip = "CI fails")]
+        [Fact]
         public void TestBasicRequestResponse()
         {
             _output.WriteLine("Starting TestBasicRequestResponse");
@@ -65,7 +65,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             Assert.Equal(_clientConsumer.Responses[0], _serverConsumer.Requests[0]);
         }
 
-        [Fact(Skip = "CI fails")]
+        [Fact]
         public void TestGappyRequestResponse()
         {
             _output.WriteLine("Starting TestGappyRequestResponse");
@@ -105,7 +105,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             Assert.Equal(_clientConsumer.Responses[0], _serverConsumer.Requests[0]);
         }
 
-        [Fact(Skip = "CI fails")]
+        [Fact]
         public void Test10RequestResponse()
         {
             _output.WriteLine("Starting Test10RequestResponse");
@@ -146,7 +146,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional
             }
         }
         
-        [Fact(Skip = "CI fails")]
+        [Fact]
         public void TestThatRequestResponsePoolLimitsNotExceeded()
         {
             _output.WriteLine("Starting TestThatRequestResponsePoolLimitsNotExceeded");

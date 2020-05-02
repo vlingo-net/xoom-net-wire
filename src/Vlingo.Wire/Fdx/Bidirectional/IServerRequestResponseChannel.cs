@@ -8,7 +8,6 @@
 using Vlingo.Actors;
 using Vlingo.Common;
 using Vlingo.Wire.Channel;
-using Vlingo.Wire.Fdx.Bidirectional.Netty.Server;
 
 namespace Vlingo.Wire.Fdx.Bidirectional
 {
@@ -57,20 +56,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             long probeTimeout) =>
             stage.ActorFor<IServerRequestResponseChannel>(
                 () => new ServerRequestResponseChannelActor(provider, port, name, processorPoolSize, maxBufferPoolSize, maxMessageSize, probeInterval, probeTimeout));
-
-        public static IServerRequestResponseChannel StartNetty(
-            Stage stage,
-            IRequestChannelConsumerProvider provider,
-            int port,
-            string name,
-            int processorPoolSize,
-            int maxBufferPoolSize,
-            int maxMessageSize,
-            long probeInterval,
-            long probeTimeout) =>
-            stage.ActorFor<IServerRequestResponseChannel>(
-                () => new NettyServerChannelActor(provider, port, name, processorPoolSize, maxBufferPoolSize, maxMessageSize, probeInterval, probeTimeout));
-
+        
         public static IServerRequestResponseChannel Start(
             Stage stage,
             IAddress address,
@@ -85,22 +71,6 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             long probeTimeout) =>
             stage.ActorFor<IServerRequestResponseChannel>(
                 () => new ServerRequestResponseChannelActor(provider, port, name, processorPoolSize,
-                    maxBufferPoolSize, maxMessageSize, probeInterval, probeTimeout), mailboxName, address.Name, address, stage.World.DefaultLogger);
-
-        public static IServerRequestResponseChannel StartNetty(
-            Stage stage,
-            IAddress address,
-            string mailboxName,
-            IRequestChannelConsumerProvider provider,
-            int port,
-            string name,
-            int processorPoolSize,
-            int maxBufferPoolSize,
-            int maxMessageSize,
-            long probeInterval,
-            long probeTimeout) =>
-            stage.ActorFor<IServerRequestResponseChannel>(
-                () => new NettyServerChannelActor(provider, port, name, processorPoolSize,
                     maxBufferPoolSize, maxMessageSize, probeInterval, probeTimeout), mailboxName, address.Name, address, stage.World.DefaultLogger);
     }
 }

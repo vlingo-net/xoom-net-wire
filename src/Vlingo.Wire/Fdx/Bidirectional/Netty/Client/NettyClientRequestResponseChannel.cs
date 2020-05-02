@@ -37,6 +37,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
     /// </summary>
     public class NettyClientRequestResponseChannel : IClientRequestResponseChannel
     {
+        private const int MaxRetries = 10;
         private readonly Address _address;
         private readonly IResponseChannelConsumer _consumer;
         private readonly int _maxBufferPoolSize;
@@ -46,6 +47,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
         private IChannel? _channel;
         private Exception? _connectException;
         private IEventLoopGroup? _workerGroup;
+        private int _retries = 0;
         private readonly TimeSpan _gracefulShutdownQuietPeriod;
         private readonly TimeSpan _gracefulShutdownTimeout;
         private readonly ILogger _logger;
@@ -120,6 +122,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
             _channel = null;
             _workerGroup = null;
             _connectException = null;
+            _retries = 0;
             _connectDone.Reset();
         }
 
@@ -175,16 +178,23 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
                             new NettyChannelResponseHandler(_consumer, _maxBufferPoolSize, _maxMessageSize, _logger)
                         )))
                     .BeginConnect(_address.HostName, _address.Port, ConnectCallback, _bootstrap);
-                _connectDone.WaitOne();
-                // if (!_connectDone.WaitOne(_connectionTimeout))
-                // {
-                //     if (_connectException != null)
-                //     {
-                //         throw _connectException;
-                //     }
-                //     
-                //     throw new Exception($"Connection timeout {_connectionTimeout.TotalMilliseconds.ToString(CultureInfo.InvariantCulture)}ms expired before the connection could be established.");
-                // }
+                _logger.Info($"Connecting... to: {_address}");
+                if (!_connectDone.WaitOne(_connectionTimeout))
+                {
+                    if (_connectException != null)
+                    {
+                        throw _connectException;
+                    }
+
+                    if (_retries < MaxRetries)
+                    {
+                        _logger.Info($"Retrying: {_retries++}");
+                        Close();
+                        PrepareChannel();
+                    }
+                    
+                    throw new Exception($"Connection timeout {_connectionTimeout.TotalMilliseconds.ToString(CultureInfo.InvariantCulture)}ms expired before the connection could be established.");
+                }
             }
         }
 

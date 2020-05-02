@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNetty.Buffers;
+using DotNetty.Handlers.Logging;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
@@ -144,7 +145,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
                 .Channel<TcpServerSocketChannel>()
                 .Option(ChannelOption.SoBacklog, 100)
                 .ChildHandler(new ActionChannelInitializer<ISocketChannel>(
-                    ch => ch.Pipeline.AddLast(new ChannelHandlerAdapterMock(
+                    ch => ch.Pipeline.AddLast(new LoggingHandler("Server ...", LogLevel.TRACE),
+                        new ChannelHandlerAdapterMock(
                         requestMsgSize, connectionCount, serverReceivedMessagesCount, serverReceivedMessage, serverSentMessages))))
                 .BindAsync(new IPEndPoint(IPAddress.Any, testPort));
         }

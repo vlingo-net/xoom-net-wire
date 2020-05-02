@@ -166,7 +166,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional.Netty.Client
             if (_bootstrap == null)
             {
                 _bootstrap = new Bootstrap();
-                _bootstrap    
+                _bootstrap
                     .Group(_workerGroup)
                     .Channel<TcpSocketChannel>()
                     .Option(ChannelOption.SoKeepalive, true)

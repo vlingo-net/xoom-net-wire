@@ -125,8 +125,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
 
         public NettyClientRequestResponseChannelTest(ITestOutputHelper output)
         {
-            var converter = new Converter(output);
-            Console.SetOut(converter);
+            // var converter = new Converter(output);
+            // Console.SetOut(converter);
         }
 
         private Task<IChannel> BootstrapServer(

@@ -87,7 +87,7 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
 
             
             var client = new NettyClientRequestResponseChannel(address, clientConsumer, 10, replyMsSize,
-                TimeSpan.FromMilliseconds(1000), ConsoleLogger.TestInstance());
+                TimeSpan.FromMilliseconds(10000), ConsoleLogger.TestInstance());
 
             for (var i = 0; i < nrExpectedMessages; i++)
             {
@@ -125,8 +125,8 @@ namespace Vlingo.Wire.Tests.Fdx.Bidirectional.Netty.Client
 
         public NettyClientRequestResponseChannelTest(ITestOutputHelper output)
         {
-            // var converter = new Converter(output);
-            // Console.SetOut(converter);
+            var converter = new Converter(output);
+            Console.SetOut(converter);
         }
 
         private Task<IChannel> BootstrapServer(

@@ -53,19 +53,19 @@ namespace Vlingo.Wire.Tests.Multicast
             subscriberConsumer.UntilConsume = accessSafely;
             subscriber.OpenFor(subscriberConsumer);
             
-            for (int idx = 0; idx < 10; ++idx)
+            for (var idx = 0; idx < 10; ++idx)
             {
                 publisher.SendAvailability();
             }
             
             publisher.ProcessChannel();
 
-            for (int i = 0; i < 2; ++i)
+            for (var i = 0; i < 2; ++i)
             {
                 subscriber.ProbeChannel();
             }
 
-            subscriberConsumer.UntilConsume.ReadFromExpecting("subscriberCount", 10);
+            subscriberConsumer.UntilConsume.ReadFromExpecting("subscriberCount", 10, 10000);
     
             Assert.Equal(0, publisherCount);
             Assert.Equal(10, subscriberCount);

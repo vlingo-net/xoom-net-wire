@@ -7,28 +7,33 @@
 
 using System.Collections.Generic;
 using Vlingo.Actors.TestKit;
+using Vlingo.Common;
 using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Channel
 {
     public class MockChannelReaderConsumer : IChannelReaderConsumer
     {
-        private readonly string _name;
         private readonly List<string> _messages = new List<string>();
-
-        public MockChannelReaderConsumer(string name)
-        {
-            _name = name;
-        }
+        private AccessSafely _access = AccessSafely.AfterCompleting(0);
+        private readonly AtomicInteger _count = new AtomicInteger(0);
 
         public void Consume(RawMessage message)
         {
             _messages.Add(message.AsTextMessage());
-            UntilConsume?.WriteUsing(_name, 1);
+            _access.WriteUsing("count", 1);
+        }
+        
+        public AccessSafely AfterCompleting(int times)
+        {
+            _access =
+                AccessSafely.AfterCompleting(times)
+                    .WritingWith<int>("count", value => _count.IncrementAndGet())
+                    .ReadingWith("count", () => _count.Get());
+
+            return _access;
         }
 
         public IReadOnlyCollection<string> Messages => _messages;
-        
-        public AccessSafely? UntilConsume { get; set; }
     }
 }

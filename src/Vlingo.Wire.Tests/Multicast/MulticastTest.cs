@@ -8,7 +8,6 @@
 using System;
 using System.IO;
 using Vlingo.Actors.Plugin.Logging.Console;
-using Vlingo.Actors.TestKit;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Multicast;
@@ -23,16 +22,8 @@ namespace Vlingo.Wire.Tests.Multicast
         [Fact]
         public void TestMulticastPublishSubscribe()
         {
-            var publisherCount = 0;
-            var subscriberCount = 0;
-            var accessSafely = AccessSafely.Immediately()
-                .WritingWith<int>("publisherCount", (value) => publisherCount += value)
-                .ReadingWith("publisherCount", () => publisherCount)
-                .WritingWith<int>("subscriberCount", (value) => subscriberCount += value)
-                .ReadingWith("subscriberCount", () => subscriberCount);
-            
-            var publisherConsumer = new MockChannelReaderConsumer("publisherCount");
-            publisherConsumer.UntilConsume = accessSafely;
+            var publisherConsumer = new MockChannelReaderConsumer();
+            var publisherAccess = publisherConsumer.AfterCompleting(0);
 
             var publisher = new MulticastPublisherReader(
                 "test-publisher",
@@ -49,8 +40,8 @@ namespace Vlingo.Wire.Tests.Multicast
                 10,
                 ConsoleLogger.TestInstance());
             
-            var subscriberConsumer = new MockChannelReaderConsumer("subscriberCount");
-            subscriberConsumer.UntilConsume = accessSafely;
+            var subscriberConsumer = new MockChannelReaderConsumer();
+            var sbscriberAccess = subscriberConsumer.AfterCompleting(10);
             subscriber.OpenFor(subscriberConsumer);
             
             for (var idx = 0; idx < 10; ++idx)
@@ -64,24 +55,17 @@ namespace Vlingo.Wire.Tests.Multicast
             {
                 subscriber.ProbeChannel();
             }
-
-            subscriberConsumer.UntilConsume.ReadFromExpecting("subscriberCount", 10, 10000);
     
-            Assert.Equal(0, publisherCount);
-            Assert.Equal(10, subscriberCount);
+            Assert.Equal(0, publisherAccess.ReadFrom<int>("count"));
+            Assert.Equal(10, sbscriberAccess.ReadFrom<int>("count"));
         }
 
         [Fact]
         public void TestPublisherChannelReader()
         {
-            var publisherCount = 0;
-            var accessSafely = AccessSafely.AfterCompleting(1)
-                .WritingWith<int>("publisherCount", value => publisherCount += value)
-                .ReadingWith("publisherCount", () => publisherCount);
+            var publisherConsumer = new MockChannelReaderConsumer();
+            var publisherAccess = publisherConsumer.AfterCompleting(1);
             
-            var publisherConsumer = new MockChannelReaderConsumer("publisherCount");
-            publisherConsumer.UntilConsume = accessSafely;
-
             var publisher = new MulticastPublisherReader(
                 "test-publisher",
                 new Group("237.37.37.2", 37381),
@@ -101,19 +85,14 @@ namespace Vlingo.Wire.Tests.Multicast
 
             publisher.ProcessChannel();
             
-            Assert.Equal(1, publisherCount);
+            Assert.Equal(1, publisherAccess.ReadFrom<int>("count"));
         }
         
         [Fact]
         public void TestPublisherChannelReaderWithMultipleClients()
         {
-            var publisherCount = 0;
-            var accessSafely = AccessSafely.AfterCompleting(4)
-                .WritingWith<int>("publisherCount", (value) => publisherCount += value)
-                .ReadingWith("publisherCount", () => publisherCount);
-            
-            var publisherConsumer = new MockChannelReaderConsumer("publisherCount");
-            publisherConsumer.UntilConsume = accessSafely;
+            var publisherConsumer = new MockChannelReaderConsumer();
+            var publisherAccess = publisherConsumer.AfterCompleting(4);
 
             var publisher = new MulticastPublisherReader(
                 "test-publisher",
@@ -154,7 +133,7 @@ namespace Vlingo.Wire.Tests.Multicast
             publisher.ProbeChannel();
             publisher.ProbeChannel();
 
-            Assert.Equal(4, publisherCount);
+            Assert.Equal(4, publisherAccess.ReadFrom<int>("count"));
         }
 
         public MulticastTest(ITestOutputHelper output)

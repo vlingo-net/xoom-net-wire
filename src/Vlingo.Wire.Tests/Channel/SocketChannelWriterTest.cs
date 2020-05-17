@@ -9,7 +9,6 @@ using System;
 using System.IO;
 using System.Linq;
 using Vlingo.Actors.Plugin.Logging.Console;
-using Vlingo.Actors.TestKit;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Fdx.Inbound;
 using Vlingo.Wire.Message;
@@ -30,13 +29,9 @@ namespace Vlingo.Wire.Tests.Channel
         [Fact]
         public void TestChannelWriter()
         {
-            var consumer = new MockChannelReaderConsumer("consume");
-            var consumeCount = 0;
-            var accessSafely = AccessSafely.Immediately()
-                .WritingWith<int>("consume", (value) => consumeCount += value)
-                .ReadingWith("consume", () => consumeCount);
-            consumer.UntilConsume = accessSafely;
-            
+            var consumer = new MockChannelReaderConsumer();
+            var accessSafely = consumer.AfterCompleting(2);
+
             _channelReader.OpenFor(consumer);
             
             var buffer = new MemoryStream(1024);
@@ -46,18 +41,18 @@ namespace Vlingo.Wire.Tests.Channel
             var rawMessage1 = RawMessage.From(0, 0, message1);
             _channelWriter.Write(rawMessage1, buffer);
             
-            ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("consume") < 1, _channelReader);
+            ProbeUntilConsumed(() => accessSafely.ReadFromNow<int>("count") < 1, _channelReader);
             
-            Assert.Equal(1, consumer.UntilConsume.ReadFrom<int>("consume"));
+            Assert.Equal(1, accessSafely.ReadFromNow<int>("count"));
             Assert.Equal(message1, consumer.Messages.First());
             
             var message2 = TestMessage + 2;
             var rawMessage2 = RawMessage.From(0, 0, message2);
             _channelWriter.Write(rawMessage2, buffer);
             
-            ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("consume") < 2, _channelReader);
+            ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("count") < 2, _channelReader);
             
-            Assert.Equal(2, consumer.UntilConsume.ReadFrom<int>("consume"));
+            Assert.Equal(2, accessSafely.ReadFrom<int>("count"));
             Assert.Equal(message2, consumer.Messages.Last());
             
         }

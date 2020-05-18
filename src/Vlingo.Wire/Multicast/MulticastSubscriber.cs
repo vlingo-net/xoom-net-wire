@@ -59,7 +59,7 @@ namespace Vlingo.Wire.Multicast
             var networkInterface = AssignNetworkInterfaceTo(_channel, networkInterfaceName);
             var groupAddress = IPAddress.Parse(group.Address);
             var p = networkInterface.GetIPProperties().GetIPv4Properties();
-            var mcastOption = new MulticastOption(groupAddress, p.Index);
+            var mcastOption = new MulticastOption(groupAddress, IPAddress.Any);
             _channel.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, mcastOption);
             _channel.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 255);
             _channel.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
@@ -207,7 +207,7 @@ namespace Vlingo.Wire.Multicast
             {
                 _logger.Debug($"Network interfaces candidates: {candidate.Id}");
                 var candidateName = candidate.Name.ToLowerInvariant();
-                if (!candidateName.Contains("virtual") && !candidateName.StartsWith("v") && !candidateName.StartsWith("eth"))
+                if (!candidateName.Contains("virtual") && !candidateName.StartsWith("v"))
                 {
                     if (candidate.OperationalStatus == OperationalStatus.Up &&
                         candidate.NetworkInterfaceType != NetworkInterfaceType.Loopback &&

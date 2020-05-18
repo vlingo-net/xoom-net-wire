@@ -297,6 +297,8 @@ namespace Vlingo.Wire.Multicast
 
             var sent = publisherChannel.EndSendTo(ar);
             
+            _logger.Debug($"Sent bytes '{sent}' from local {publisherChannel.LocalEndPoint}");
+            
             if (sent > 0)
             {
                 _messageQueue.Dequeue();

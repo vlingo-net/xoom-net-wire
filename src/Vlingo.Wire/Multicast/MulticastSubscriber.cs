@@ -146,7 +146,7 @@ namespace Vlingo.Wire.Multicast
                         
                         var state = new StateObject(_channel, bytes);
                         _channel.BeginReceiveFrom(bytes, 0, bytes.Length, SocketFlags.None, ref _ipEndPoint, ReceiveCallback, state);
-                        //_readDone.WaitOne();
+                        _readDone.WaitOne();
                     }
                 }
             }
@@ -252,11 +252,11 @@ namespace Vlingo.Wire.Multicast
                     _buffer.Flip();
                     _message.From(_buffer);
 
-                    _logger.Debug($"MulticastSubscriber received message: {_message.AsTextMessage()}");
+                    _logger.Debug($"MulticastSubscriber received message: {_message.AsTextMessage()} on: {channel.LocalEndPoint}");
                     _consumer!.Consume(_message);
                 }
                 
-                //_readDone.Set();
+                _readDone.Set();
             }
             catch (SocketException e)
             {

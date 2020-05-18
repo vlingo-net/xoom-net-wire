@@ -28,7 +28,7 @@ namespace Vlingo.Wire.Tests.Multicast
             var publisher = new MulticastPublisherReader(
                 "test-publisher",
                 new Group("237.37.37.2", 37771),
-                37779,
+                37379,
                 1024,
                 publisherConsumer,
                 ConsoleLogger.TestInstance());
@@ -57,7 +57,7 @@ namespace Vlingo.Wire.Tests.Multicast
             }
     
             Assert.Equal(0, publisherAccess.ReadFrom<int>("count"));
-            Assert.Equal(10, subscriberAccess.ReadFrom<int>("count"));
+            Assert.Equal(10, subscriberAccess.ReadFromExpecting<int>("count", 10, 10_000));
         }
 
         [Fact]

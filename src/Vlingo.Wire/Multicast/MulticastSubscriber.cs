@@ -252,6 +252,7 @@ namespace Vlingo.Wire.Multicast
                     _buffer.Flip();
                     _message.From(_buffer);
 
+                    _logger.Debug($"MulticastSubscriber received message: {_message.AsTextMessage()}");
                     _consumer!.Consume(_message);
                 }
                 

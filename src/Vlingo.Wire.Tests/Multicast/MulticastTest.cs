@@ -57,7 +57,7 @@ namespace Vlingo.Wire.Tests.Multicast
             }
     
             Assert.Equal(0, publisherAccess.ReadFrom<int>("count"));
-            Assert.Equal(10, subscriberAccess.ReadFromExpecting<int>("count", 10, 10_000));
+            Assert.Equal(10, subscriberAccess.ReadFromExpecting("count", 10, 10_000));
         }
 
         [Fact]

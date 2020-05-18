@@ -55,20 +55,19 @@ namespace Vlingo.Wire.Multicast
             _maxReceives = maxReceives;
             _logger = logger;
             _channel = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            _channel.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            _channel.ExclusiveAddressUse = false;
-            _channel.Blocking = false;
             _port = group.Port;
-            _ipEndPoint = new IPEndPoint(IPAddress.Any, group.Port);
-            _channel.Bind(_ipEndPoint);
             var networkInterface = AssignNetworkInterfaceTo(_channel, networkInterfaceName);
             var groupAddress = IPAddress.Parse(group.Address);
-
             var p = networkInterface.GetIPProperties().GetIPv4Properties();
             var mcastOption = new MulticastOption(groupAddress, p.Index);
             _channel.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, mcastOption);
-            _channel.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 50);
-            
+            _channel.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 255);
+            _channel.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            _channel.ExclusiveAddressUse = false;
+            _channel.Blocking = false;
+            _ipEndPoint = new IPEndPoint(IPAddress.Any, group.Port);
+            _channel.Bind(_ipEndPoint);
+
             _buffer = new MemoryStream(maxMessageSize);
             _message = new RawMessage(maxMessageSize);
             

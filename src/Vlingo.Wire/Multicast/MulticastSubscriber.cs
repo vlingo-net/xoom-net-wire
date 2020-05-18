@@ -207,7 +207,7 @@ namespace Vlingo.Wire.Multicast
             {
                 _logger.Debug($"Network interfaces candidates: {candidate.Id}");
                 var candidateName = candidate.Name.ToLowerInvariant();
-                if (!candidateName.Contains("virtual") && !candidateName.StartsWith("v"))
+                if (!candidateName.Contains("virtual") && !candidateName.StartsWith("v") && !candidateName.StartsWith("eth"))
                 {
                     if (candidate.OperationalStatus == OperationalStatus.Up &&
                         candidate.NetworkInterfaceType != NetworkInterfaceType.Loopback &&

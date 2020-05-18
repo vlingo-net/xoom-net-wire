@@ -57,7 +57,7 @@ namespace Vlingo.Wire.Multicast
             _publisherChannel.ExclusiveAddressUse = false;
             // binds to an assigned local address that is
             // published as my availabilityMessage
-            _publisherChannel.Bind(new IPEndPoint(IPAddress.Any, 0));
+            _publisherChannel.Bind(new IPEndPoint(IPAddress.Any, group.Port));
             
             _readChannel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _readChannel.Blocking = false;

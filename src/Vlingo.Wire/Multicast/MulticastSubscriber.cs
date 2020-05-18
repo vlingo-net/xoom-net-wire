@@ -135,6 +135,7 @@ namespace Vlingo.Wire.Multicast
                 // and possibly some number of receives
                 for (var receives = 0; receives < _maxReceives; ++receives)
                 {
+                    _logger.Debug($"Receive {receives} and bytes available : {_channel.Available}");
                     if (_channel.Available > 0)
                     {
                         _buffer.SetLength(0); // clear

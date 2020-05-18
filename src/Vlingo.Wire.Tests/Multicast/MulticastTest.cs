@@ -48,12 +48,11 @@ namespace Vlingo.Wire.Tests.Multicast
             {
                 publisher.SendAvailability();
             }
-            
-            publisher.ProcessChannel();
 
             for (var i = 0; i < 10; ++i)
             {
                 subscriber.ProbeChannel();
+                if (i == 0) publisher.ProcessChannel();
             }
     
             Assert.Equal(0, publisherAccess.ReadFrom<int>("count"));

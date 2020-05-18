@@ -27,7 +27,7 @@ namespace Vlingo.Wire.Tests.Multicast
 
             var publisher = new MulticastPublisherReader(
                 "test-publisher",
-                new Group("237.37.37.1", 37771),
+                new Group("237.37.37.2", 37771),
                 37779,
                 1024,
                 publisherConsumer,
@@ -35,7 +35,7 @@ namespace Vlingo.Wire.Tests.Multicast
             
             var subscriber = new MulticastSubscriber(
                 "test-subscriber",
-                new Group("237.37.37.1", 37771),
+                new Group("237.37.37.2", 37771),
                 1024,
                 10,
                 ConsoleLogger.TestInstance());

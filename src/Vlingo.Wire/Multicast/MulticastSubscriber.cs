@@ -62,7 +62,7 @@ namespace Vlingo.Wire.Multicast
             _ipEndPoint = new IPEndPoint(IPAddress.Any, group.Port);
             _channel.Bind(_ipEndPoint);
             var networkInterface = AssignNetworkInterfaceTo(_channel, networkInterfaceName);
-            var groupAddress = IPAddress.Parse(@group.Address);
+            var groupAddress = IPAddress.Parse(group.Address);
 
             var p = networkInterface.GetIPProperties().GetIPv4Properties();
             var mcastOption = new MulticastOption(groupAddress, p.Index);
@@ -72,7 +72,7 @@ namespace Vlingo.Wire.Multicast
             _buffer = new MemoryStream(maxMessageSize);
             _message = new RawMessage(maxMessageSize);
             
-            logger.Info($"MulticastSubscriber joined: {networkInterface.Id}");
+            logger.Info($"MulticastSubscriber joined: {networkInterface.Id}, {networkInterface.NetworkInterfaceType}, {networkInterface.OperationalStatus}");
         }
         
         //=========================================

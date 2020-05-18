@@ -51,7 +51,7 @@ namespace Vlingo.Wire.Tests.Multicast
             
             publisher.ProcessChannel();
 
-            for (var i = 0; i < 2; ++i)
+            for (var i = 0; i < 10; ++i)
             {
                 subscriber.ProbeChannel();
             }

@@ -41,7 +41,7 @@ namespace Vlingo.Wire.Tests.Multicast
                 ConsoleLogger.TestInstance());
             
             var subscriberConsumer = new MockChannelReaderConsumer();
-            var sbscriberAccess = subscriberConsumer.AfterCompleting(10);
+            var subscriberAccess = subscriberConsumer.AfterCompleting(10);
             subscriber.OpenFor(subscriberConsumer);
             
             for (var idx = 0; idx < 10; ++idx)
@@ -57,7 +57,7 @@ namespace Vlingo.Wire.Tests.Multicast
             }
     
             Assert.Equal(0, publisherAccess.ReadFrom<int>("count"));
-            Assert.Equal(10, sbscriberAccess.ReadFrom<int>("count"));
+            Assert.Equal(10, subscriberAccess.ReadFrom<int>("count"));
         }
 
         [Fact]

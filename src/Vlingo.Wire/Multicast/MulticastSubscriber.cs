@@ -205,6 +205,7 @@ namespace Vlingo.Wire.Multicast
             var networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
             foreach (var candidate in networkInterfaces)
             {
+                _logger.Debug($"Network interfaces candidates: {candidate.Id}");
                 var candidateName = candidate.Name.ToLowerInvariant();
                 if (!candidateName.Contains("virtual") && !candidateName.StartsWith("v"))
                 {
@@ -252,7 +253,6 @@ namespace Vlingo.Wire.Multicast
                     _buffer.Flip();
                     _message.From(_buffer);
 
-                    _logger.Debug($"MulticastSubscriber received message: {_message.AsTextMessage()} on: {channel.LocalEndPoint}");
                     _consumer!.Consume(_message);
                 }
                 

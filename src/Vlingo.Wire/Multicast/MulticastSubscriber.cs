@@ -7,7 +7,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
@@ -38,16 +37,6 @@ namespace Vlingo.Wire.Multicast
             Group group,
             int maxMessageSize,
             int maxReceives,
-            ILogger logger) : this(name, group, null, maxMessageSize, maxReceives, logger)
-        {
-        }
-
-        public MulticastSubscriber(
-            string name,
-            Group group,
-            string? networkInterfaceName,
-            int maxMessageSize,
-            int maxReceives,
             ILogger logger)
         {
             _readDone = new AutoResetEvent(false);
@@ -56,9 +45,8 @@ namespace Vlingo.Wire.Multicast
             _logger = logger;
             _channel = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             _port = group.Port;
-            var networkInterface = AssignNetworkInterfaceTo(_channel, networkInterfaceName);
             var groupAddress = IPAddress.Parse(group.Address);
-            var p = networkInterface.GetIPProperties().GetIPv4Properties();
+            
             var mcastOption = new MulticastOption(groupAddress, IPAddress.Any);
             _channel.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, mcastOption);
             _channel.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 255);
@@ -71,6 +59,7 @@ namespace Vlingo.Wire.Multicast
             _buffer = new MemoryStream(maxMessageSize);
             _message = new RawMessage(maxMessageSize);
             
+            var networkInterface = NetworkInterface.GetAllNetworkInterfaces()[mcastOption.InterfaceIndex];
             logger.Info($"MulticastSubscriber joined: {networkInterface.Id}, {networkInterface.NetworkInterfaceType}, {networkInterface.OperationalStatus}");
         }
         
@@ -135,7 +124,6 @@ namespace Vlingo.Wire.Multicast
                 // and possibly some number of receives
                 for (var receives = 0; receives < _maxReceives; ++receives)
                 {
-                    _logger.Debug($"Receive {receives} and bytes available : {_channel.Available}");
                     if (_channel.Available > 0)
                     {
                         _buffer.SetLength(0); // clear
@@ -176,66 +164,7 @@ namespace Vlingo.Wire.Multicast
       
             _disposed = true;
         }
-        
-        //=========================================
-        // internal implementation
-        //=========================================
-        
-        private NetworkInterface AssignNetworkInterfaceTo(Socket channel, string? networkInterfaceName)
-        {
-            if (networkInterfaceName != null && networkInterfaceName.Trim() != string.Empty)
-            {
-                var specified = NetworkInterface.GetAllNetworkInterfaces()
-                    .SingleOrDefault(ni => ni.Name == networkInterfaceName);
 
-                if (specified != null)
-                {
-                    var p = specified.GetIPProperties().GetIPv4Properties();
-                    channel.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, IPAddress.HostToNetworkOrder(p.Index));
-                }
-            }
-
-            // if networkInterfaceName not given or unknown, take best guess
-            return AssignBestGuessNetworkInterfaceTo(channel);
-        }
-
-        private NetworkInterface AssignBestGuessNetworkInterfaceTo(Socket channel)
-        {
-            NetworkInterface? networkInterface = null;
-            var networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
-            foreach (var candidate in networkInterfaces)
-            {
-                _logger.Debug($"Network interfaces candidates: {candidate.Id}");
-                var candidateName = candidate.Name.ToLowerInvariant();
-                if (!candidateName.Contains("virtual") && !candidateName.StartsWith("v"))
-                {
-                    if (candidate.OperationalStatus == OperationalStatus.Up &&
-                        candidate.NetworkInterfaceType != NetworkInterfaceType.Loopback &&
-                        candidate.NetworkInterfaceType != NetworkInterfaceType.Ppp /* lacks isVirtual() */)
-                    {
-                        try
-                        {
-                            var p = candidate.GetIPProperties().GetIPv4Properties();
-                            channel.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, IPAddress.HostToNetworkOrder(p.Index));
-                            networkInterface = candidate;
-                            break;
-                        }
-                        catch (Exception)
-                        {
-                            networkInterface = null;
-                        }
-                    }
-                }
-            }
-            
-            if (networkInterface == null)
-            {
-                throw new IOException("Cannot assign network interface");
-            }
-
-            return networkInterface;
-        }
-        
         private void ReceiveCallback(IAsyncResult ar)
         {
             var state = (StateObject) ar.AsyncState;  

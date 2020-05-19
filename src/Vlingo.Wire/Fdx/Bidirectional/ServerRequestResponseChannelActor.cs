@@ -185,7 +185,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         {
             var processors = new ISocketChannelSelectionProcessor[processorPoolSize];
 
-            for (int idx = 0; idx < processors.Length; ++idx)
+            for (var idx = 0; idx < processors.Length; ++idx)
             {
                 processors[idx] = ChildActorFor<ISocketChannelSelectionProcessor>(
                     () => new SocketChannelSelectionProcessorActor(provider, $"{name}-processor-{idx}", requestBufferPool, probeInterval, probeTimeout));

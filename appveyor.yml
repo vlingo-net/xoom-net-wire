@@ -1,6 +1,10 @@
 version: 0.0.{build}
 image:
+  - Visual Studio 2019
+  - Previous Ubuntu
   - Ubuntu
+  - macos
+  - macos-mojave
 configuration: Release
 skip_commits:
   message: /.*\[ci\-skip\].*/ 
@@ -10,8 +14,15 @@ build:
   project: src/Vlingo.Wire.sln
   verbosity: minimal
   publish_nuget: true
-before_test:
-  - sudo ufw disable
+for:
+  -
+    matrix:
+      only:
+        - image: Ubuntu
+    before_test:
+      - sudo ufw disable
+    after_test:
+      - sudo ufw enable
 test_script:
 - dotnet test src/Vlingo.Wire.Tests
 deploy:

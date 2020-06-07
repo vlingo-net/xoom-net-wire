@@ -17,15 +17,24 @@ for:
   -
     matrix:
       only:
+        - image: Ubuntu
+      before_test:
+        - sudo ufw disable
+      after_test:
+        - sudo ufw enable
+  -
+    matrix:
+      only:
         - image: macOS
+        - image: macOS-Mojave
     before_test:
-      - defaults write /Library/Preferences/com.apple.alf globalstate -int 0
-      - launchctl unload /System/Library/LaunchAgents/com.apple.alf.useragent.plist
-      - launchctl unload /System/Library/LaunchDaemons/com.apple.alf.agent.plist
+      - sudo defaults write /Library/Preferences/com.apple.alf globalstate -int 0
+      - sudo launchctl unload /System/Library/LaunchAgents/com.apple.alf.useragent.plist
+      - sudo launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist
     after_test:
-      - defaults write /Library/Preferences/com.apple.alf globalstate -int 1
-      - launchctl unload /System/Library/LaunchAgents/com.apple.alf.useragent.plist
-      - launchctl unload /System/Library/LaunchDaemons/com.apple.alf.agent.plist
+      - sudo defaults write /Library/Preferences/com.apple.alf globalstate -int 1
+      - sudo launchctl unload /System/Library/LaunchAgents/com.apple.alf.useragent.plist
+      - sudo launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist
 test_script:
 - dotnet test src/Vlingo.Wire.Tests
 deploy:

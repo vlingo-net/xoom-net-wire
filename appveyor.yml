@@ -29,11 +29,11 @@ for:
         - image: macOS-Mojave
     before_test:
       - sudo defaults write /Library/Preferences/com.apple.alf globalstate -int 0
-      - sudo launchctl unload /System/Library/LaunchAgents/com.apple.alf.useragent.plist
+      - sudo launchctl unload /System/Library/LaunchDaemons/com.apple.alf.agent.plist
       - sudo launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist
     after_test:
       - sudo defaults write /Library/Preferences/com.apple.alf globalstate -int 1
-      - sudo launchctl unload /System/Library/LaunchAgents/com.apple.alf.useragent.plist
+      - sudo launchctl unload /System/Library/LaunchDaemons/com.apple.alf.agent.plist
       - sudo launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist
 test_script:
 - dotnet test src/Vlingo.Wire.Tests

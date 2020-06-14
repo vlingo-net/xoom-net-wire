@@ -202,11 +202,11 @@ namespace Vlingo.Wire.Multicast
                         _socketChannelSelectionReader.Read(clientReadChannel, new RawMessageBuilder(_maxMessageSize));
                     }
                     
-                    if (!clientReadChannel.IsSocketConnected())
-                    {
-                        clientReadChannel.Close();
-                        _clientReadChannels.Remove(clientReadChannel);
-                    }
+                    // if (!clientReadChannel.IsSocketConnected())
+                    // {
+                    //     clientReadChannel.Close();
+                    //     _clientReadChannels.Remove(clientReadChannel);
+                    // }
                 }
             }
             catch (Exception e)

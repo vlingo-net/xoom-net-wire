@@ -83,8 +83,8 @@ namespace Vlingo.Wire.Channel
 
             try
             {
-                if (_channel.IsSocketConnected())
-                {
+                // if (_channel.IsSocketConnected())
+                // {
                     while (buffer.HasRemaining())
                     {
                         var bytes = new byte[buffer.Length];
@@ -94,7 +94,7 @@ namespace Vlingo.Wire.Channel
                         totalBytesWritten += bytes.Length;
                         _channel.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, SendCallback, _channel);
                     }
-                }
+                // }
             }
             catch (Exception e)
             {

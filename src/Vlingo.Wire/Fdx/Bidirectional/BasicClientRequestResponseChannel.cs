@@ -173,13 +173,13 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             {
                 if (_channel != null)
                 {
-                    if (_channel.IsSocketConnected())
-                    {
+                    // if (_channel.IsSocketConnected())
+                    // {
                         _previousPrepareFailures = 0;
                         return _channel;
-                    }
+                    // }
 
-                    CloseChannel();
+                    // CloseChannel();
                 }
                 else
                 {

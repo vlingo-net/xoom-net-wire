@@ -173,22 +173,15 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             {
                 if (_channel != null)
                 {
-                    // if (_channel.IsSocketConnected())
-                    // {
-                        _previousPrepareFailures = 0;
-                        return _channel;
-                    // }
-
-                    // CloseChannel();
-                }
-                else
-                {
-                    _channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    _channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, _channel);
-                    _connectDone.WaitOne();
                     _previousPrepareFailures = 0;
                     return _channel;
                 }
+
+                _channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                _channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, _channel);
+                _connectDone.WaitOne();
+                _previousPrepareFailures = 0;
+                return _channel;
             }
             catch (Exception e)
             {

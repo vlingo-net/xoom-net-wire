@@ -182,25 +182,18 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             {
                 if (_channel != null)
                 {
-                    // if (_channel.IsSocketConnected())
-                    // {
-                        _previousPrepareFailures = 0;
-                        return _sslStream;
-                    // }
-                    //
-                    // CloseChannel();
-                }
-                else
-                {
-                    _tcpClient = new TcpClient();
-                    _tcpClient.BeginConnect(_address.HostName, _address.Port, ConnectCallback, _tcpClient);
-                    _connectDone.WaitOne();
-                    _sslStream = new SslStream(_tcpClient.GetStream(), false, (sender, certificate, chain, errors) => true);
-                    _sslStream.BeginAuthenticateAsClient(_address.HostName, AuthenticateCallback, _sslStream);
-                    _authenticateDone.WaitOne();
                     _previousPrepareFailures = 0;
                     return _sslStream;
                 }
+
+                _tcpClient = new TcpClient();
+                _tcpClient.BeginConnect(_address.HostName, _address.Port, ConnectCallback, _tcpClient);
+                _connectDone.WaitOne();
+                _sslStream = new SslStream(_tcpClient.GetStream(), false, (sender, certificate, chain, errors) => true);
+                _sslStream.BeginAuthenticateAsClient(_address.HostName, AuthenticateCallback, _sslStream);
+                _authenticateDone.WaitOne();
+                _previousPrepareFailures = 0;
+                return _sslStream;
             }
             catch (Exception e)
             {

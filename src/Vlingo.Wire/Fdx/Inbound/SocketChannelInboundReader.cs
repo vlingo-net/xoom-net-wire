@@ -98,12 +98,6 @@ namespace Vlingo.Wire.Fdx.Inbound
                     {
                         new SocketChannelSelectionReader(this).Read(clientChannel, new RawMessageBuilder(_maxMessageSize));
                     }
-                    
-                    // if (!clientChannel.IsSocketConnected())
-                    // {
-                    //     clientChannel.Close();
-                    //     _clientChannels.Remove(clientChannel);
-                    // }
                 }
             }
             catch (Exception e)

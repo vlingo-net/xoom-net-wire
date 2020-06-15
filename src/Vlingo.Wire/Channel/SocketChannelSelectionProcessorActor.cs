@@ -205,15 +205,7 @@ namespace Vlingo.Wire.Channel
         private void Read(Context readable)
         {
             var channel = readable.Channel;
-            // if (!channel.IsSocketConnected())
-            // {
-            //     Logger.Debug($"Closing context on Read");
-            //     readable.Close();
-            //     channel.Close();
-            //     _contexts.Remove(readable);
-            //     return;
-            // }
-            
+
             // Create the state object.  
             var limit = readable.RequestBuffer.Limit();
             var state = new StateObject(channel, readable, new byte[limit], readable.RequestBuffer.Clear());
@@ -223,15 +215,7 @@ namespace Vlingo.Wire.Channel
         private void Write(Context writable)
         {
             var channel = writable.Channel;
-            // if (!channel.IsSocketConnected())
-            // {
-            //     Logger.Debug($"Closing context on Write");
-            //     writable.Close();
-            //     channel.Close();
-            //     _contexts.Remove(writable);
-            //     return;
-            // }
-            
+
             if (writable.HasNextWritable)
             {
                 WriteWithCachedData(writable, channel);
@@ -399,11 +383,6 @@ namespace Vlingo.Wire.Channel
                 {
                     return;
                 }
-                
-                // if (!_clientChannel.IsSocketConnected())
-                // {
-                //     return;
-                // }
 
                 try
                 {

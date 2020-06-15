@@ -83,18 +83,15 @@ namespace Vlingo.Wire.Channel
 
             try
             {
-                // if (_channel.IsSocketConnected())
-                // {
-                    while (buffer.HasRemaining())
-                    {
-                        var bytes = new byte[buffer.Length];
-                        buffer.BeginRead(bytes, 0, bytes.Length, ReadCallback, buffer);
-                        _readDone.WaitOne();
+                while (buffer.HasRemaining())
+                {
+                    var bytes = new byte[buffer.Length];
+                    buffer.BeginRead(bytes, 0, bytes.Length, ReadCallback, buffer);
+                    _readDone.WaitOne();
 
-                        totalBytesWritten += bytes.Length;
-                        _channel.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, SendCallback, _channel);
-                    }
-                // }
+                    totalBytesWritten += bytes.Length;
+                    _channel.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, SendCallback, _channel);
+                }
             }
             catch (Exception e)
             {

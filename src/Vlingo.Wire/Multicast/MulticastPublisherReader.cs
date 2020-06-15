@@ -279,10 +279,17 @@ namespace Vlingo.Wire.Multicast
         {
             // Get the socket that handles the client request.  
             var listener = (Socket)ar.AsyncState;
-            var clientChannel = listener.EndAccept(ar);
-            _clientReadChannels.Add(clientChannel);
-            _logger.Debug($"{this}: Accepted callback from {clientChannel.RemoteEndPoint} on {clientChannel.LocalEndPoint}");
-            _acceptDone.Set();
+            try
+            {
+                var clientChannel = listener.EndAccept(ar);
+                _clientReadChannels.Add(clientChannel);
+                _logger.Debug($"{this}: Accepted callback from {clientChannel.RemoteEndPoint} on {clientChannel.LocalEndPoint}");
+                _acceptDone.Set();
+            }
+            catch (ObjectDisposedException e)
+            {
+                _logger.Debug($"{this}: Not accepted callback because the client channel was disposed", e);
+            }
         }
 
         private void SendToCallback(IAsyncResult ar)
@@ -291,7 +298,7 @@ namespace Vlingo.Wire.Multicast
 
             var sent = publisherChannel.EndSendTo(ar);
             
-            if (sent > 0)
+            if (sent > 0 && _messageQueue.Count > 0)
             {
                 _messageQueue.Dequeue();
             }

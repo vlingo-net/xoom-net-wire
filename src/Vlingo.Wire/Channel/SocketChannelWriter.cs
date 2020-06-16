@@ -20,7 +20,6 @@ namespace Vlingo.Wire.Channel
         private Socket? _channel;
         private readonly Address _address;
         private readonly ILogger _logger;
-        private readonly AutoResetEvent _readDone;
         private readonly AutoResetEvent _connectDone;
         private int _retries;
 
@@ -29,7 +28,6 @@ namespace Vlingo.Wire.Channel
             _address = address;
             _logger = logger;
             _channel = null;
-            _readDone = new AutoResetEvent(false);
             _connectDone = new AutoResetEvent(false);
             _retries = 0;
         }
@@ -86,8 +84,7 @@ namespace Vlingo.Wire.Channel
                 while (buffer.HasRemaining())
                 {
                     var bytes = new byte[buffer.Length];
-                    buffer.BeginRead(bytes, 0, bytes.Length, ReadCallback, buffer);
-                    _readDone.WaitOne();
+                    buffer.Read(bytes, 0, bytes.Length);
 
                     totalBytesWritten += bytes.Length;
                     _channel.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, SendCallback, _channel);
@@ -103,21 +100,6 @@ namespace Vlingo.Wire.Channel
         }
         
         public bool IsClosed { get; private set; }
-
-        private void ReadCallback(IAsyncResult ar)
-        {
-            try
-            {
-                var ms = (MemoryStream) ar.AsyncState;
-                ms.EndRead(ar);
-                _readDone.Set();
-            }
-            catch (Exception e)
-            {
-                _logger.Error($"{this}: Failed to read from memory stream because: {e.Message}", e);
-                Close();
-            }
-        }
 
         private void SendCallback(IAsyncResult ar)
         {

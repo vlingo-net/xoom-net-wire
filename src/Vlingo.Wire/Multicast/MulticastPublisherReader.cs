@@ -201,12 +201,6 @@ namespace Vlingo.Wire.Multicast
                     {
                         _socketChannelSelectionReader.Read(clientReadChannel, new RawMessageBuilder(_maxMessageSize));
                     }
-                    
-                    if (clientReadChannel.Poll(1000, SelectMode.SelectRead) && clientReadChannel.Available == 0 || !clientReadChannel.Connected)
-                    {
-                        clientReadChannel.Close();
-                        _clientReadChannels.Remove(clientReadChannel);
-                    }
                 }
             }
             catch (Exception e)

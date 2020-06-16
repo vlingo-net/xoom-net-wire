@@ -44,7 +44,7 @@ namespace Vlingo.Wire.Channel
                 state.TotalRead += bytesRead;
             }
 
-            int bytesRemain = client.Available;
+            var bytesRemain = client.Available;
             if (bytesRemain > 0)
             {
                 client.BeginReceive(bytes, 0, bytes.Length, SocketFlags.None , ReceiveCallback, state);

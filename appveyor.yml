@@ -35,6 +35,14 @@ for:
       - sudo defaults write /Library/Preferences/com.apple.alf globalstate -int 1
       - sudo launchctl unload /System/Library/LaunchDaemons/com.apple.alf.agent.plist
       - sudo launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist
+  -
+    matrix:
+      only:
+        - image: Visual Studio 2019
+    before_test:
+      - netsh advfirewall set currentprofile state off
+    after_test:
+      - netsh advfirewall set  currentprofile state on
 test_script:
 - dotnet test src/Vlingo.Wire.Tests
 deploy:

@@ -17,6 +17,7 @@ namespace Vlingo.Wire.Channel
 {
     public class SocketChannelWriter
     {
+        private const int DefaultRetries = 10;
         private Socket? _channel;
         private readonly Address _address;
         private readonly ILogger _logger;
@@ -43,11 +44,12 @@ namespace Vlingo.Wire.Channel
             {
                 try
                 {
+                    _logger.Info($"{this}: Closing socket...");
                     _channel.Close();
                 }
                 catch (Exception e)
                 {
-                    _logger.Error($"Channel close failed because: {e.Message}", e);
+                    _logger.Error($"{this}: Channel close failed because: {e.Message}", e);
                 }
                 finally
                 {
@@ -68,7 +70,7 @@ namespace Vlingo.Wire.Channel
 
         public int Write(MemoryStream buffer)
         {
-            while (_channel == null && _retries < 10)
+            while (_channel == null && _retries < DefaultRetries)
             {
                 _channel = PreparedChannel();
             }
@@ -92,7 +94,7 @@ namespace Vlingo.Wire.Channel
             }
             catch (Exception e)
             {
-                _logger.Error($"Write to channel failed because: {e.Message}", e);
+                _logger.Error($"{this}: Write to channel failed because: {e.Message}", e);
                 Close();
             }
 
@@ -100,6 +102,8 @@ namespace Vlingo.Wire.Channel
         }
         
         public bool IsClosed { get; private set; }
+
+        public bool IsBroken => _channel == null && _retries >= DefaultRetries;
 
         private void SendCallback(IAsyncResult ar)
         {
@@ -115,7 +119,7 @@ namespace Vlingo.Wire.Channel
             }
         }
 
-        public override string ToString() => $"SocketChannelWriter[address={_address}, channel={_channel}]";
+        public override string ToString() => $"SocketChannelWriter[address={_address}, channel={_channel}, IsClosed={IsClosed}]";
 
         private Socket? PreparedChannel()
         {
@@ -128,11 +132,10 @@ namespace Vlingo.Wire.Channel
                         _retries = 0;
                         return _channel;
                     }
-
-                    _logger.Info($"{this}: Closing socket...");
+                    
                     Close();
                 }
-
+                
                 var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, channel);
                 _connectDone.WaitOne();
@@ -155,9 +158,9 @@ namespace Vlingo.Wire.Channel
             {
                 var channel = (Socket) ar.AsyncState;
                 channel.EndConnect(ar);
-                _logger.Debug($"{this}: Socket successfully connected to remote enpoint {channel.RemoteEndPoint}");
                 IsClosed = false;
                 _connectDone.Set();
+                _logger.Debug($"{this}: Socket successfully connected to remote endpoint {channel.RemoteEndPoint}");
             }
             catch (Exception e)
             {

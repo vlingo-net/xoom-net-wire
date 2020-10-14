@@ -29,8 +29,8 @@ namespace Vlingo.Wire.Multicast
         private readonly string _name;
         private EndPoint _ipEndPoint;
         private bool _disposed;
-        private readonly AutoResetEvent _readDone;
         private readonly int _port;
+        private readonly SemaphoreSlim _synchronizeReading;
 
         public MulticastSubscriber(
             string name,
@@ -39,7 +39,7 @@ namespace Vlingo.Wire.Multicast
             int maxReceives,
             ILogger logger)
         {
-            _readDone = new AutoResetEvent(false);
+            _synchronizeReading = new SemaphoreSlim(1);
             _name = name;
             _maxReceives = maxReceives;
             _logger = logger;
@@ -92,7 +92,7 @@ namespace Vlingo.Wire.Multicast
             {
                 _channel.Close();
                 _buffer.Dispose();
-                _readDone.Dispose();
+                _synchronizeReading.Dispose();
                 Dispose(true);
             }
             catch (Exception e)
@@ -126,6 +126,7 @@ namespace Vlingo.Wire.Multicast
                 {
                     if (_channel.Available > 0)
                     {
+                        _synchronizeReading.Wait();
                         _buffer.SetLength(0); // clear
                         var bytes = new byte [_channel.Available];
                         // check for availability because otherwise surprisingly
@@ -134,7 +135,6 @@ namespace Vlingo.Wire.Multicast
                         
                         var state = new StateObject(_channel, bytes);
                         _channel.BeginReceiveFrom(bytes, 0, bytes.Length, SocketFlags.None, ref _ipEndPoint, ReceiveCallback, state);
-                        _readDone.WaitOne();
                     }
                 }
             }
@@ -167,25 +167,25 @@ namespace Vlingo.Wire.Multicast
 
         private void ReceiveCallback(IAsyncResult ar)
         {
-            var state = (StateObject) ar.AsyncState;  
-            var channel = state.WorkSocket;
-            var buffer = state.Buffer;
+            var state = ar.AsyncState as StateObject;  
+            var channel = state?.WorkSocket;
+            var buffer = state?.Buffer;
 
             try
             {
-                var bytesRead = channel.EndReceiveFrom(ar, ref _ipEndPoint);
-                if (bytesRead > 0)
+                var bytesRead = channel?.EndReceiveFrom(ar, ref _ipEndPoint);
+                if (bytesRead.HasValue && bytesRead > 0 && buffer != null)
                 {
                     _buffer.Clear();
                     _message.Reset();
-                    _buffer.Write(buffer, 0, bytesRead);
+                    _buffer.Write(buffer, 0, bytesRead.Value);
                     _buffer.Flip();
                     _message.From(_buffer);
 
                     _consumer!.Consume(_message);
                 }
                 
-                _readDone.Set();
+                _synchronizeReading.Release();
             }
             catch (SocketException e)
             {

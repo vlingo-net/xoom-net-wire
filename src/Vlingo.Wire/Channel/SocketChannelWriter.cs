@@ -23,7 +23,7 @@ namespace Vlingo.Wire.Channel
         private Socket? _channel;
         private readonly Address _address;
         private readonly ILogger _logger;
-        private readonly AutoResetEvent _connectDone;
+        private readonly SemaphoreSlim _connectDone;
         private int _retries;
         private readonly AtomicBoolean _isConnected;
 
@@ -34,7 +34,7 @@ namespace Vlingo.Wire.Channel
             _address = address;
             _logger = logger;
             _channel = null;
-            _connectDone = new AutoResetEvent(false);
+            _connectDone = new SemaphoreSlim(1);
             _retries = 0;
             _logger.Debug($"Creating socket ID={_id}");
         }
@@ -95,7 +95,7 @@ namespace Vlingo.Wire.Channel
                     buffer.Read(bytes, 0, bytes.Length);
 
                     totalBytesWritten += bytes.Length;
-                    _channel.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, SendCallback, _channel);
+                    _channel?.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, SendCallback, _channel);
                 }
             }
             catch (Exception e)
@@ -110,13 +110,13 @@ namespace Vlingo.Wire.Channel
         public bool IsClosed => !_isConnected.Get();
 
         public bool IsBroken => _channel == null && _retries >= DefaultRetries;
-
+        
         private void SendCallback(IAsyncResult ar)
         {
             try
             {
-                var channel = (Socket) ar.AsyncState;
-                channel.EndSend(ar);
+                var channel = ar.AsyncState as Socket;
+                channel?.EndSend(ar);
             }
             catch (Exception e)
             {
@@ -146,18 +146,18 @@ namespace Vlingo.Wire.Channel
                 {
                     var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                     channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, channel);
-                    _connectDone.WaitOne();
+                    _connectDone.Wait();
                     _retries = 0;
                     return channel;
                 }
             }
             catch (Exception e)
             {
-                ++_retries;
                 _logger.Error($"{this}: Failed to prepare channel because: {e.Message}. Retrying: {_retries}", e);
                 Close();
             }
 
+            ++_retries;
             return null;
         }
 
@@ -165,10 +165,10 @@ namespace Vlingo.Wire.Channel
         {
             try
             {
-                var channel = (Socket) ar.AsyncState;
-                channel.EndConnect(ar);
-                _connectDone.Set();
-                _logger.Debug($"{this}: Socket successfully connected to remote endpoint {channel.RemoteEndPoint}");
+                var channel = ar.AsyncState as Socket;
+                channel?.EndConnect(ar);
+                _connectDone.Release();
+                _logger.Debug($"{this}: Socket successfully connected to remote endpoint {channel?.RemoteEndPoint}");
             }
             catch (Exception e)
             {

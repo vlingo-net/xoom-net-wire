@@ -18,6 +18,7 @@ namespace Vlingo.Wire.Channel
     public class SocketChannelWriter
     {
         private const int DefaultRetries = 10;
+        private readonly int _id;
         private Socket? _channel;
         private readonly Address _address;
         private readonly ILogger _logger;
@@ -26,6 +27,7 @@ namespace Vlingo.Wire.Channel
 
         public SocketChannelWriter(Address address, ILogger logger)
         {
+            _id = new Random().Next();
             _address = address;
             _logger = logger;
             _channel = null;
@@ -119,7 +121,7 @@ namespace Vlingo.Wire.Channel
             }
         }
 
-        public override string ToString() => $"SocketChannelWriter[address={_address}, channel={_channel}, IsClosed={IsClosed}]";
+        public override string ToString() => $"SocketChannelWriter[Id={_id}, address={_address}, channel={_channel}, IsClosed={IsClosed}]";
 
         private Socket? PreparedChannel()
         {
@@ -145,7 +147,7 @@ namespace Vlingo.Wire.Channel
             catch (Exception e)
             {
                 ++_retries;
-                _logger.Error($"{this}: Failed to prepare channel because: {e.Message}", e);
+                _logger.Error($"{this}: Failed to prepare channel because: {e.Message}. Retrying: {_retries}", e);
                 Close();
             }
 
@@ -164,6 +166,7 @@ namespace Vlingo.Wire.Channel
             }
             catch (Exception e)
             {
+                ++_retries;
                 _logger.Error($"{this}: Failed to connect to channel because: {e.Message}", e);
                 Close();
             }

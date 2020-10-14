@@ -10,6 +10,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using Vlingo.Actors;
+using Vlingo.Common;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Node;
 
@@ -24,11 +25,12 @@ namespace Vlingo.Wire.Channel
         private readonly ILogger _logger;
         private readonly AutoResetEvent _connectDone;
         private int _retries;
-        private bool _isPreparing;
+        private readonly AtomicBoolean _isConnected;
 
         public SocketChannelWriter(Address address, ILogger logger)
         {
             _id = new Random().Next(1, 1000);
+            _isConnected = new AtomicBoolean(false);
             _address = address;
             _logger = logger;
             _channel = null;
@@ -57,7 +59,7 @@ namespace Vlingo.Wire.Channel
                 }
                 finally
                 {
-                    IsClosed = true;
+                    _isConnected.Set(false);
                 }
             }
 
@@ -104,8 +106,8 @@ namespace Vlingo.Wire.Channel
 
             return totalBytesWritten;
         }
-        
-        public bool IsClosed { get; private set; }
+
+        public bool IsClosed => !_isConnected.Get();
 
         public bool IsBroken => _channel == null && _retries >= DefaultRetries;
 
@@ -123,7 +125,7 @@ namespace Vlingo.Wire.Channel
             }
         }
 
-        public override string ToString() => $"SocketChannelWriter[Id={_id}, address={_address}, channel={_channel?.Connected}, IsClosed={IsClosed}, Retrying={_retries}, IsBroken={IsBroken}]";
+        public override string ToString() => $"SocketChannelWriter[Id={_id}, address={_address}, channel={_channel}, IsClosed={IsClosed}, Retrying={_retries}, IsBroken={IsBroken}]";
 
         private Socket? PreparedChannel()
         {
@@ -134,21 +136,18 @@ namespace Vlingo.Wire.Channel
                     if (_channel.Poll(10000, SelectMode.SelectWrite))
                     {
                         _retries = 0;
-                        _isPreparing = false;
                         return _channel;
                     }
                     
                     Close();
                 }
 
-                if (!_isPreparing)
+                if (_isConnected.CompareAndSet(false, true))
                 {
-                    _isPreparing = true;
                     var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                     channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, channel);
                     _connectDone.WaitOne();
                     _retries = 0;
-                    _isPreparing = false;
                     return channel;
                 }
             }
@@ -168,7 +167,6 @@ namespace Vlingo.Wire.Channel
             {
                 var channel = (Socket) ar.AsyncState;
                 channel.EndConnect(ar);
-                IsClosed = false;
                 _connectDone.Set();
                 _logger.Debug($"{this}: Socket successfully connected to remote endpoint {channel.RemoteEndPoint}");
             }

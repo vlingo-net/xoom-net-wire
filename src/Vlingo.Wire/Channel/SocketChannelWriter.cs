@@ -24,15 +24,17 @@ namespace Vlingo.Wire.Channel
         private readonly ILogger _logger;
         private readonly AutoResetEvent _connectDone;
         private int _retries;
+        private bool _isPreparing;
 
         public SocketChannelWriter(Address address, ILogger logger)
         {
-            _id = new Random().Next();
+            _id = new Random().Next(1, 1000);
             _address = address;
             _logger = logger;
             _channel = null;
             _connectDone = new AutoResetEvent(false);
             _retries = 0;
+            _logger.Debug($"Creating socket ID={_id}");
         }
 
         public void Close()
@@ -121,7 +123,7 @@ namespace Vlingo.Wire.Channel
             }
         }
 
-        public override string ToString() => $"SocketChannelWriter[Id={_id}, address={_address}, channel={_channel}, IsClosed={IsClosed}]";
+        public override string ToString() => $"SocketChannelWriter[Id={_id}, address={_address}, channel={_channel?.Connected}, IsClosed={IsClosed}, Retrying={_retries}, IsBroken={IsBroken}]";
 
         private Socket? PreparedChannel()
         {
@@ -132,17 +134,23 @@ namespace Vlingo.Wire.Channel
                     if (_channel.Poll(10000, SelectMode.SelectWrite))
                     {
                         _retries = 0;
+                        _isPreparing = false;
                         return _channel;
                     }
                     
                     Close();
                 }
-                
-                var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, channel);
-                _connectDone.WaitOne();
-                _retries = 0;
-                return channel;
+
+                if (!_isPreparing)
+                {
+                    _isPreparing = true;
+                    var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, channel);
+                    _connectDone.WaitOne();
+                    _retries = 0;
+                    _isPreparing = false;
+                    return channel;
+                }
             }
             catch (Exception e)
             {

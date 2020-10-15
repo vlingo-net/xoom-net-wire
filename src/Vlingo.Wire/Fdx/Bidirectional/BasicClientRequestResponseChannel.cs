@@ -9,7 +9,6 @@ using System;
 using System.Net.Sockets;
 using System.Threading;
 using Vlingo.Actors;
-using Vlingo.Common;
 using Vlingo.Common.Pool;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
@@ -228,12 +227,12 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             try
             {
                 // Retrieve the socket from the state object.  
-                var client = (Socket) ar.AsyncState;
+                var client = ar.AsyncState as Socket;
 
                 // Complete the connection.  
-                client.EndConnect(ar);
+                client?.EndConnect(ar);
 
-                _logger.Info($"Socket connected to {client.RemoteEndPoint}");
+                _logger.Info($"Socket connected to {client?.RemoteEndPoint}");
                 
                 // Signal that the connection has been made.  
                 _connectDone.Set();
@@ -249,10 +248,10 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             try
             {
                 // Retrieve the socket from the state object.  
-                var client = (Socket) ar.AsyncState;
+                var client = ar.AsyncState as Socket;
 
                 // Complete sending the data to the remote device.  
-                client.EndSend(ar);
+                client?.EndSend(ar);
             }
             catch (Exception e)
             {
@@ -274,44 +273,44 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             
             // Retrieve the state object and the client socket   
             // from the asynchronous state object.  
-            var state = (StateObject)ar.AsyncState;
-            var client = state.WorkSocket;
-            var pooledBuffer = state.PooledByteBuffer;
-            var readBuffer = state.Buffer;
+            var state = ar.AsyncState as StateObject;
+            var client = state?.WorkSocket;
+            var pooledBuffer = state?.PooledByteBuffer;
+            var readBuffer = state?.Buffer;
 
             try
             {
                 // Read data from the remote device.  
-                var bytesRead = client.EndReceive(ar);
+                var bytesRead = client?.EndReceive(ar);
 
-                if (bytesRead > 0)
+                if (bytesRead.HasValue && bytesRead > 0 && readBuffer != null)
                 {
                     // There might be more data, so store the data received so far.  
-                    pooledBuffer.Put(readBuffer, 0, bytesRead);
+                    pooledBuffer?.Put(readBuffer, 0, bytesRead.Value);
                 }
 
-                var bytesRemain = client.Available;
-                if (bytesRemain > 0)
+                var bytesRemain = client?.Available;
+                if (bytesRemain.HasValue && bytesRemain > 0 && readBuffer != null)
                 {
                     // Get the rest of the data.  
-                    client.BeginReceive(readBuffer,0,readBuffer.Length,0, ReceiveCallback, state);
+                    client?.BeginReceive(readBuffer,0,readBuffer.Length,0, ReceiveCallback, state);
                 }
                 else
                 {
                     // All the data has arrived; put it in response.  
-                    if (pooledBuffer.Limit() >= 1)
+                    if (pooledBuffer?.Limit() >= 1)
                     {
                         _consumer.Consume(pooledBuffer.Flip());
                     }
                     else
                     {
-                        pooledBuffer.Release();
+                        pooledBuffer?.Release();
                     }
                 }
             }
             catch (Exception e)
             {
-                pooledBuffer.Release();
+                pooledBuffer?.Release();
                 _logger.Error("Error while receiving bytes", e);
                 throw;
             }

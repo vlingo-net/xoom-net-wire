@@ -126,12 +126,12 @@ namespace Vlingo.Wire.Fdx.Outbound
             try
             {
                 // Retrieve the socket from the state object.  
-                var client = (Socket) ar.AsyncState;
+                var client = ar.AsyncState as Socket;
 
                 // Complete the connection.  
-                client.EndConnect(ar);
+                client?.EndConnect(ar);
 
-                _logger.Debug($"Socket connected to {client.RemoteEndPoint}");
+                _logger.Debug($"Socket connected to {client?.RemoteEndPoint}");
                 
                 // Signal that the connection has been made.  
                 _connectDone.Set();
@@ -147,10 +147,10 @@ namespace Vlingo.Wire.Fdx.Outbound
             try
             {
                 // Retrieve the socket from the state object.  
-                var client = (Socket) ar.AsyncState;
+                var client = ar.AsyncState as Socket;
 
                 // Complete sending the data to the remote device.  
-                client.EndSend(ar);
+                client?.EndSend(ar);
             }
             catch (Exception e)
             {

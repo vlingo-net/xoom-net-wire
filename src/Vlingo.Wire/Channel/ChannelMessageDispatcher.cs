@@ -19,9 +19,9 @@ namespace Vlingo.Wire.Channel
 
         public abstract string Name { get; }
 
-        public virtual void DispatchMessageFor(RawMessageBuilder builder)
+        public virtual void DispatchMessageFor(RawMessageBuilder? builder)
         {
-            if (!builder.HasContent)
+            if (builder == null || !builder.HasContent)
             {
                 return;
             }

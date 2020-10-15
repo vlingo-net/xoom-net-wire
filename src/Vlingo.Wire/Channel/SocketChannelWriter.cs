@@ -23,7 +23,8 @@ namespace Vlingo.Wire.Channel
         private Socket? _channel;
         private readonly Address _address;
         private readonly ILogger _logger;
-        private readonly SemaphoreSlim _connectDone;
+        private readonly SemaphoreSlim _connectAtOnce;
+        private readonly ManualResetEvent _connectDone;
         private int _retries;
         private readonly AtomicBoolean _isConnected;
 
@@ -34,7 +35,8 @@ namespace Vlingo.Wire.Channel
             _address = address;
             _logger = logger;
             _channel = null;
-            _connectDone = new SemaphoreSlim(1);
+            _connectAtOnce = new SemaphoreSlim(1);
+            _connectDone = new ManualResetEvent(false);
             _retries = 0;
             _logger.Debug($"Creating socket ID={_id}");
         }
@@ -93,7 +95,7 @@ namespace Vlingo.Wire.Channel
                 {
                     var bytes = new byte[buffer.Length];
                     buffer.Read(bytes, 0, bytes.Length);
-
+                    _connectDone.WaitOne();
                     totalBytesWritten += bytes.Length;
                     _channel?.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, SendCallback, _channel);
                 }
@@ -144,9 +146,9 @@ namespace Vlingo.Wire.Channel
 
                 if (_isConnected.CompareAndSet(false, true))
                 {
+                    _connectAtOnce.Wait();
                     var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                     channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, channel);
-                    _connectDone.Wait();
                     _retries = 0;
                     return channel;
                 }
@@ -167,7 +169,8 @@ namespace Vlingo.Wire.Channel
             {
                 var channel = ar.AsyncState as Socket;
                 channel?.EndConnect(ar);
-                _connectDone.Release();
+                _connectAtOnce.Release();
+                _connectDone.Set();
                 _logger.Debug($"{this}: Socket successfully connected to remote endpoint {channel?.RemoteEndPoint}");
             }
             catch (Exception e)

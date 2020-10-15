@@ -40,6 +40,7 @@ namespace Vlingo.Wire.Fdx.Outbound
                 try
                 {
                     _channel.Close();
+                    _connectDone.Reset();
                     Dispose(false);
                 }
                 catch (Exception e)

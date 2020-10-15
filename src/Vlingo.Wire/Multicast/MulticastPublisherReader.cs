@@ -300,7 +300,6 @@ namespace Vlingo.Wire.Multicast
                     _clientReadChannels.Add(clientChannel);
                     _logger.Debug(
                         $"{this}: Accepted callback from {clientChannel.RemoteEndPoint} on {clientChannel.LocalEndPoint}");
-                    _acceptDone.Release();
                 }
             }
             catch (ObjectDisposedException e)
@@ -310,6 +309,10 @@ namespace Vlingo.Wire.Multicast
             catch (Exception e)
             {
                 _logger.Error($"{this}: Not accepted callback", e);
+            }
+            finally
+            {
+                _acceptDone.Release();
             }
         }
 

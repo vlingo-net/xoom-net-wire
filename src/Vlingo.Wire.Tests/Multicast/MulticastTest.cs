@@ -85,7 +85,7 @@ namespace Vlingo.Wire.Tests.Multicast
 
             publisher.ProcessChannel();
             
-            Assert.Equal(1, publisherAccess.ReadFrom<int>("count"));
+            Assert.Equal(1, publisherAccess.ReadFromExpecting("count", 1, 10_000));
         }
         
         [Fact]

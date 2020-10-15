@@ -6,6 +6,7 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -25,14 +26,15 @@ namespace Vlingo.Wire.Multicast
         private readonly IChannelReaderConsumer _consumer;
         private readonly EndPoint _groupAddress;
         private readonly ILogger _logger;
-        private readonly Queue<RawMessage> _messageQueue;
+        private readonly ConcurrentQueue<RawMessage> _messageQueue;
         private readonly string _name;
         private readonly int _maxMessageSize;
         private readonly IPEndPoint _publisherAddress;
         private readonly Socket _readChannel;
         private readonly List<Socket> _clientReadChannels;
         private bool _disposed;
-        private readonly ManualResetEvent _acceptDone;
+        private readonly AutoResetEvent _acceptDone;
+        private readonly AutoResetEvent _sendDone;
 
         private readonly SocketChannelSelectionReader _socketChannelSelectionReader;
 
@@ -48,9 +50,10 @@ namespace Vlingo.Wire.Multicast
             _maxMessageSize = maxMessageSize;
             _consumer = consumer;
             _logger = logger;
-            _acceptDone = new ManualResetEvent(false);
+            _acceptDone = new AutoResetEvent(false);
+            _sendDone = new AutoResetEvent(false);
             _groupAddress = new IPEndPoint(IPAddress.Parse(group.Address), group.Port);
-            _messageQueue = new Queue<RawMessage>();
+            _messageQueue = new ConcurrentQueue<RawMessage>();
             
             _publisherChannel = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             _publisherChannel.Blocking = false;
@@ -88,7 +91,17 @@ namespace Vlingo.Wire.Multicast
             
             try
             {
-                _messageQueue.Clear(); // messages are lost anyway
+                // messages are lost anyway
+#if NETSTANDARD2_0
+                for (var i = 0; i < _messageQueue.Count; i++)
+                {
+                    _messageQueue.TryDequeue(out _);
+                }
+#endif
+                
+#if NETCOREAPP3_1
+                _messageQueue.Clear();
+#endif
                 _publisherChannel.Close();
             }
             catch (Exception e)
@@ -267,18 +280,18 @@ namespace Vlingo.Wire.Multicast
                 {
                     return;
                 }
-                
-                var message = _messageQueue.Peek();
 
-                var buffer = message.AsBuffer(new MemoryStream(_maxMessageSize));
-                _publisherChannel.BeginSendTo(buffer, 0, buffer.Length, SocketFlags.None, _groupAddress, SendToCallback, _publisherChannel);
+                if (_messageQueue.TryPeek(out var message))
+                {
+                    var buffer = message.AsBuffer(new MemoryStream(_maxMessageSize));
+                    _publisherChannel.BeginSendTo(buffer, 0, buffer.Length, SocketFlags.None, _groupAddress, SendToCallback, _publisherChannel);
+                    _sendDone.WaitOne();
+                }
             }
         }
         
         private void AcceptCallback(IAsyncResult ar)
         {
-            // Get the socket that handles the client request.  
-
             try
             {
                 var listener = ar.AsyncState as Socket;
@@ -311,8 +324,10 @@ namespace Vlingo.Wire.Multicast
             
                 if (sent > 0 && _messageQueue.Count > 0)
                 {
-                    _messageQueue.Dequeue();
+                    _messageQueue.TryDequeue(out _);
                 }
+
+                _sendDone.Set();
             }
             catch (Exception e)
             {

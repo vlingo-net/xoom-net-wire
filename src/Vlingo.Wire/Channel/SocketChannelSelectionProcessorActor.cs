@@ -78,11 +78,14 @@ namespace Vlingo.Wire.Channel
         {
             var textResponse = response.ToString();
 
-            var buffer =
-                new BasicConsumerByteBuffer(0, textResponse.Length + 1024)
-                    .Put(Converters.TextToBytes(textResponse)).Flip();
+            if (!string.IsNullOrEmpty(textResponse))
+            {
+                var buffer =
+                    new BasicConsumerByteBuffer(0, textResponse.Length + 1024)
+                        .Put(Converters.TextToBytes(textResponse)).Flip();
 
-            RespondWith(context, buffer, closeFollowing);
+                RespondWith(context, buffer, closeFollowing);
+            }
         }
 
         //=========================================
@@ -183,7 +186,7 @@ namespace Vlingo.Wire.Channel
             {
                 foreach (var context in _contexts.ToArray())
                 {
-                    if (context != null && !context.IsClosed)
+                    if (!context.IsClosed)
                     {
                         if (context.Channel.Available > 0)
                         {
@@ -209,7 +212,10 @@ namespace Vlingo.Wire.Channel
             // Create the state object.  
             var limit = readable.RequestBuffer.Limit();
             var state = new StateObject(channel, readable, new byte[limit], readable.RequestBuffer.Clear());
-            channel.BeginReceive(state.Buffer, 0, (int)limit, 0, ReadCallback, state);
+            if (state.Buffer != null)
+            {
+                channel.BeginReceive(state.Buffer, 0, (int)limit, 0, ReadCallback, state);   
+            }
         }
         
         private void Write(Context writable)
@@ -251,45 +257,45 @@ namespace Vlingo.Wire.Channel
 
         private void ReadCallback(IAsyncResult ar)
         {
-            // Retrieve the state object and the handler socket  
-            // from the asynchronous state object.  
-            var state = (StateObject) ar.AsyncState;  
-            var channel = state.WorkSocket;
-            var readable = state.Context;
-            var buffer = state.ByteBuffer;
-            var readBuffer = state.Buffer!;
-
             try
             {
+                // Retrieve the state object and the handler socket  
+                // from the asynchronous state object.  
+                var state = ar.AsyncState as StateObject;  
+                var channel = state?.WorkSocket;
+                var readable = state?.Context;
+                var buffer = state?.ByteBuffer;
+                var readBuffer = state?.Buffer!;
+                
                 // Read data from the client socket.   
-                var bytesRead = channel.EndReceive(ar);
+                var bytesRead = channel?.EndReceive(ar);
 
-                if (bytesRead > 0)
+                if (bytesRead.HasValue && bytesRead > 0)
                 {
-                    buffer.Put(readBuffer, 0, bytesRead);
+                    buffer?.Put(readBuffer, 0, bytesRead.Value);
                 }
                 
-                if (bytesRead == 0)
+                if (bytesRead == 0 && readable != null)
                 {
                     Close(readable.Channel, readable);
                 }
 
-                var bytesRemain = channel.Available;
+                var bytesRemain = channel?.Available;
                 if (bytesRemain > 0)
                 {
                     // Get the rest of the data.  
-                    channel.BeginReceive(readBuffer,0,readBuffer.Length, 0, ReadCallback, state);
+                    channel?.BeginReceive(readBuffer,0,readBuffer.Length, 0, ReadCallback, state);
                 }
                 else
                 {
                     // All the data has arrived; put it in response.  
-                    if (buffer.Limit() >= 1)
+                    if (buffer?.Limit() >= 1)
                     {
-                        readable.Consumer.Consume(readable, buffer.Flip());
+                        readable?.Consumer.Consume(readable, buffer.Flip());
                     }
                     else
                     {
-                        buffer.Release();
+                        buffer?.Release();
                     }
                 }
             }
@@ -303,12 +309,15 @@ namespace Vlingo.Wire.Channel
         
         private void AcceptCallback(IAsyncResult ar)
         {
-            // Get the socket that handles the client request.  
-            var listener = (Socket)ar.AsyncState;
             try
             {
-                var clientChannel = listener.EndAccept(ar);  
-                _contexts.Add(new Context(this, clientChannel));
+                // Get the socket that handles the client request.  
+                var listener = ar.AsyncState as Socket;
+                var clientChannel = listener?.EndAccept(ar);
+                if (clientChannel != null)
+                {
+                    _contexts.Add(new Context(this, clientChannel));   
+                }
             }
             catch (ObjectDisposedException e)
             {
@@ -325,11 +334,11 @@ namespace Vlingo.Wire.Channel
             try
             {  
                 // Retrieve the socket from the state object.  
-                var state = (StateObject)ar.AsyncState;
-                var channel = state.WorkSocket;
+                var state = ar.AsyncState as StateObject;
+                var channel = state?.WorkSocket;
 
                 // Complete sending the data to the remote device.  
-                channel.EndSend(ar);
+                channel?.EndSend(ar);
 
             }
             catch (Exception e)

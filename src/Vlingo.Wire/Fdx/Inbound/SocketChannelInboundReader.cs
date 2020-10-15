@@ -27,7 +27,7 @@ namespace Vlingo.Wire.Fdx.Inbound
         private readonly string _name;
         private readonly int _port;
         private bool _disposed;
-        private readonly ManualResetEvent _acceptDone;
+        private readonly SemaphoreSlim _acceptDone;
 
         public SocketChannelInboundReader(int port, string name, int maxMessageSize, ILogger logger)
         {
@@ -37,7 +37,7 @@ namespace Vlingo.Wire.Fdx.Inbound
             _logger = logger;
             _channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _clientChannels = new List<Socket>();
-            _acceptDone = new ManualResetEvent(false);
+            _acceptDone = new SemaphoreSlim(1);
         }
         
         //=========================================
@@ -144,7 +144,7 @@ namespace Vlingo.Wire.Fdx.Inbound
             try
             {
                 _channel.BeginAccept(AcceptCallback, _channel);
-                _acceptDone.WaitOne();
+                _acceptDone.Wait();
             }
             catch (Exception e)
             {
@@ -176,7 +176,7 @@ namespace Vlingo.Wire.Fdx.Inbound
             }
             finally
             {
-                _acceptDone.Set();   
+                _acceptDone.Release();   
             }
         }
     }

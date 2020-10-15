@@ -27,7 +27,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private readonly ConsumerByteBufferPool _readBufferPool;
         private bool _disposed;
         private bool _canStartProbing;
-        private readonly ManualResetEvent _connectDone;
+        private readonly AutoResetEvent _connectDone;
+        private readonly AutoResetEvent _sendDone;
+        private readonly AutoResetEvent _receiveDone;
 
         public BasicClientRequestResponseChannel(
             Address address,
@@ -43,7 +45,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             _channel = null;
             _previousPrepareFailures = 0;
             _readBufferPool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, string>.Config.Of(maxBufferPoolSize), maxMessageSize);
-            _connectDone = new ManualResetEvent(false);
+            _connectDone = new AutoResetEvent(false);
+            _sendDone = new AutoResetEvent(false);
+            _receiveDone = new AutoResetEvent(false);
         }
         
         //=========================================
@@ -76,6 +80,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 try
                 {
                     preparedChannel.BeginSend(buffer, 0, buffer.Length, 0, SendCallback, preparedChannel);
+                    _sendDone.WaitOne();
                 }
                 catch (Exception e)
                 {
@@ -209,6 +214,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                 // Create the state object.  
                 var state = new StateObject(channel, readBuffer, pooledBuffer);
                 channel.BeginReceive(readBuffer, 0, readBuffer.Length, 0, ReceiveCallback, state);
+                _receiveDone.WaitOne();
             }
             catch (Exception e)
             {
@@ -252,6 +258,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
                 // Complete sending the data to the remote device.  
                 client?.EndSend(ar);
+
+                _sendDone.Set();
             }
             catch (Exception e)
             {
@@ -306,6 +314,8 @@ namespace Vlingo.Wire.Fdx.Bidirectional
                     {
                         pooledBuffer?.Release();
                     }
+                    
+                    _receiveDone.Set();
                 }
             }
             catch (Exception e)

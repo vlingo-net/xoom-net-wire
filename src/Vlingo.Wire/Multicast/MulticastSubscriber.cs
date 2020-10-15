@@ -167,13 +167,13 @@ namespace Vlingo.Wire.Multicast
 
         private void ReceiveCallback(IAsyncResult ar)
         {
-            var state = ar.AsyncState as StateObject;  
-            var channel = state?.WorkSocket;
-            var buffer = state?.Buffer;
-
             try
             {
+                var state = ar.AsyncState as StateObject;  
+                var channel = state?.WorkSocket;
+                var buffer = state?.Buffer;
                 var bytesRead = channel?.EndReceiveFrom(ar, ref _ipEndPoint);
+                
                 if (bytesRead.HasValue && bytesRead > 0 && buffer != null)
                 {
                     _buffer.Clear();

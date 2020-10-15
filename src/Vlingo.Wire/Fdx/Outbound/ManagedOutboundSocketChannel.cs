@@ -23,14 +23,16 @@ namespace Vlingo.Wire.Fdx.Outbound
         private readonly Node _node;
         private readonly ILogger _logger;
         private bool _disposed;
-        private readonly ManualResetEvent _connectDone;
+        private readonly AutoResetEvent _connectDone;
+        private readonly AutoResetEvent _sendDone;
 
         public ManagedOutboundSocketChannel(Node node, Address address, ILogger logger)
         {
             _node = node;
             _address = address;
             _logger = logger;
-            _connectDone = new ManualResetEvent(false);
+            _connectDone = new AutoResetEvent(false);
+            _sendDone = new AutoResetEvent(false);
         }
         
         public void Close()
@@ -63,6 +65,7 @@ namespace Vlingo.Wire.Fdx.Outbound
                     var bytes = new byte[buffer.Length];
                     buffer.Read(bytes, 0, bytes.Length); // TODO: can be done async
                     _channel.BeginSend(bytes, 0, bytes.Length, 0, SendCallback, _channel);
+                    _sendDone.WaitOne();
                 }
             }
             catch (Exception e)
@@ -151,6 +154,8 @@ namespace Vlingo.Wire.Fdx.Outbound
 
                 // Complete sending the data to the remote device.  
                 client?.EndSend(ar);
+
+                _sendDone.Set();
             }
             catch (Exception e)
             {

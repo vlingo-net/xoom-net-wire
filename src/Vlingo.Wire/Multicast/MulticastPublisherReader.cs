@@ -33,8 +33,7 @@ namespace Vlingo.Wire.Multicast
         private readonly Socket _readChannel;
         private readonly List<Socket> _clientReadChannels;
         private bool _disposed;
-        private readonly AutoResetEvent _acceptDone;
-        private readonly AutoResetEvent _sendDone;
+        private readonly SemaphoreSlim _acceptDone;
 
         private readonly SocketChannelSelectionReader _socketChannelSelectionReader;
 
@@ -50,8 +49,7 @@ namespace Vlingo.Wire.Multicast
             _maxMessageSize = maxMessageSize;
             _consumer = consumer;
             _logger = logger;
-            _acceptDone = new AutoResetEvent(false);
-            _sendDone = new AutoResetEvent(false);
+            _acceptDone = new SemaphoreSlim(1);
             _groupAddress = new IPEndPoint(IPAddress.Parse(group.Address), group.Port);
             _messageQueue = new ConcurrentQueue<RawMessage>();
             
@@ -183,7 +181,6 @@ namespace Vlingo.Wire.Multicast
                 Close();
                 
                 _acceptDone.Dispose();
-                _sendDone.Dispose();
             }
       
             _disposed = true;
@@ -231,8 +228,8 @@ namespace Vlingo.Wire.Multicast
             {
                 if (_readChannel.Poll(10000, SelectMode.SelectRead))
                 {
+                    _acceptDone.Wait();
                     _readChannel.BeginAccept(AcceptCallback, _readChannel);
-                    _acceptDone.WaitOne();
                 }
             }
             catch (Exception e)
@@ -288,7 +285,6 @@ namespace Vlingo.Wire.Multicast
                 {
                     var buffer = message.AsBuffer(new MemoryStream(_maxMessageSize));
                     _publisherChannel.BeginSendTo(buffer, 0, buffer.Length, SocketFlags.None, _groupAddress, SendToCallback, _publisherChannel);
-                    _sendDone.WaitOne();
                 }
             }
         }
@@ -304,7 +300,7 @@ namespace Vlingo.Wire.Multicast
                     _clientReadChannels.Add(clientChannel);
                     _logger.Debug(
                         $"{this}: Accepted callback from {clientChannel.RemoteEndPoint} on {clientChannel.LocalEndPoint}");
-                    _acceptDone.Set();
+                    _acceptDone.Release();
                 }
             }
             catch (ObjectDisposedException e)
@@ -329,8 +325,6 @@ namespace Vlingo.Wire.Multicast
                 {
                     _messageQueue.TryDequeue(out _);
                 }
-
-                _sendDone.Set();
             }
             catch (Exception e)
             {

@@ -7,6 +7,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
@@ -82,6 +83,8 @@ namespace Vlingo.Wire.Tests.Multicast
                 ConsoleLogger.TestInstance());
 
             socketWriter.Write(RawMessage.From(1, 1, "test-response"), new MemoryStream());
+            
+            Thread.Sleep(100);
 
             publisher.ProcessChannel();
             

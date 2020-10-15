@@ -68,7 +68,7 @@ namespace Vlingo.Wire.Multicast
             _publisherAddress = (IPEndPoint)_readChannel.LocalEndPoint;
             
             _clientReadChannels = new List<Socket>();
-            _socketChannelSelectionReader = new SocketChannelSelectionReader(this);
+            _socketChannelSelectionReader = new SocketChannelSelectionReader(this, logger);
             
             _availability = AvailabilityMessage();
         }
@@ -278,29 +278,45 @@ namespace Vlingo.Wire.Multicast
         private void AcceptCallback(IAsyncResult ar)
         {
             // Get the socket that handles the client request.  
-            var listener = (Socket)ar.AsyncState;
+
             try
             {
-                var clientChannel = listener.EndAccept(ar);
-                _clientReadChannels.Add(clientChannel);
-                _logger.Debug($"{this}: Accepted callback from {clientChannel.RemoteEndPoint} on {clientChannel.LocalEndPoint}");
-                _acceptDone.Set();
+                var listener = ar.AsyncState as Socket;
+                var clientChannel = listener?.EndAccept(ar);
+                if (clientChannel != null)
+                {
+                    _clientReadChannels.Add(clientChannel);
+                    _logger.Debug(
+                        $"{this}: Accepted callback from {clientChannel.RemoteEndPoint} on {clientChannel.LocalEndPoint}");
+                    _acceptDone.Set();
+                }
             }
             catch (ObjectDisposedException e)
             {
-                _logger.Debug($"{this}: Not accepted callback because the client channel was disposed", e);
+                _logger.Error($"{this}: Not accepted callback because the client channel was disposed", e);
+            }
+            catch (Exception e)
+            {
+                _logger.Error($"{this}: Not accepted callback", e);
             }
         }
 
         private void SendToCallback(IAsyncResult ar)
         {
-            var publisherChannel = (Socket)ar.AsyncState;
-
-            var sent = publisherChannel.EndSendTo(ar);
-            
-            if (sent > 0 && _messageQueue.Count > 0)
+            try
             {
-                _messageQueue.Dequeue();
+                var publisherChannel = ar.AsyncState as Socket;
+
+                var sent = publisherChannel?.EndSendTo(ar);
+            
+                if (sent > 0 && _messageQueue.Count > 0)
+                {
+                    _messageQueue.Dequeue();
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.Error($"{this}: Cannot send", e);
             }
         }
     }

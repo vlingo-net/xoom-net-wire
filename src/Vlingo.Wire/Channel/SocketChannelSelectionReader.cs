@@ -8,15 +8,16 @@
 using System;
 using System.IO;
 using System.Net.Sockets;
+using Vlingo.Actors;
 using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Channel
 {
     public class SocketChannelSelectionReader: SelectionReader
     {
-        public SocketChannelSelectionReader(ChannelMessageDispatcher dispatcher) : base(dispatcher)
-        {
-        }
+        private readonly ILogger _logger;
+
+        public SocketChannelSelectionReader(ChannelMessageDispatcher dispatcher, ILogger logger) : base(dispatcher) => _logger = logger;
 
         public override void Read(Socket channel, RawMessageBuilder builder)
         {
@@ -30,31 +31,38 @@ namespace Vlingo.Wire.Channel
 
         private void ReceiveCallback(IAsyncResult ar)
         {
-            var state = (StateObject)ar.AsyncState;
-            var client = state.WorkSocket;
-            var buffer = state.Buffer;
-            var bytes = state.Bytes;
-            var builder = state.Builder;
-
-            var bytesRead = client.EndReceive(ar);
-
-            if (bytesRead > 0)
+            try
             {
-                buffer.Write(bytes, state.TotalRead, bytesRead);
-                state.TotalRead += bytesRead;
-            }
+                var state = ar.AsyncState as StateObject;
+                var client = state?.WorkSocket;
+                var buffer = state?.Buffer;
+                var bytes = state?.Bytes;
+                var builder = state?.Builder;
 
-            var bytesRemain = client.Available;
-            if (bytesRemain > 0)
-            {
-                client.BeginReceive(bytes, 0, bytes.Length, SocketFlags.None , ReceiveCallback, state);
-            }
-            else
-            {
-                if (bytesRead > 0)
+                var bytesRead = client?.EndReceive(ar);
+
+                if (bytesRead.HasValue && bytesRead.Value > 0 && state != null && bytes != null)
                 {
-                    Dispatcher.DispatchMessageFor(builder);
+                    buffer?.Write(bytes, state.TotalRead, bytesRead.Value);
+                    state.TotalRead += bytesRead.Value;
                 }
+
+                var bytesRemain = client?.Available;
+                if (bytesRemain > 0 && bytes != null)
+                {
+                    client?.BeginReceive(bytes, 0, bytes.Length, SocketFlags.None , ReceiveCallback, state);
+                }
+                else
+                {
+                    if (bytesRead > 0)
+                    {
+                        Dispatcher.DispatchMessageFor(builder);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.Error($"Error while receiving data", e);
             }
         }
         

@@ -8,7 +8,6 @@
 using System;
 using System.IO;
 using System.Net.Sockets;
-using System.Threading;
 using Vlingo.Actors;
 using Vlingo.Wire.Message;
 
@@ -17,18 +16,11 @@ namespace Vlingo.Wire.Channel
     public class SocketChannelSelectionReader: SelectionReader
     {
         private readonly ILogger _logger;
-        private readonly SemaphoreSlim _readDone;
 
-        public SocketChannelSelectionReader(ChannelMessageDispatcher dispatcher, ILogger logger) : base(dispatcher)
-        {
-            _logger = logger;
-            _readDone = new SemaphoreSlim(1);
-        }
+        public SocketChannelSelectionReader(ChannelMessageDispatcher dispatcher, ILogger logger) : base(dispatcher) => _logger = logger;
 
         public override void Read(Socket channel, RawMessageBuilder builder)
         {
-            _readDone.Wait();
-            
             var buffer = builder.WorkBuffer();
             var bytes = new byte[buffer.Length];
             var state = new StateObject(channel, buffer, bytes, builder);
@@ -70,10 +62,6 @@ namespace Vlingo.Wire.Channel
             catch (Exception e)
             {
                 _logger.Error($"Error while receiving data", e);
-            }
-            finally
-            {
-                _readDone.Release();
             }
         }
         

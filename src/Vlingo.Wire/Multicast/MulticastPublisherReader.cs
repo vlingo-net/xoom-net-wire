@@ -33,7 +33,6 @@ namespace Vlingo.Wire.Multicast
         private readonly Socket _readChannel;
         private readonly List<Socket> _clientReadChannels;
         private bool _disposed;
-        private readonly SemaphoreSlim _acceptDone;
 
         private readonly SocketChannelSelectionReader _socketChannelSelectionReader;
 
@@ -49,7 +48,6 @@ namespace Vlingo.Wire.Multicast
             _maxMessageSize = maxMessageSize;
             _consumer = consumer;
             _logger = logger;
-            _acceptDone = new SemaphoreSlim(1);
             _groupAddress = new IPEndPoint(IPAddress.Parse(group.Address), group.Port);
             _messageQueue = new ConcurrentQueue<RawMessage>();
             
@@ -179,8 +177,6 @@ namespace Vlingo.Wire.Multicast
             if (disposing) 
             {
                 Close();
-                
-                _acceptDone.Dispose();
             }
       
             _disposed = true;
@@ -228,7 +224,6 @@ namespace Vlingo.Wire.Multicast
             {
                 if (_readChannel.Poll(10000, SelectMode.SelectRead))
                 {
-                    _acceptDone.Wait();
                     _readChannel.BeginAccept(AcceptCallback, _readChannel);
                 }
             }
@@ -309,10 +304,6 @@ namespace Vlingo.Wire.Multicast
             catch (Exception e)
             {
                 _logger.Error($"{this}: Not accepted callback", e);
-            }
-            finally
-            {
-                _acceptDone.Release();
             }
         }
 

@@ -17,21 +17,22 @@ namespace Vlingo.Wire.Channel
     public class SocketChannelSelectionReader: SelectionReader
     {
         private readonly ILogger _logger;
-        private readonly AutoResetEvent _readDone;
+        private readonly SemaphoreSlim _readDone;
 
         public SocketChannelSelectionReader(ChannelMessageDispatcher dispatcher, ILogger logger) : base(dispatcher)
         {
             _logger = logger;
-            _readDone = new AutoResetEvent(false);
+            _readDone = new SemaphoreSlim(1);
         }
 
         public override void Read(Socket channel, RawMessageBuilder builder)
         {
+            _readDone.Wait();
+            
             var buffer = builder.WorkBuffer();
             var bytes = new byte[buffer.Length];
             var state = new StateObject(channel, buffer, bytes, builder);
             channel.BeginReceive(bytes, 0, bytes.Length, SocketFlags.None, ReceiveCallback, state);
-            _readDone.WaitOne();
             Dispatcher.DispatchMessageFor(builder);
         }
 
@@ -56,7 +57,7 @@ namespace Vlingo.Wire.Channel
                 var bytesRemain = client?.Available;
                 if (bytesRemain > 0 && bytes != null)
                 {
-                    client?.BeginReceive(bytes, 0, bytes.Length, SocketFlags.None , ReceiveCallback, state);
+                    client?.BeginReceive(bytes, 0, bytes.Length, SocketFlags.None, ReceiveCallback, state);
                 }
                 else
                 {
@@ -65,12 +66,14 @@ namespace Vlingo.Wire.Channel
                         Dispatcher.DispatchMessageFor(builder);
                     }
                 }
-
-                _readDone.Set();
             }
             catch (Exception e)
             {
                 _logger.Error($"Error while receiving data", e);
+            }
+            finally
+            {
+                _readDone.Release();
             }
         }
         

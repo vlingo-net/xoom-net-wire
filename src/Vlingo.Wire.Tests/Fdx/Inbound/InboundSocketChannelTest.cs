@@ -57,9 +57,9 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             var rawMessage2 = RawMessage.From(0, 0, message2);
             _opChannel.Write(rawMessage2.AsStream(buffer));
             
-            ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("count") < 2, _opReader, 10);
+            ProbeUntilConsumed(() => accessSafely.ReadFromNow<int>("count") < 2, _opReader, 10);
             
-            Assert.Equal(2, accessSafely.ReadFrom<int>("count"));
+            Assert.Equal(2, accessSafely.ReadFromNow<int>("count"));
             Assert.Equal(message2, consumer.Messages.Last());
         }
 
@@ -87,9 +87,9 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             var rawMessage2 = RawMessage.From(0, 0, message2);
             _appChannel.Write(rawMessage2.AsStream(buffer));
             
-            ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("count") < 2, _appReader, 10);
+            ProbeUntilConsumed(() => accessSafely.ReadFromNow<int>("count") < 2, _appReader, 10);
             
-            Assert.Equal(2, accessSafely.ReadFrom<int>("count"));
+            Assert.Equal(2, accessSafely.ReadFromNow<int>("count"));
             Assert.Equal(message2, consumer.Messages.Last());
         }
 

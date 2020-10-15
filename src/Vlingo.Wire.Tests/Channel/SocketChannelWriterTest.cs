@@ -51,9 +51,9 @@ namespace Vlingo.Wire.Tests.Channel
             var rawMessage2 = RawMessage.From(0, 0, message2);
             _channelWriter.Write(rawMessage2, buffer);
 
-            ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("count") < 2, _channelReader, 10);
+            ProbeUntilConsumed(() => accessSafely.ReadFromNow<int>("count") < 2, _channelReader, 10);
             
-            Assert.Equal(2, accessSafely.ReadFrom<int>("count"));
+            Assert.Equal(2, accessSafely.ReadFromNow<int>("count"));
             Assert.Equal(message2, consumer.Messages.Last());
             
         }

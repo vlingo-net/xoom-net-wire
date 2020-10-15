@@ -6,6 +6,7 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Vlingo.Actors.Plugin.Logging.Console;
@@ -41,7 +42,7 @@ namespace Vlingo.Wire.Tests.Channel
             var rawMessage1 = RawMessage.From(0, 0, message1);
             _channelWriter.Write(rawMessage1, buffer);
             
-            ProbeUntilConsumed(() => accessSafely.ReadFromNow<int>("count") < 1, _channelReader);
+            ProbeUntilConsumed(() => accessSafely.ReadFromNow<int>("count") < 1, _channelReader, 10);
             
             Assert.Equal(1, accessSafely.ReadFromNow<int>("count"));
             Assert.Equal(message1, consumer.Messages.First());
@@ -49,8 +50,8 @@ namespace Vlingo.Wire.Tests.Channel
             var message2 = TestMessage + 2;
             var rawMessage2 = RawMessage.From(0, 0, message2);
             _channelWriter.Write(rawMessage2, buffer);
-            
-            ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("count") < 2, _channelReader);
+
+            ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("count") < 2, _channelReader, 10);
             
             Assert.Equal(2, accessSafely.ReadFrom<int>("count"));
             Assert.Equal(message2, consumer.Messages.Last());
@@ -74,12 +75,15 @@ namespace Vlingo.Wire.Tests.Channel
             _channelReader.Close();
         }
         
-        private void ProbeUntilConsumed(Func<bool> reading, IChannelReader reader)
+        private void ProbeUntilConsumed(Func<bool> reading, IChannelReader reader, int maxSeconds)
         {
+            var sw = new Stopwatch();
+            sw.Start();
             do
             {
                 reader.ProbeChannel();
-            } while (reading());
+            } while (reading() || sw.Elapsed.TotalSeconds >= maxSeconds);
+            sw.Stop();
         }
     }
 }

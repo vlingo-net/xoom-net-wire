@@ -6,6 +6,7 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Vlingo.Actors.Plugin.Logging.Console;
@@ -47,7 +48,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             var rawMessage1 = RawMessage.From(0, 0, message1);
             _opChannel.Write(rawMessage1.AsStream(buffer));
             
-            ProbeUntilConsumed(() => accessSafely.ReadFromNow<int>("count") < 1, _opReader);
+            ProbeUntilConsumed(() => accessSafely.ReadFromNow<int>("count") < 1, _opReader, 10);
             
             Assert.Equal(1, accessSafely.ReadFromNow<int>("count"));
             Assert.Equal(message1, consumer.Messages.First());
@@ -56,7 +57,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             var rawMessage2 = RawMessage.From(0, 0, message2);
             _opChannel.Write(rawMessage2.AsStream(buffer));
             
-            ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("count") < 2, _opReader);
+            ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("count") < 2, _opReader, 10);
             
             Assert.Equal(2, accessSafely.ReadFrom<int>("count"));
             Assert.Equal(message2, consumer.Messages.Last());
@@ -77,7 +78,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             var rawMessage1 = RawMessage.From(0, 0, message1);
             _appChannel.Write(rawMessage1.AsStream(buffer));
 
-            ProbeUntilConsumed(() => accessSafely.ReadFromNow<int>("count") < 1, _appReader);
+            ProbeUntilConsumed(() => accessSafely.ReadFromNow<int>("count") < 1, _appReader, 10);
             
             Assert.Equal(1, accessSafely.ReadFromNow<int>("count"));
             Assert.Equal(message1, consumer.Messages.First());
@@ -86,7 +87,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             var rawMessage2 = RawMessage.From(0, 0, message2);
             _appChannel.Write(rawMessage2.AsStream(buffer));
             
-            ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("count") < 2, _appReader);
+            ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("count") < 2, _appReader, 10);
             
             Assert.Equal(2, accessSafely.ReadFrom<int>("count"));
             Assert.Equal(message2, consumer.Messages.Last());
@@ -113,12 +114,15 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
             _opReader.Close();
         }
 
-        private void ProbeUntilConsumed(Func<bool> reading, IChannelReader reader)
+        private void ProbeUntilConsumed(Func<bool> reading, IChannelReader reader, int maxSeconds)
         {
+            var sw = new Stopwatch();
+            sw.Start();
             do
             {
                 reader.ProbeChannel();
-            } while (reading());
+            } while (reading() || sw.Elapsed.TotalSeconds >= maxSeconds);
+            sw.Stop();
         }
     }
 }

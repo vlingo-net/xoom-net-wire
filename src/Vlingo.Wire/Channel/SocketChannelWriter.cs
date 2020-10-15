@@ -104,6 +104,7 @@ namespace Vlingo.Wire.Channel
             catch (Exception e)
             {
                 _logger.Error($"{this}: Write to channel failed because: {e.Message}", e);
+                _connectDone.WaitOne();
                 Close();
             }
 
@@ -157,6 +158,7 @@ namespace Vlingo.Wire.Channel
             catch (Exception e)
             {
                 _logger.Error($"{this}: Failed to prepare channel because: {e.Message}. Retrying: {_retries}", e);
+                _connectAtOnce.Release();
                 Close();
             }
 
@@ -170,8 +172,6 @@ namespace Vlingo.Wire.Channel
             {
                 var channel = ar.AsyncState as Socket;
                 channel?.EndConnect(ar);
-                _connectAtOnce.Release();
-                _connectDone.Set();
                 _logger.Debug($"{this}: Socket successfully connected to remote endpoint {channel?.RemoteEndPoint}");
             }
             catch (Exception e)
@@ -179,6 +179,11 @@ namespace Vlingo.Wire.Channel
                 ++_retries;
                 _logger.Error($"{this}: Failed to connect to channel because: {e.Message}", e);
                 Close();
+            }
+            finally
+            {
+                _connectAtOnce.Release();
+                _connectDone.Set();
             }
         }
     }

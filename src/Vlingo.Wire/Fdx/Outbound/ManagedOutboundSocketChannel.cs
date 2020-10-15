@@ -23,6 +23,7 @@ namespace Vlingo.Wire.Fdx.Outbound
         private readonly Node _node;
         private readonly ILogger _logger;
         private bool _disposed;
+        private readonly SemaphoreSlim _connectAtOnce;
         private readonly ManualResetEvent _connectDone;
 
         public ManagedOutboundSocketChannel(Node node, Address address, ILogger logger)
@@ -30,6 +31,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             _node = node;
             _address = address;
             _logger = logger;
+            _connectAtOnce = new SemaphoreSlim(1);
             _connectDone = new ManualResetEvent(false);
         }
         
@@ -61,15 +63,16 @@ namespace Vlingo.Wire.Fdx.Outbound
             {
                 while (buffer.HasRemaining())
                 {
+                    _connectDone.WaitOne();
                     var bytes = new byte[buffer.Length];
                     buffer.Read(bytes, 0, bytes.Length); // TODO: can be done async
                     _channel.BeginSend(bytes, 0, bytes.Length, 0, SendCallback, _channel);
-                    _connectDone.WaitOne();
                 }
             }
             catch (Exception e)
             {
                 _logger.Error($"Write to {_node} failed because: {e.Message}", e);
+                _connectDone.Set();
                 Close();
             }
         }
@@ -91,6 +94,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             {
                 Close();
                 
+                _connectAtOnce.Dispose();
                 _connectDone.Dispose();
             }
       
@@ -111,14 +115,15 @@ namespace Vlingo.Wire.Fdx.Outbound
                     Close();
                 }
                 
+                _connectAtOnce.Wait();
                 var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, channel);
-                _connectDone.WaitOne();
                 return channel;
             }
             catch (Exception e)
             {
                 _logger.Error($"{GetType().Name}: Cannot prepare/open channel because: {e.Message}");
+                _connectAtOnce.Release();
                 Close();
             }
 
@@ -136,13 +141,16 @@ namespace Vlingo.Wire.Fdx.Outbound
                 client?.EndConnect(ar);
 
                 _logger.Debug($"Socket connected to {client?.RemoteEndPoint}");
-                
-                // Signal that the connection has been made.  
-                _connectDone.Set();
             }
             catch (Exception e)
             {
                 _logger.Error("Cannot connect", e);
+            }
+            finally
+            {
+                // Signal that the connection has been made.  
+                _connectAtOnce.Release();
+                _connectDone.Set();
             }
         }
         

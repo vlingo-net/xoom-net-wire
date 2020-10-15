@@ -181,6 +181,9 @@ namespace Vlingo.Wire.Multicast
             if (disposing) 
             {
                 Close();
+                
+                _acceptDone.Dispose();
+                _sendDone.Dispose();
             }
       
             _disposed = true;

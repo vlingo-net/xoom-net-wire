@@ -62,6 +62,7 @@ namespace Vlingo.Wire.Channel
                 finally
                 {
                     _isConnected.Set(false);
+                    _connectDone.Reset();
                 }
             }
 

@@ -139,10 +139,13 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             if (disposing) 
             {
                 Close();
+                
+                _connectDone.Dispose();
+                _sendDone.Dispose();
+                _receiveDone.Dispose();
             }
 
             _disposed = true;
-            _connectDone.Dispose();
         }
 
         //=========================================

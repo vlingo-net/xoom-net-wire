@@ -122,6 +122,8 @@ namespace Vlingo.Wire.Fdx.Inbound
             if (disposing) 
             {
                 Close();
+                
+                _acceptDone.Dispose();
             }
       
             _disposed = true;
@@ -176,7 +178,14 @@ namespace Vlingo.Wire.Fdx.Inbound
             }
             finally
             {
-                _acceptDone.Release();   
+                try
+                {
+                    _acceptDone.Release();
+                }
+                catch
+                {
+                    // nothing to do because already disposed
+                }
             }
         }
     }

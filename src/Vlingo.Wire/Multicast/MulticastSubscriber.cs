@@ -91,8 +91,6 @@ namespace Vlingo.Wire.Multicast
             try
             {
                 _channel.Close();
-                _buffer.Dispose();
-                _synchronizeReading.Dispose();
                 Dispose(true);
             }
             catch (Exception e)
@@ -160,6 +158,9 @@ namespace Vlingo.Wire.Multicast
             if (disposing) 
             {
                 Close();
+                
+                _buffer.Dispose();
+                _synchronizeReading.Dispose();
             }
       
             _disposed = true;

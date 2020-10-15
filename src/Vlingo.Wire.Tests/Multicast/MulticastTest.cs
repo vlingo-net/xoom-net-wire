@@ -6,8 +6,8 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
+using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
@@ -84,9 +84,7 @@ namespace Vlingo.Wire.Tests.Multicast
 
             socketWriter.Write(RawMessage.From(1, 1, "test-response"), new MemoryStream());
             
-            Thread.Sleep(100);
-
-            publisher.ProcessChannel();
+            ProbeUntilConsumed(() => publisherAccess.ReadFromNow<int>("count") < 1, publisher, 10);
             
             Assert.Equal(1, publisherAccess.ReadFromExpecting("count", 1, 10_000));
         }
@@ -143,6 +141,17 @@ namespace Vlingo.Wire.Tests.Multicast
         {
             var converter = new Converter(output);
             Console.SetOut(converter);
+        }
+        
+        private void ProbeUntilConsumed(Func<bool> reading, IChannelPublisher reader, int maxSeconds)
+        {
+            var sw = new Stopwatch();
+            sw.Start();
+            do
+            {
+                reader.ProcessChannel();
+            } while (reading() || sw.Elapsed.TotalSeconds >= maxSeconds);
+            sw.Stop();
         }
     }
 }

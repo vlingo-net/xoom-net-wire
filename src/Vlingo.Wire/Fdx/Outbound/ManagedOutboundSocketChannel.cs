@@ -59,12 +59,12 @@ namespace Vlingo.Wire.Fdx.Outbound
             }
             try
             {
-                _connectDone.WaitOne();
                 while (buffer.HasRemaining())
                 {
                     var bytes = new byte[buffer.Length];
                     buffer.Read(bytes, 0, bytes.Length); // TODO: can be done async
                     _channel.BeginSend(bytes, 0, bytes.Length, 0, SendCallback, _channel);
+                    _connectDone.WaitOne();
                 }
             }
             catch (Exception e)

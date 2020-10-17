@@ -20,7 +20,7 @@ namespace Vlingo.Wire.Multicast
     {
         private readonly RawMessage _availability;
         private readonly Socket _publisherChannel;
-        private bool _closed;
+        private readonly SocketChannelSelectionReader _socketChannelSelectionReader;
         private readonly IChannelReaderConsumer _consumer;
         private readonly EndPoint _groupAddress;
         private readonly ILogger _logger;
@@ -30,9 +30,8 @@ namespace Vlingo.Wire.Multicast
         private readonly IPEndPoint _publisherAddress;
         private readonly Socket _readChannel;
         private readonly ConcurrentBag<Socket> _clientReadChannels;
+        private bool _closed;
         private bool _disposed;
-
-        private readonly SocketChannelSelectionReader _socketChannelSelectionReader;
 
         public MulticastPublisherReader(
             string name,
@@ -132,6 +131,10 @@ namespace Vlingo.Wire.Multicast
             catch (SocketException e)
             {
                 _logger.Error($"Failed to read channel selector for: '{_name}'", e);
+            }
+            catch (Exception e)
+            {
+                _logger.Error($"Error occured for: '{_name}'", e);
             }
         }
 

@@ -130,15 +130,20 @@ namespace Vlingo.Wire.Multicast
                         // check for availability because otherwise surprisingly
                         // the call to _channel.ReceiveFromAsync is blocking and
                         // _channel.Blocking = false; is not taken into account
-                        
+
                         var state = new StateObject(_channel, bytes);
-                        _channel.BeginReceiveFrom(bytes, 0, bytes.Length, SocketFlags.None, ref _ipEndPoint, ReceiveCallback, state);
+                        _channel.BeginReceiveFrom(bytes, 0, bytes.Length, SocketFlags.None, ref _ipEndPoint,
+                            ReceiveCallback, state);
                     }
                 }
             }
             catch (SocketException e)
             {
                 _logger.Error($"Failed to read channel selector for: '{_name}'", e);
+            }
+            catch (Exception e)
+            {
+                _logger.Error($"Error occured for: '{_name}'", e);
             }
         }
 
@@ -170,11 +175,11 @@ namespace Vlingo.Wire.Multicast
         {
             try
             {
-                var state = ar.AsyncState as StateObject;  
+                var state = ar.AsyncState as StateObject;
                 var channel = state?.WorkSocket;
                 var buffer = state?.Buffer;
                 var bytesRead = channel?.EndReceiveFrom(ar, ref _ipEndPoint);
-                
+
                 if (bytesRead.HasValue && bytesRead > 0 && buffer != null)
                 {
                     _buffer.Clear();
@@ -185,12 +190,16 @@ namespace Vlingo.Wire.Multicast
 
                     _consumer!.Consume(_message);
                 }
-                
+
                 _synchronizeReading.Release();
             }
             catch (SocketException e)
             {
                 _logger.Error($"Failed to receive callback: '{_name}'", e);
+            }
+            catch (Exception e)
+            {
+                _logger.Error($"Error occured in callback: '{_name}'", e);
             }
         }
         

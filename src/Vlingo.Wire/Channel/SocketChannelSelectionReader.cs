@@ -64,7 +64,7 @@ namespace Vlingo.Wire.Channel
                 {
                     if (bytesRead > 0)
                     {
-                        _logger.Debug($"SocketChannelSelectionReader received and dispatching '{builder?.CurrentRawMessage().AsTextMessage()}'");
+                        _logger.Debug("SocketChannelSelectionReader received and dispatching");
                         Dispatcher.DispatchMessageFor(builder);
                     }
 

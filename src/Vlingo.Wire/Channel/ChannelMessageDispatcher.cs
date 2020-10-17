@@ -33,6 +33,7 @@ namespace Vlingo.Wire.Channel
                 try
                 {
                     var message = builder.CurrentRawMessage();
+                    Logger.Debug($"ChannelMessageDispatcher received and dispatching message '{message.AsTextMessage()}'");
                     Consumer?.Consume(message);
                 }
                 catch (Exception e)

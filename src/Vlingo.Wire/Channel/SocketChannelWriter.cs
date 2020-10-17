@@ -88,6 +88,8 @@ namespace Vlingo.Wire.Channel
             {
                 _channel = PreparedChannel();
             }
+            
+            _connectDone.WaitOne();
 
             var totalBytesWritten = 0;
             if (_channel == null)
@@ -97,7 +99,6 @@ namespace Vlingo.Wire.Channel
 
             try
             {
-                _connectDone.WaitOne();
                 while (buffer.HasRemaining())
                 {
                     var bytes = new byte[buffer.Length];
@@ -179,17 +180,14 @@ namespace Vlingo.Wire.Channel
                 channel?.EndConnect(ar);
                 _logger.Debug($"{this}: Socket successfully connected to remote endpoint {channel?.RemoteEndPoint}");
                 _connectDone.Set();
+                _isConnected.Set(true);
+                _connectAtOnce.Release();
             }
             catch (Exception e)
             {
                 ++_retries;
                 _logger.Error($"{this}: Failed to connect to channel because: {e.Message}", e);
                 Close();
-            }
-            finally
-            {
-                _isConnected.Set(true);
-                _connectAtOnce.Release();
             }
         }
     }

@@ -145,7 +145,7 @@ namespace Vlingo.Wire.Channel
                     Close();
                 }
 
-                if (_isConnected.CompareAndSet(false, true))
+                if (!_isConnected.Get())
                 {
                     _connectAtOnce.Wait();
                     var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -181,6 +181,7 @@ namespace Vlingo.Wire.Channel
             }
             finally
             {
+                _isConnected.Set(true);
                 _connectAtOnce.Release();
                 _connectDone.Set();
             }

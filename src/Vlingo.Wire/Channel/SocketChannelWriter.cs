@@ -172,6 +172,7 @@ namespace Vlingo.Wire.Channel
                 var channel = ar.AsyncState as Socket;
                 channel?.EndConnect(ar);
                 _logger.Debug($"{this}: Socket successfully connected to remote endpoint {channel?.RemoteEndPoint}");
+                _connectDone.Set();
             }
             catch (Exception e)
             {
@@ -183,7 +184,6 @@ namespace Vlingo.Wire.Channel
             {
                 _isConnected.Set(true);
                 _connectAtOnce.Release();
-                _connectDone.Set();
             }
         }
     }

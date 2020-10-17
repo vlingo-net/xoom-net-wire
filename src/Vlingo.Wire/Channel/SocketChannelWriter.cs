@@ -24,6 +24,7 @@ namespace Vlingo.Wire.Channel
         private readonly Address _address;
         private readonly ILogger _logger;
         private readonly SemaphoreSlim _connectAtOnce;
+        private readonly SemaphoreSlim _sendAtOnce;
         private readonly ManualResetEvent _connectDone;
         private int _retries;
         private readonly AtomicBoolean _isConnected;
@@ -36,6 +37,7 @@ namespace Vlingo.Wire.Channel
             _logger = logger;
             _channel = null;
             _connectAtOnce = new SemaphoreSlim(1);
+            _sendAtOnce = new SemaphoreSlim(1);
             _connectDone = new ManualResetEvent(false);
             _retries = 0;
             _logger.Debug($"Creating socket ID={_id}");
@@ -63,6 +65,8 @@ namespace Vlingo.Wire.Channel
                 {
                     _isConnected.Set(false);
                     _connectDone.Reset();
+                    _sendAtOnce.Release();
+                    _connectAtOnce.Release();
                 }
             }
 
@@ -71,6 +75,7 @@ namespace Vlingo.Wire.Channel
 
         public int Write(RawMessage message, MemoryStream buffer)
         {
+            _sendAtOnce.Wait();
             buffer.Clear();
             message.CopyBytesTo(buffer);
             buffer.Flip();
@@ -125,6 +130,10 @@ namespace Vlingo.Wire.Channel
             {
                 _logger.Error($"{this}: Failed to send to channel because: {e.Message}", e);
                 Close();
+            }
+            finally
+            {
+                _sendAtOnce.Release();
             }
         }
 

@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 using Vlingo.Actors;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
@@ -27,7 +26,6 @@ namespace Vlingo.Wire.Fdx.Inbound
         private readonly string _name;
         private readonly int _port;
         private bool _disposed;
-        private readonly ManualResetEvent _acceptDone;
 
         public SocketChannelInboundReader(int port, string name, int maxMessageSize, ILogger logger)
         {
@@ -37,7 +35,6 @@ namespace Vlingo.Wire.Fdx.Inbound
             _logger = logger;
             _channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _clientChannels = new List<Socket>();
-            _acceptDone = new ManualResetEvent(false);
         }
         
         //=========================================
@@ -61,7 +58,6 @@ namespace Vlingo.Wire.Fdx.Inbound
                     clientChannel.Close();
                 }
 
-                _acceptDone.Reset();
                 Dispose(true);
             }
             catch (Exception e)
@@ -124,8 +120,6 @@ namespace Vlingo.Wire.Fdx.Inbound
             if (disposing) 
             {
                 Close();
-                
-                _acceptDone.Dispose();
             }
       
             _disposed = true;
@@ -148,7 +142,6 @@ namespace Vlingo.Wire.Fdx.Inbound
             try
             {
                 _channel.BeginAccept(AcceptCallback, _channel);
-                _acceptDone.WaitOne();
             }
             catch (Exception e)
             {
@@ -177,17 +170,6 @@ namespace Vlingo.Wire.Fdx.Inbound
             catch(Exception e)
             {
                 _logger.Error($"{this}: Error occured on the underlying channel for {_name}", e);
-            }
-            finally
-            {
-                try
-                {
-                    _acceptDone.Set();
-                }
-                catch
-                {
-                    // nothing to do because already disposed
-                }
             }
         }
     }

@@ -71,6 +71,7 @@ namespace Vlingo.Wire.Channel
             catch (Exception e)
             {
                 _logger.Error($"Error while receiving data", e);
+                _syncRead.Release();
             }
         }
         

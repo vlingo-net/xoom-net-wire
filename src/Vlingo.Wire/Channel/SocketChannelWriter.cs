@@ -92,11 +92,11 @@ namespace Vlingo.Wire.Channel
 
             try
             {
+                _connectDone.WaitOne();
                 while (buffer.HasRemaining())
                 {
                     var bytes = new byte[buffer.Length];
                     buffer.Read(bytes, 0, bytes.Length);
-                    _connectDone.WaitOne();
                     totalBytesWritten += bytes.Length;
                     _channel?.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, SendCallback, _channel);
                 }
@@ -145,14 +145,11 @@ namespace Vlingo.Wire.Channel
                     Close();
                 }
 
-                if (!_isConnected.Get())
-                {
-                    _connectAtOnce.Wait();
-                    var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, channel);
-                    _retries = 0;
-                    return channel;
-                }
+                _connectAtOnce.Wait();
+                var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, channel);
+                _retries = 0;
+                return channel;
             }
             catch (Exception e)
             {

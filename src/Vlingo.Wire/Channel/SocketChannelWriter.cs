@@ -24,7 +24,6 @@ namespace Vlingo.Wire.Channel
         private readonly Address _address;
         private readonly ILogger _logger;
         private readonly SemaphoreSlim _connectAtOnce;
-        private readonly SemaphoreSlim _sendAtOnce;
         private readonly ManualResetEvent _connectDone;
         private int _retries;
         private readonly AtomicBoolean _isConnected;
@@ -37,7 +36,6 @@ namespace Vlingo.Wire.Channel
             _logger = logger;
             _channel = null;
             _connectAtOnce = new SemaphoreSlim(1);
-            _sendAtOnce = new SemaphoreSlim(1);
             _connectDone = new ManualResetEvent(false);
             _retries = 0;
             _logger.Debug($"Creating socket ID={_id}");
@@ -65,7 +63,6 @@ namespace Vlingo.Wire.Channel
                 {
                     _isConnected.Set(false);
                     _connectDone.Reset();
-                    _sendAtOnce.Release();
                     _connectAtOnce.Release();
                 }
             }
@@ -75,7 +72,6 @@ namespace Vlingo.Wire.Channel
 
         public int Write(RawMessage message, MemoryStream buffer)
         {
-            _sendAtOnce.Wait();
             buffer.Clear();
             message.CopyBytesTo(buffer);
             buffer.Flip();
@@ -86,16 +82,16 @@ namespace Vlingo.Wire.Channel
         {
             while (_channel == null && _retries < DefaultRetries)
             {
-                _channel = PreparedChannel();
+                PreparedChannel();
             }
-            
-            _connectDone.WaitOne();
 
             var totalBytesWritten = 0;
             if (_channel == null)
             {
                 return totalBytesWritten;
             }
+            
+            _connectDone.WaitOne();
 
             try
             {
@@ -132,15 +128,11 @@ namespace Vlingo.Wire.Channel
                 _logger.Error($"{this}: Failed to send to channel because: {e.Message}", e);
                 Close();
             }
-            finally
-            {
-                _sendAtOnce.Release();
-            }
         }
 
         public override string ToString() => $"SocketChannelWriter[Id={_id}, address={_address}, channel={_channel}, IsClosed={IsClosed}, Retrying={_retries}, IsBroken={IsBroken}]";
 
-        private Socket? PreparedChannel()
+        private void PreparedChannel()
         {
             try
             {
@@ -149,17 +141,15 @@ namespace Vlingo.Wire.Channel
                     if (_channel.Poll(10000, SelectMode.SelectWrite))
                     {
                         _retries = 0;
-                        return _channel;
                     }
                     
                     Close();
                 }
 
                 _connectAtOnce.Wait();
-                var channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, channel);
+                _channel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                _channel.BeginConnect(_address.HostName, _address.Port, ConnectCallback, _channel);
                 _retries = 0;
-                return channel;
             }
             catch (Exception e)
             {
@@ -169,7 +159,6 @@ namespace Vlingo.Wire.Channel
             }
 
             ++_retries;
-            return null;
         }
 
         private void ConnectCallback(IAsyncResult ar)

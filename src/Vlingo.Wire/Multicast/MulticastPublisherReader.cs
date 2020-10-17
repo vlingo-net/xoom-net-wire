@@ -7,11 +7,9 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 using Vlingo.Actors;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
@@ -31,7 +29,7 @@ namespace Vlingo.Wire.Multicast
         private readonly int _maxMessageSize;
         private readonly IPEndPoint _publisherAddress;
         private readonly Socket _readChannel;
-        private readonly List<Socket> _clientReadChannels;
+        private readonly ConcurrentBag<Socket> _clientReadChannels;
         private bool _disposed;
 
         private readonly SocketChannelSelectionReader _socketChannelSelectionReader;
@@ -66,7 +64,7 @@ namespace Vlingo.Wire.Multicast
             
             _publisherAddress = (IPEndPoint)_readChannel.LocalEndPoint;
             
-            _clientReadChannels = new List<Socket>();
+            _clientReadChannels = new ConcurrentBag<Socket>();
             _socketChannelSelectionReader = new SocketChannelSelectionReader(this, logger);
             
             _availability = AvailabilityMessage();

@@ -96,6 +96,8 @@ namespace Vlingo.Wire.Multicast
                 _messageQueue.Clear();
 #endif
                 _publisherChannel.Close();
+                
+                _logger.Debug("Closed multicast publisher reader");
             }
             catch (Exception e)
             {
@@ -159,6 +161,7 @@ namespace Vlingo.Wire.Multicast
                 throw new ArgumentException($"The message length is greater than {_maxMessageSize}");
             }
             
+            _logger.Debug($"Multicast publisher reader enqueuing message {message.AsTextMessage()}");
             _messageQueue.Enqueue(message);
         }
         
@@ -209,6 +212,7 @@ namespace Vlingo.Wire.Multicast
                 {
                     if (clientReadChannel.Available > 0)
                     {
+                        _logger.Debug("Multicast publisher reader reading on client channel");
                         _socketChannelSelectionReader.Read(clientReadChannel, new RawMessageBuilder(_maxMessageSize));
                     }
                 }
@@ -318,7 +322,8 @@ namespace Vlingo.Wire.Multicast
             
                 if (sent > 0 && _messageQueue.Count > 0)
                 {
-                    _messageQueue.TryDequeue(out _);
+                    _messageQueue.TryDequeue(out var message);
+                    _logger.Debug($"Multicast publisher reader sent and dequeuing the message '{message?.AsTextMessage()}'");
                 }
             }
             catch (Exception e)

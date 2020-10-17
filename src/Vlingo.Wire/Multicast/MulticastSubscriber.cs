@@ -90,6 +90,7 @@ namespace Vlingo.Wire.Multicast
 
             try
             {
+                _logger.Debug($"Closing multicast subscriber: '{_name}'");
                 _channel.Close();
                 Dispose(true);
             }
@@ -130,7 +131,7 @@ namespace Vlingo.Wire.Multicast
                         // check for availability because otherwise surprisingly
                         // the call to _channel.ReceiveFromAsync is blocking and
                         // _channel.Blocking = false; is not taken into account
-
+                        _logger.Debug($"MulticastSubscriber receiving bytes [{bytes.Length}]");
                         var state = new StateObject(_channel, bytes);
                         _channel.BeginReceiveFrom(bytes, 0, bytes.Length, SocketFlags.None, ref _ipEndPoint,
                             ReceiveCallback, state);
@@ -188,6 +189,7 @@ namespace Vlingo.Wire.Multicast
                     _buffer.Flip();
                     _message.From(_buffer);
 
+                    _logger.Debug($"MulticastSubscriber received message '{_message.AsTextMessage()}'");
                     _consumer!.Consume(_message);
                 }
 

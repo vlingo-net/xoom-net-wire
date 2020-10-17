@@ -100,6 +100,7 @@ namespace Vlingo.Wire.Channel
                     var bytes = new byte[buffer.Length];
                     buffer.Read(bytes, 0, bytes.Length);
                     totalBytesWritten += bytes.Length;
+                    _logger.Debug($"{this}: Sending bytes [{bytes.Length}]");
                     _channel?.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, SendCallback, _channel);
                 }
             }
@@ -122,6 +123,7 @@ namespace Vlingo.Wire.Channel
             {
                 var channel = ar.AsyncState as Socket;
                 channel?.EndSend(ar);
+                _logger.Debug($"{this}: Sent successfully");
             }
             catch (Exception e)
             {

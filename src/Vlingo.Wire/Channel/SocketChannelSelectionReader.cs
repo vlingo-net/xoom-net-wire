@@ -31,6 +31,7 @@ namespace Vlingo.Wire.Channel
             var buffer = builder.WorkBuffer();
             var bytes = new byte[buffer.Length];
             var state = new StateObject(channel, buffer, bytes, builder);
+            _logger.Debug($"SocketChannelSelectionReader receiving [{buffer.Length}]");
             channel.BeginReceive(bytes, 0, bytes.Length, SocketFlags.None, ReceiveCallback, state);
             Dispatcher.DispatchMessageFor(builder);
         }
@@ -56,12 +57,14 @@ namespace Vlingo.Wire.Channel
                 var bytesRemain = client?.Available;
                 if (bytesRemain > 0 && bytes != null)
                 {
+                    _logger.Debug($"SocketChannelSelectionReader receiving more [{bytes.Length}]");
                     client?.BeginReceive(bytes, 0, bytes.Length, SocketFlags.None, ReceiveCallback, state);
                 }
                 else
                 {
                     if (bytesRead > 0)
                     {
+                        _logger.Debug("SocketChannelSelectionReader received and dispatching");
                         Dispatcher.DispatchMessageFor(builder);
                     }
 

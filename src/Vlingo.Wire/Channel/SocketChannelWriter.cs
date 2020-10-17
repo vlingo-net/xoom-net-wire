@@ -104,7 +104,6 @@ namespace Vlingo.Wire.Channel
             catch (Exception e)
             {
                 _logger.Error($"{this}: Write to channel failed because: {e.Message}", e);
-                _connectDone.WaitOne();
                 Close();
             }
 

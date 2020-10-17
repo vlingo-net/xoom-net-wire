@@ -67,7 +67,7 @@ namespace Vlingo.Wire.Message
                 var headerId = binaryReader.ReadInt16();
                 if (headerId != HeaderId)
                 {
-                    throw new ArgumentException($"Invalid raw message header: {headerId}");
+                    throw new ArgumentException($"Invalid raw message header: {headerId}. Expected: {HeaderId}");
                 }
 
                 var nodeId = binaryReader.ReadInt16();

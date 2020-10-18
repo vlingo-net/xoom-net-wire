@@ -82,9 +82,9 @@ namespace Vlingo.Wire.Tests.Multicast
                     AddressType.Main),
                 ConsoleLogger.TestInstance());
 
-            socketWriter.Write(RawMessage.From(1, 1, "test-response"), new MemoryStream());
+            Func<int> write = () => socketWriter.Write(RawMessage.From(1, 1, "test-response"), new MemoryStream());
             
-            ProbeUntilConsumed(() => publisherAccess.ReadFromNow<int>("count") < 1, publisher, 10);
+            ProbeUntilConsumed(() => publisherAccess.ReadFromNow<int>("count") < 1, publisher, write, 10);
             
             Assert.Equal(1, publisherAccess.ReadFromExpecting("count", 1, 10_000));
         }
@@ -124,15 +124,20 @@ namespace Vlingo.Wire.Tests.Multicast
                     AddressType.Main),
                 ConsoleLogger.TestInstance());
 
-            client1.Write(RawMessage.From(1, 1, "test-response1"), new MemoryStream());
-            client2.Write(RawMessage.From(1, 1, "test-response2"), new MemoryStream());
-            client3.Write(RawMessage.From(1, 1, "test-response3"), new MemoryStream());
-            client1.Write(RawMessage.From(1, 1, "test-response1"), new MemoryStream());
+            Func<int> write1 = () => client1.Write(RawMessage.From(1, 1, "test-response1"), new MemoryStream());
+            Func<int> write2 = () => client2.Write(RawMessage.From(1, 1, "test-response2"), new MemoryStream());
+            Func<int> write3 = () => client3.Write(RawMessage.From(1, 1, "test-response3"), new MemoryStream());
+            Func<int> write4 = () => client1.Write(RawMessage.From(1, 1, "test-response1"), new MemoryStream());
+
+            Func<int> writes = () =>
+            {
+                write1();
+                write2();
+                write3();
+                return write4();
+            };
             
-            publisher.ProbeChannel();
-            publisher.ProbeChannel();
-            publisher.ProbeChannel();
-            publisher.ProbeChannel();
+            ProbeUntilConsumed(() => publisherAccess.ReadFromNow<int>("count") < 1, publisher, writes, 10);
 
             Assert.Equal(4, publisherAccess.ReadFrom<int>("count"));
         }
@@ -143,12 +148,13 @@ namespace Vlingo.Wire.Tests.Multicast
             Console.SetOut(converter);
         }
         
-        private void ProbeUntilConsumed(Func<bool> reading, IChannelPublisher reader, int maxSeconds)
+        private void ProbeUntilConsumed(Func<bool> reading, IChannelPublisher reader, Func<int> write, int maxSeconds)
         {
             var sw = new Stopwatch();
             sw.Start();
             do
             {
+                write();   
                 reader.ProcessChannel();
             } while (reading() || sw.Elapsed.TotalSeconds >= maxSeconds);
             sw.Stop();

@@ -40,18 +40,16 @@ namespace Vlingo.Wire.Tests.Channel
             
             var message1 = TestMessage + 1;
             var rawMessage1 = RawMessage.From(0, 0, message1);
-            _channelWriter.Write(rawMessage1, buffer);
-            
-            ProbeUntilConsumed(() => accessSafely.ReadFromNow<int>("count") < 1, _channelReader, 10);
+
+            ProbeUntilConsumed(() => accessSafely.ReadFromNow<int>("count") < 1, _channelReader, () => _channelWriter.Write(rawMessage1, buffer), 10);
             
             Assert.Equal(1, accessSafely.ReadFromNow<int>("count"));
             Assert.Equal(message1, consumer.Messages.First());
             
             var message2 = TestMessage + 2;
             var rawMessage2 = RawMessage.From(0, 0, message2);
-            _channelWriter.Write(rawMessage2, buffer);
 
-            ProbeUntilConsumed(() => accessSafely.ReadFromNow<int>("count") < 2, _channelReader, 10);
+            ProbeUntilConsumed(() => accessSafely.ReadFromNow<int>("count") < 2, _channelReader, () => _channelWriter.Write(rawMessage2, buffer), 10);
             
             Assert.Equal(2, accessSafely.ReadFromNow<int>("count"));
             Assert.Equal(message2, consumer.Messages.Last());
@@ -75,12 +73,13 @@ namespace Vlingo.Wire.Tests.Channel
             _channelReader.Close();
         }
         
-        private void ProbeUntilConsumed(Func<bool> reading, IChannelReader reader, int maxSeconds)
+        private void ProbeUntilConsumed(Func<bool> reading, IChannelReader reader, Func<int> write, int maxSeconds)
         {
             var sw = new Stopwatch();
             sw.Start();
             do
             {
+                write();
                 reader.ProbeChannel();
             } while (reading() || sw.Elapsed.TotalSeconds >= maxSeconds);
             sw.Stop();

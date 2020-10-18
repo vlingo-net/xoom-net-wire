@@ -50,6 +50,7 @@ namespace Vlingo.Wire.Channel
 
                 if (bytesRead.HasValue && bytesRead.Value > 0 && state != null && bytes != null)
                 {
+                    _logger.Debug($"SocketChannelSelectionReader Writing to buffer: bytes length [{bytes.Length}], offset [{state.TotalRead}], bytes read [{bytesRead.Value}]");
                     buffer?.Write(bytes, state.TotalRead, bytesRead.Value);
                     state.TotalRead += bytesRead.Value;
                 }

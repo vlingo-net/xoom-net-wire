@@ -67,6 +67,8 @@ namespace Vlingo.Wire.Multicast
             _socketChannelSelectionReader = new SocketChannelSelectionReader(this, logger);
             
             _availability = AvailabilityMessage();
+            
+            _logger.Debug($"Creating MulticastPublisherReader with read channel on {_readChannel.LocalEndPoint} on port {incomingSocketPort}");
         }
         
         //====================================

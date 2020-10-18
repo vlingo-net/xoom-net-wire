@@ -63,7 +63,11 @@ namespace Vlingo.Wire.Fdx.Outbound
             {
                 while (buffer.HasRemaining())
                 {
-                    _connectDone.WaitOne();
+                    if (!_connectDone.WaitOne(TimeSpan.FromSeconds(5)))
+                    {
+                        throw new TimeoutException("ManagedOutboundSocketChannel timeout of 5s for connection achieved");
+                    }
+                    
                     var bytes = new byte[buffer.Length];
                     buffer.Read(bytes, 0, bytes.Length); // TODO: can be done async
                     _channel.BeginSend(bytes, 0, bytes.Length, 0, SendCallback, _channel);

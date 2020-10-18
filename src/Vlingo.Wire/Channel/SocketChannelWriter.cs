@@ -90,8 +90,11 @@ namespace Vlingo.Wire.Channel
             {
                 return totalBytesWritten;
             }
-            
-            _connectDone.WaitOne();
+
+            if (!_connectDone.WaitOne(TimeSpan.FromSeconds(5)))
+            {
+                throw new TimeoutException("SocketChannelWriter timeout of 5s for connection achieved");
+            }
 
             try
             {

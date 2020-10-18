@@ -24,7 +24,6 @@ namespace Vlingo.Wire.Channel
         private readonly Address _address;
         private readonly ILogger _logger;
         private readonly SemaphoreSlim _connectAtOnce;
-        private readonly ManualResetEvent _connectDone;
         private int _retries;
         private readonly AtomicBoolean _isConnected;
 
@@ -36,7 +35,6 @@ namespace Vlingo.Wire.Channel
             _logger = logger;
             _channel = null;
             _connectAtOnce = new SemaphoreSlim(1);
-            _connectDone = new ManualResetEvent(false);
             _retries = 0;
             _logger.Debug($"Creating socket ID={_id}");
         }
@@ -62,7 +60,6 @@ namespace Vlingo.Wire.Channel
                 finally
                 {
                     _isConnected.Set(false);
-                    _connectDone.Reset();
                     _connectAtOnce.Release();
                 }
             }
@@ -86,14 +83,9 @@ namespace Vlingo.Wire.Channel
             }
 
             var totalBytesWritten = 0;
-            if (_channel == null)
+            if (_channel == null || !_isConnected.Get())
             {
                 return totalBytesWritten;
-            }
-
-            if (!_connectDone.WaitOne(TimeSpan.FromSeconds(5)))
-            {
-                throw new TimeoutException("SocketChannelWriter timeout of 5s for connection achieved");
             }
 
             try
@@ -173,7 +165,6 @@ namespace Vlingo.Wire.Channel
                 var channel = ar.AsyncState as Socket;
                 channel?.EndConnect(ar);
                 _logger.Debug($"{this}: Socket successfully connected to remote endpoint {channel?.RemoteEndPoint}");
-                _connectDone.Set();
                 _isConnected.Set(true);
                 _connectAtOnce.Release();
             }

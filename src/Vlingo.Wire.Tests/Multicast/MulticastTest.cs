@@ -136,7 +136,7 @@ namespace Vlingo.Wire.Tests.Multicast
                 return write1();
             };
             
-            ProbeUntilConsumed(() => publisherAccess.ReadFromNow<int>("count") < 1, publisher, writes, 10);
+            ProbeUntilConsumed(() => publisherAccess.ReadFromNow<int>("count") < 4, publisher, writes, 10);
 
             Assert.Equal(4, publisherAccess.ReadFrom<int>("count"));
         }

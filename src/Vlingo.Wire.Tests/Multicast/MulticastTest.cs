@@ -127,14 +127,13 @@ namespace Vlingo.Wire.Tests.Multicast
             Func<int> write1 = () => client1.Write(RawMessage.From(1, 1, "test-response1"), new MemoryStream());
             Func<int> write2 = () => client2.Write(RawMessage.From(1, 1, "test-response2"), new MemoryStream());
             Func<int> write3 = () => client3.Write(RawMessage.From(1, 1, "test-response3"), new MemoryStream());
-            Func<int> write4 = () => client1.Write(RawMessage.From(1, 1, "test-response1"), new MemoryStream());
 
             Func<int> writes = () =>
             {
                 write1();
                 write2();
                 write3();
-                return write4();
+                return write1();
             };
             
             ProbeUntilConsumed(() => publisherAccess.ReadFromNow<int>("count") < 1, publisher, writes, 10);

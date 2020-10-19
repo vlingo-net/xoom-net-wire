@@ -43,7 +43,7 @@ namespace Vlingo.Wire.Message
         
         public Address ToAddress(AddressType type) => Address.From(Host.Of(_host), _port, type);
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj == null || obj.GetType() != typeof(PublisherAvailability))
             {

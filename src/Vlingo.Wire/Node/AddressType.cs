@@ -35,7 +35,7 @@ namespace Vlingo.Wire.Node
         
         public bool IsNone { get; }
         
-        public int CompareTo(AddressType other)
+        public int CompareTo(AddressType? other)
         {
             if (other == null || other.GetType() != typeof(AddressType))
             {
@@ -44,7 +44,7 @@ namespace Vlingo.Wire.Node
             return string.Compare(Field, other.Field, StringComparison.Ordinal);
         }
         
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj == null || obj.GetType() != typeof(AddressType))
             {

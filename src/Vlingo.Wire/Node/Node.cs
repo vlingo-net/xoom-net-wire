@@ -51,7 +51,7 @@ namespace Vlingo.Wire.Node
 
         public bool GreaterThan(Node other) => Id.GreaterThan(other.Id);
         
-        public int CompareTo(Node other)
+        public int CompareTo(Node? other)
         {
             if (other == null || other.GetType() != typeof(Node))
             {
@@ -85,7 +85,7 @@ namespace Vlingo.Wire.Node
             return 0;
         }
         
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj == null || obj.GetType() != typeof(Node))
             {

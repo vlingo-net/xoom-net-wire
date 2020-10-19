@@ -8,10 +8,8 @@
 using System;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Vlingo.Actors;
-using Vlingo.Common;
 using Vlingo.Common.Pool;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
@@ -235,12 +233,12 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             try
             {
                 // Retrieve the socket from the state object.
-                var client = (TcpClient)ar.AsyncState;
+                var client = ar.AsyncState as TcpClient;
 
                 // Complete the connection.
-                client.EndConnect(ar);
+                client?.EndConnect(ar);
 
-                _logger.Info($"Socket connected to {client.Client.RemoteEndPoint}");
+                _logger.Info($"Socket connected to {client?.Client.RemoteEndPoint}");
 
                 // Signal that the connection has been made.
                 _connectDone.Set();
@@ -255,9 +253,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         {
             try
             {
-                var sslStream = (SslStream)ar.AsyncState;
+                var sslStream = ar.AsyncState as SslStream;
 
-                sslStream.EndAuthenticateAsClient(ar);
+                sslStream?.EndAuthenticateAsClient(ar);
 
                 _logger.Info($"Authenticate succeeded");
                 DisplaySecurityLevel(sslStream);
@@ -278,9 +276,9 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         {
             try
             {
-                var sslStream = (SslStream)ar.AsyncState;
+                var sslStream = ar.AsyncState as SslStream;
 
-                sslStream.EndWrite(ar);
+                sslStream?.EndWrite(ar);
 
                 _sendDone.Set();
             }
@@ -294,37 +292,37 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         {
             // Retrieve the state object and the client socket   
             // from the asynchronous state object.  
-            var state = (StateObject)ar.AsyncState;
-            var sslStream = state.SslStream;
-            var pooledBuffer = state.PooledByteBuffer;
-            var readBuffer = state.Buffer;
+            var state = ar.AsyncState as StateObject;
+            var sslStream = state?.SslStream;
+            var pooledBuffer = state?.PooledByteBuffer;
+            var readBuffer = state?.Buffer;
 
             try
             {
                 // Read data from the remote device.  
-                int bytesRead = sslStream.EndRead(ar);
+                var bytesRead = sslStream?.EndRead(ar);
 
-                if (bytesRead > 0)
+                if (bytesRead!= null && bytesRead > 0 && readBuffer != null)
                 {
                     // There might be more data, so store the data received so far.  
-                    pooledBuffer.Put(readBuffer, 0, bytesRead);
+                    pooledBuffer?.Put(readBuffer, 0, bytesRead.Value);
                 }
                 
-                if (_tcpClient!.Available > 0)
+                if (_tcpClient!.Available > 0 && readBuffer != null)
                 {
                     // Get the rest of the data.  
-                    sslStream.BeginRead(readBuffer,0,readBuffer.Length, ReceiveCallback, state);
+                    sslStream?.BeginRead(readBuffer,0,readBuffer.Length, ReceiveCallback, state);
                 }
                 else
                 {
                     // All the data has arrived; put it in response.  
-                    if (pooledBuffer.Limit() >= 1)
+                    if (pooledBuffer?.Limit() >= 1)
                     {
                         _consumer.Consume(pooledBuffer.Flip());
                     }
                     else
                     {
-                        pooledBuffer.Release();
+                        pooledBuffer?.Release();
                     }
 
                     // Signal that all bytes have been received.  
@@ -333,51 +331,51 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             }
             catch (Exception e)
             {
-                pooledBuffer.Release();
+                pooledBuffer?.Release();
                 _logger.Error("Error while receiving bytes", e);
                 throw;
             }
         }
         
-        private void DisplaySecurityLevel(SslStream stream)
+        private void DisplaySecurityLevel(SslStream? stream)
         {
-            _logger.Debug($"Cipher: {stream.CipherAlgorithm} strength {stream.CipherStrength}");
-            _logger.Debug($"Hash: {stream.HashAlgorithm} strength {stream.HashStrength}");
-            _logger.Debug($"Key exchange: {stream.KeyExchangeAlgorithm} strength {stream.KeyExchangeStrength}");
-            _logger.Debug($"Protocol: {stream.SslProtocol}");
+            _logger.Debug($"Cipher: {stream?.CipherAlgorithm} strength {stream?.CipherStrength}");
+            _logger.Debug($"Hash: {stream?.HashAlgorithm} strength {stream?.HashStrength}");
+            _logger.Debug($"Key exchange: {stream?.KeyExchangeAlgorithm} strength {stream?.KeyExchangeStrength}");
+            _logger.Debug($"Protocol: {stream?.SslProtocol}");
         }
         
-        private void DisplaySecurityServices(SslStream stream)
+        private void DisplaySecurityServices(SslStream? stream)
         {
-            _logger.Debug($"Is authenticated: {stream.IsAuthenticated} as server? {stream.IsServer}");
-            _logger.Debug($"IsSigned: {stream.IsSigned}");
-            _logger.Debug($"Is Encrypted: {stream.IsEncrypted}");
+            _logger.Debug($"Is authenticated: {stream?.IsAuthenticated} as server? {stream?.IsServer}");
+            _logger.Debug($"IsSigned: {stream?.IsSigned}");
+            _logger.Debug($"Is Encrypted: {stream?.IsEncrypted}");
         }
         
-        private void DisplayStreamProperties(SslStream stream)
+        private void DisplayStreamProperties(SslStream? stream)
         {
-            _logger.Debug($"Can read: {stream.CanRead}, write {stream.CanWrite}");
-            _logger.Debug($"Can timeout: {stream.CanTimeout}");
+            _logger.Debug($"Can read: {stream?.CanRead}, write {stream?.CanWrite}");
+            _logger.Debug($"Can timeout: {stream?.CanTimeout}");
         }
         
-        private void DisplayCertificateInformation(SslStream stream)
+        private void DisplayCertificateInformation(SslStream? stream)
         {
-            _logger.Debug($"Certificate revocation list checked: {stream.CheckCertRevocationStatus}");
+            _logger.Debug($"Certificate revocation list checked: {stream?.CheckCertRevocationStatus}");
                 
-            X509Certificate localCertificate = stream.LocalCertificate;
-            if (stream.LocalCertificate != null)
+            var localCertificate = stream?.LocalCertificate;
+            if (stream?.LocalCertificate != null)
             {
                 _logger.Debug(
-                    $"Local cert was issued to {localCertificate.Subject} and is valid from {localCertificate.GetEffectiveDateString()} until {localCertificate.GetExpirationDateString()}.");
+                    $"Local cert was issued to {localCertificate?.Subject} and is valid from {localCertificate?.GetEffectiveDateString()} until {localCertificate?.GetExpirationDateString()}.");
             }
             else
             {
                 _logger.Debug("Local certificate is null.");
             }
             // Display the properties of the client's certificate.
-            X509Certificate remoteCertificate = stream.RemoteCertificate;
+            var remoteCertificate = stream?.RemoteCertificate;
             
-            if (stream.RemoteCertificate != null)
+            if (stream?.RemoteCertificate != null)
             {
                 _logger.Debug($"Remote cert was issued to {remoteCertificate?.Subject} and is valid from {remoteCertificate?.GetEffectiveDateString()} until {remoteCertificate?.GetExpirationDateString()}.");
             }

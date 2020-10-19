@@ -27,7 +27,7 @@ namespace Vlingo.Wire.Node
 
         public bool SameAs(string name) => Value == name;
 
-        public int CompareTo(Name other)
+        public int CompareTo(Name? other)
         {
             if (other == null || other.GetType() != typeof(Name))
             {
@@ -37,7 +37,7 @@ namespace Vlingo.Wire.Node
             return string.Compare(Value, other.Value, StringComparison.Ordinal);
         }
         
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj == null || obj.GetType() != typeof(Name))
             {

@@ -269,7 +269,7 @@ namespace Vlingo.Wire.Message
 
         public IConsumerByteBuffer PutDouble(int index, double value) => PutValueIndex(index, Convert.ToByte(value));
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj == null || obj.GetType() != typeof(BasicConsumerByteBuffer))
             {

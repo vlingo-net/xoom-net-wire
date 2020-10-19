@@ -52,7 +52,7 @@ namespace Vlingo.Wire.Node
 
         public AddressType Type => _type;
 
-        public int CompareTo(Address other)
+        public int CompareTo(Address? other)
         {
             if (other == null || other.GetType() != typeof(Address))
             {
@@ -62,7 +62,7 @@ namespace Vlingo.Wire.Node
             return _host.CompareTo(other._host);
         }
         
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj == null || obj.GetType() != typeof(Address))
             {

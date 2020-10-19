@@ -93,7 +93,7 @@ namespace Vlingo.Wire.Message
             }
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj == null || obj.GetType() != typeof(RawMessageHeader))
             {

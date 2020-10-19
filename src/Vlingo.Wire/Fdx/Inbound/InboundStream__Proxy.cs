@@ -1,3 +1,10 @@
+// Copyright © 2012-2020 VLINGO LABS. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the
+// Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain
+// one at https://mozilla.org/MPL/2.0/.
+
 using System;
 using Vlingo.Actors;
 
@@ -9,32 +16,32 @@ namespace Vlingo.Wire.Fdx.Inbound
         private const string StartRepresentation1 = "Start()";
         private const string StopRepresentation2 = "Stop()";
 
-        private readonly Actor actor;
-        private readonly IMailbox mailbox;
+        private readonly Actor _actor;
+        private readonly IMailbox _mailbox;
 
         public InboundStream__Proxy(Actor actor, IMailbox mailbox)
         {
-            this.actor = actor;
-            this.mailbox = mailbox;
+            _actor = actor;
+            _mailbox = mailbox;
         }
         
         public void Conclude()
         {
-            if (!actor.IsStopped)
+            if (!_actor.IsStopped)
             {
                 Action<IStoppable> consumer = x => x.Conclude();
-                if (mailbox.IsPreallocated)
+                if (_mailbox.IsPreallocated)
                 {
-                    mailbox.Send(actor, consumer, null, RepresentationConclude0);
+                    _mailbox.Send(_actor, consumer, null, RepresentationConclude0);
                 }
                 else
                 {
-                    mailbox.Send(new LocalMessage<IStoppable>(actor, consumer, RepresentationConclude0));
+                    _mailbox.Send(new LocalMessage<IStoppable>(_actor, consumer, RepresentationConclude0));
                 }
             }
             else
             {
-                actor.DeadLetters.FailedDelivery(new DeadLetter(actor, RepresentationConclude0));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, RepresentationConclude0));
             }
         }
 
@@ -42,41 +49,41 @@ namespace Vlingo.Wire.Fdx.Inbound
 
         public void Start()
         {
-            if (!actor.IsStopped)
+            if (!_actor.IsStopped)
             {
                 Action<IInboundStream> consumer = x => x.Start();
-                if (mailbox.IsPreallocated)
+                if (_mailbox.IsPreallocated)
                 {
-                    mailbox.Send(actor, consumer, null, StartRepresentation1);
+                    _mailbox.Send(_actor, consumer, null, StartRepresentation1);
                 }
                 else
                 {
-                    mailbox.Send(new LocalMessage<IInboundStream>(actor, consumer, StartRepresentation1));
+                    _mailbox.Send(new LocalMessage<IInboundStream>(_actor, consumer, StartRepresentation1));
                 }
             }
             else
             {
-                actor.DeadLetters.FailedDelivery(new DeadLetter(actor, StartRepresentation1));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, StartRepresentation1));
             }
         }
 
         public void Stop()
         {
-            if (!actor.IsStopped)
+            if (!_actor.IsStopped)
             {
                 Action<IInboundStream> consumer = x => x.Stop();
-                if (mailbox.IsPreallocated)
+                if (_mailbox.IsPreallocated)
                 {
-                    mailbox.Send(actor, consumer, null, StopRepresentation2);
+                    _mailbox.Send(_actor, consumer, null, StopRepresentation2);
                 }
                 else
                 {
-                    mailbox.Send(new LocalMessage<IInboundStream>(actor, consumer, StopRepresentation2));
+                    _mailbox.Send(new LocalMessage<IInboundStream>(_actor, consumer, StopRepresentation2));
                 }
             }
             else
             {
-                actor.DeadLetters.FailedDelivery(new DeadLetter(actor, StopRepresentation2));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, StopRepresentation2));
             }
         }
     }

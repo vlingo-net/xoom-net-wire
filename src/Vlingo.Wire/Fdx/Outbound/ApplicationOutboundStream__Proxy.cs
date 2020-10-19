@@ -44,7 +44,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             }
             else
             {
-                _actor.DeadLetters.FailedDelivery(new DeadLetter(_actor, RepresentationConclude0));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, RepresentationConclude0));
             }
         }
         
@@ -64,7 +64,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             }
             else
             {
-                _actor.DeadLetters.FailedDelivery(new DeadLetter(_actor, RepresentationStop1));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, RepresentationStop1));
             }
         }
 
@@ -86,7 +86,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             }
             else
             {
-                _actor.DeadLetters.FailedDelivery(new DeadLetter(_actor, RepresentationBroadcast2));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, RepresentationBroadcast2));
             }
         }
 
@@ -106,7 +106,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             }
             else
             {
-                _actor.DeadLetters.FailedDelivery(new DeadLetter(_actor, RepresentationSendTo3));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, RepresentationSendTo3));
             }
         }
     }

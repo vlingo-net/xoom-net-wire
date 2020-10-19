@@ -1,3 +1,10 @@
+// Copyright © 2012-2020 VLINGO LABS. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the
+// Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain
+// one at https://mozilla.org/MPL/2.0/.
+
 using System;
 using Vlingo.Actors;
 using Vlingo.Wire.Message;
@@ -8,32 +15,32 @@ namespace Vlingo.Wire.Channel
     {
         private const string ConsumeRepresentation1 = "Consume(RawMessage)";
 
-        private readonly Actor actor;
-        private readonly IMailbox mailbox;
+        private readonly Actor _actor;
+        private readonly IMailbox _mailbox;
 
         public ChannelReaderConsumer__Proxy(Actor actor, IMailbox mailbox)
         {
-            this.actor = actor;
-            this.mailbox = mailbox;
+            _actor = actor;
+            _mailbox = mailbox;
         }
 
         public void Consume(RawMessage message)
         {
-            if (!actor.IsStopped)
+            if (!_actor.IsStopped)
             {
                 Action<IChannelReaderConsumer> consumer = x => x.Consume(message);
-                if (mailbox.IsPreallocated)
+                if (_mailbox.IsPreallocated)
                 {
-                    mailbox.Send(actor, consumer, null, ConsumeRepresentation1);
+                    _mailbox.Send(_actor, consumer, null, ConsumeRepresentation1);
                 }
                 else
                 {
-                    mailbox.Send(new LocalMessage<IChannelReaderConsumer>(actor, consumer, ConsumeRepresentation1));
+                    _mailbox.Send(new LocalMessage<IChannelReaderConsumer>(_actor, consumer, ConsumeRepresentation1));
                 }
             }
             else
             {
-                actor.DeadLetters.FailedDelivery(new DeadLetter(actor, ConsumeRepresentation1));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, ConsumeRepresentation1));
             }
         }
     }

@@ -1,12 +1,17 @@
+// Copyright © 2012-2020 VLINGO LABS. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the
+// Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain
+// one at https://mozilla.org/MPL/2.0/.
+
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Vlingo.Actors;
 using Vlingo.Common;
 
 namespace Vlingo.Wire.Fdx.Bidirectional
 {
-    public class ServerRequestResponseChannel__Proxy : Vlingo.Wire.Fdx.Bidirectional.IServerRequestResponseChannel
+    public class ServerRequestResponseChannel__Proxy : IServerRequestResponseChannel
     {
         private const string StartRepresentation1 =
             "Start(Vlingo.Actors.Stage, Vlingo.Wire.Channel.IRequestChannelConsumerProvider, int, string, int, int, int, long, long)";
@@ -19,69 +24,69 @@ namespace Vlingo.Wire.Fdx.Bidirectional
         private const string ConcludeRepresentation5 = "Conclude()";
         private const string StopRepresentation6 = "Stop()";
 
-        private readonly Actor actor;
-        private readonly IMailbox mailbox;
+        private readonly Actor _actor;
+        private readonly IMailbox _mailbox;
 
         public ServerRequestResponseChannel__Proxy(Actor actor, IMailbox mailbox)
         {
-            this.actor = actor;
-            this.mailbox = mailbox;
+            _actor = actor;
+            _mailbox = mailbox;
         }
 
         public bool IsStopped => false;
 
-        public Vlingo.Wire.Fdx.Bidirectional.IServerRequestResponseChannel Start(Vlingo.Actors.Stage stage,
-            Vlingo.Wire.Channel.IRequestChannelConsumerProvider provider, int port, string name, int processorPoolSize,
+        public IServerRequestResponseChannel Start(Stage stage,
+            Channel.IRequestChannelConsumerProvider provider, int port, string name, int processorPoolSize,
             int maxBufferPoolSize, int maxMessageSize, long probeInterval, long probeTimeout)
         {
-            if (!this.actor.IsStopped)
+            if (!_actor.IsStopped)
             {
-                Action<Vlingo.Wire.Fdx.Bidirectional.IServerRequestResponseChannel> cons843064929 = __ =>
+                Action<IServerRequestResponseChannel> cons843064929 = __ =>
                     __.Start(stage, provider, port, name, processorPoolSize, maxBufferPoolSize, maxMessageSize,
                         probeInterval, probeTimeout);
-                if (this.mailbox.IsPreallocated)
+                if (_mailbox.IsPreallocated)
                 {
-                    this.mailbox.Send(this.actor, cons843064929, null, StartRepresentation1);
+                    _mailbox.Send(_actor, cons843064929, null, StartRepresentation1);
                 }
                 else
                 {
-                    this.mailbox.Send(
-                        new LocalMessage<Vlingo.Wire.Fdx.Bidirectional.IServerRequestResponseChannel>(this.actor,
+                    _mailbox.Send(
+                        new LocalMessage<IServerRequestResponseChannel>(_actor,
                             cons843064929, StartRepresentation1));
                 }
             }
             else
             {
-                this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, StartRepresentation1));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, StartRepresentation1));
             }
 
             return null!;
         }
 
-        public Vlingo.Wire.Fdx.Bidirectional.IServerRequestResponseChannel Start(Vlingo.Actors.Stage stage,
-            Vlingo.Actors.IAddress address, string mailboxName,
-            Vlingo.Wire.Channel.IRequestChannelConsumerProvider provider, int port, string name, int processorPoolSize,
+        public IServerRequestResponseChannel Start(Stage stage,
+            IAddress address, string mailboxName,
+            Channel.IRequestChannelConsumerProvider provider, int port, string name, int processorPoolSize,
             int maxBufferPoolSize, int maxMessageSize, long probeInterval, long probeTimeout)
         {
-            if (!this.actor.IsStopped)
+            if (!_actor.IsStopped)
             {
-                Action<Vlingo.Wire.Fdx.Bidirectional.IServerRequestResponseChannel> cons1871902676 = __ =>
+                Action<IServerRequestResponseChannel> cons1871902676 = __ =>
                     __.Start(stage, address, mailboxName, provider, port, name, processorPoolSize, maxBufferPoolSize,
                         maxMessageSize, probeInterval, probeTimeout);
-                if (this.mailbox.IsPreallocated)
+                if (_mailbox.IsPreallocated)
                 {
-                    this.mailbox.Send(this.actor, cons1871902676, null, StartRepresentation2);
+                    _mailbox.Send(_actor, cons1871902676, null, StartRepresentation2);
                 }
                 else
                 {
-                    this.mailbox.Send(
-                        new LocalMessage<Vlingo.Wire.Fdx.Bidirectional.IServerRequestResponseChannel>(this.actor,
+                    _mailbox.Send(
+                        new LocalMessage<IServerRequestResponseChannel>(_actor,
                             cons1871902676, StartRepresentation2));
                 }
             }
             else
             {
-                this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, StartRepresentation2));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, StartRepresentation2));
             }
 
             return null!;
@@ -89,40 +94,40 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
         public void Close()
         {
-            if (!this.actor.IsStopped)
+            if (!_actor.IsStopped)
             {
-                Action<Vlingo.Wire.Fdx.Bidirectional.IServerRequestResponseChannel> cons1365492750 = __ => __.Close();
-                if (this.mailbox.IsPreallocated)
+                Action<IServerRequestResponseChannel> cons1365492750 = __ => __.Close();
+                if (_mailbox.IsPreallocated)
                 {
-                    this.mailbox.Send(this.actor, cons1365492750, null, CloseRepresentation3);
+                    _mailbox.Send(_actor, cons1365492750, null, CloseRepresentation3);
                 }
                 else
                 {
-                    this.mailbox.Send(
-                        new LocalMessage<Vlingo.Wire.Fdx.Bidirectional.IServerRequestResponseChannel>(this.actor,
+                    _mailbox.Send(
+                        new LocalMessage<IServerRequestResponseChannel>(_actor,
                             cons1365492750, CloseRepresentation3));
                 }
             }
             else
             {
-                this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, CloseRepresentation3));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, CloseRepresentation3));
             }
         }
 
-        public Vlingo.Common.ICompletes<int> Port()
+        public ICompletes<int> Port()
         {
-            if (!this.actor.IsStopped)
+            if (!_actor.IsStopped)
             {
-                Action<Vlingo.Wire.Fdx.Bidirectional.IServerRequestResponseChannel> cons1657589136 = __ => __.Port();
-                var completes = new BasicCompletes<int>(this.actor.Scheduler);
-                if (this.mailbox.IsPreallocated)
+                Action<IServerRequestResponseChannel> cons1657589136 = __ => __.Port();
+                var completes = new BasicCompletes<int>(_actor.Scheduler);
+                if (_mailbox.IsPreallocated)
                 {
-                    this.mailbox.Send(this.actor, cons1657589136, completes, PortRepresentation4);
+                    _mailbox.Send(_actor, cons1657589136, completes, PortRepresentation4);
                 }
                 else
                 {
-                    this.mailbox.Send(
-                        new LocalMessage<Vlingo.Wire.Fdx.Bidirectional.IServerRequestResponseChannel>(this.actor,
+                    _mailbox.Send(
+                        new LocalMessage<IServerRequestResponseChannel>(_actor,
                             cons1657589136, completes, PortRepresentation4));
                 }
 
@@ -130,7 +135,7 @@ namespace Vlingo.Wire.Fdx.Bidirectional
             }
             else
             {
-                this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, PortRepresentation4));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, PortRepresentation4));
             }
 
             return null!;
@@ -138,45 +143,45 @@ namespace Vlingo.Wire.Fdx.Bidirectional
 
         public void Conclude()
         {
-            if (!this.actor.IsStopped)
+            if (!_actor.IsStopped)
             {
-                Action<Vlingo.Wire.Fdx.Bidirectional.IServerRequestResponseChannel> cons347762824 = __ => __.Conclude();
-                if (this.mailbox.IsPreallocated)
+                Action<IServerRequestResponseChannel> cons347762824 = __ => __.Conclude();
+                if (_mailbox.IsPreallocated)
                 {
-                    this.mailbox.Send(this.actor, cons347762824, null, ConcludeRepresentation5);
+                    _mailbox.Send(_actor, cons347762824, null, ConcludeRepresentation5);
                 }
                 else
                 {
-                    this.mailbox.Send(
-                        new LocalMessage<Vlingo.Wire.Fdx.Bidirectional.IServerRequestResponseChannel>(this.actor,
+                    _mailbox.Send(
+                        new LocalMessage<IServerRequestResponseChannel>(_actor,
                             cons347762824, ConcludeRepresentation5));
                 }
             }
             else
             {
-                this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, ConcludeRepresentation5));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, ConcludeRepresentation5));
             }
         }
 
         public void Stop()
         {
-            if (!this.actor.IsStopped)
+            if (!_actor.IsStopped)
             {
-                Action<Vlingo.Wire.Fdx.Bidirectional.IServerRequestResponseChannel> cons1070440153 = __ => __.Stop();
-                if (this.mailbox.IsPreallocated)
+                Action<IServerRequestResponseChannel> cons1070440153 = __ => __.Stop();
+                if (_mailbox.IsPreallocated)
                 {
-                    this.mailbox.Send(this.actor, cons1070440153, null, StopRepresentation6);
+                    _mailbox.Send(_actor, cons1070440153, null, StopRepresentation6);
                 }
                 else
                 {
-                    this.mailbox.Send(
-                        new LocalMessage<Vlingo.Wire.Fdx.Bidirectional.IServerRequestResponseChannel>(this.actor,
+                    _mailbox.Send(
+                        new LocalMessage<IServerRequestResponseChannel>(_actor,
                             cons1070440153, StopRepresentation6));
                 }
             }
             else
             {
-                this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, StopRepresentation6));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, StopRepresentation6));
             }
         }
     }

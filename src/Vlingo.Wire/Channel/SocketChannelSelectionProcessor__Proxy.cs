@@ -1,3 +1,10 @@
+// Copyright © 2012-2020 VLINGO LABS. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the
+// Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain
+// one at https://mozilla.org/MPL/2.0/.
+
 using System;
 using System.Net.Sockets;
 using Vlingo.Actors;
@@ -9,55 +16,55 @@ namespace Vlingo.Wire.Channel
         private const string CloseRepresentation1 = "Close()";
         private const string ProcessRepresentation2 = "Process(Socket)";
 
-        private readonly Actor actor;
-        private readonly IMailbox mailbox;
+        private readonly Actor _actor;
+        private readonly IMailbox _mailbox;
 
         public SocketChannelSelectionProcessor__Proxy(Actor actor, IMailbox mailbox)
         {
-            this.actor = actor;
-            this.mailbox = mailbox;
+            _actor = actor;
+            _mailbox = mailbox;
         }
 
         public void Close()
         {
-            if (!actor.IsStopped)
+            if (!_actor.IsStopped)
             {
                 Action<ISocketChannelSelectionProcessor> consumer = x => x.Close();
-                if (mailbox.IsPreallocated)
+                if (_mailbox.IsPreallocated)
                 {
-                    mailbox.Send(actor, consumer, null, CloseRepresentation1);
+                    _mailbox.Send(_actor, consumer, null, CloseRepresentation1);
                 }
                 else
                 {
-                    mailbox.Send(
-                        new LocalMessage<ISocketChannelSelectionProcessor>(actor, consumer, CloseRepresentation1));
+                    _mailbox.Send(
+                        new LocalMessage<ISocketChannelSelectionProcessor>(_actor, consumer, CloseRepresentation1));
                 }
             }
             else
             {
-                actor.DeadLetters.FailedDelivery(new DeadLetter(actor, CloseRepresentation1));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, CloseRepresentation1));
             }
         }
 
         public void Process(Socket channel)
         {
-            if (!actor.IsStopped)
+            if (!_actor.IsStopped)
             {
                 Action<ISocketChannelSelectionProcessor> consumer = x => x.Process(channel);
-                if (mailbox.IsPreallocated)
+                if (_mailbox.IsPreallocated)
                 {
-                    mailbox.Send(actor, consumer, null, ProcessRepresentation2);
+                    _mailbox.Send(_actor, consumer, null, ProcessRepresentation2);
                 }
                 else
                 {
-                    mailbox.Send(
-                        new LocalMessage<ISocketChannelSelectionProcessor>(actor, consumer,
+                    _mailbox.Send(
+                        new LocalMessage<ISocketChannelSelectionProcessor>(_actor, consumer,
                             ProcessRepresentation2));
                 }
             }
             else
             {
-                actor.DeadLetters.FailedDelivery(new DeadLetter(actor, ProcessRepresentation2));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, ProcessRepresentation2));
             }
         }
     }

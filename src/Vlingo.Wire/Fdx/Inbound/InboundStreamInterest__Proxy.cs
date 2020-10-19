@@ -1,3 +1,10 @@
+// Copyright © 2012-2020 VLINGO LABS. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the
+// Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain
+// one at https://mozilla.org/MPL/2.0/.
+
 using System;
 using Vlingo.Actors;
 using Vlingo.Wire.Node;
@@ -10,33 +17,33 @@ namespace Vlingo.Wire.Fdx.Inbound
         private const string HandleInboundStreamMessageRepresentation1 =
             "HandleInboundStreamMessage(AddressType, RawMessage)";
 
-        private readonly Actor actor;
-        private readonly IMailbox mailbox;
+        private readonly Actor _actor;
+        private readonly IMailbox _mailbox;
 
         public InboundStreamInterest__Proxy(Actor actor, IMailbox mailbox)
         {
-            this.actor = actor;
-            this.mailbox = mailbox;
+            _actor = actor;
+            _mailbox = mailbox;
         }
 
         public void HandleInboundStreamMessage(AddressType addressType, RawMessage message)
         {
-            if (!actor.IsStopped)
+            if (!_actor.IsStopped)
             {
                 Action<IInboundStreamInterest> consumer = x => x.HandleInboundStreamMessage(addressType, message);
-                if (mailbox.IsPreallocated)
+                if (_mailbox.IsPreallocated)
                 {
-                    mailbox.Send(actor, consumer, null, HandleInboundStreamMessageRepresentation1);
+                    _mailbox.Send(_actor, consumer, null, HandleInboundStreamMessageRepresentation1);
                 }
                 else
                 {
-                    mailbox.Send(new LocalMessage<IInboundStreamInterest>(actor, consumer,
+                    _mailbox.Send(new LocalMessage<IInboundStreamInterest>(_actor, consumer,
                         HandleInboundStreamMessageRepresentation1));
                 }
             }
             else
             {
-                actor.DeadLetters.FailedDelivery(new DeadLetter(actor, HandleInboundStreamMessageRepresentation1));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, HandleInboundStreamMessageRepresentation1));
             }
         }
     }

@@ -1,12 +1,16 @@
+// Copyright © 2012-2020 VLINGO LABS. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the
+// Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain
+// one at https://mozilla.org/MPL/2.0/.
+
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Vlingo.Actors;
-using Vlingo.Common;
 
 namespace Vlingo.Wire.Channel
 {
-    public class ResponseSenderChannel__Proxy : Vlingo.Wire.Channel.IResponseSenderChannel
+    public class ResponseSenderChannel__Proxy : IResponseSenderChannel
     {
         private const string AbandonRepresentation1 = "Abandon(Vlingo.Wire.Channel.RequestResponseContext)";
 
@@ -19,103 +23,103 @@ namespace Vlingo.Wire.Channel
         private const string RespondWithRepresentation4 =
             "RespondWith(Vlingo.Wire.Channel.RequestResponseContext, object, bool)";
 
-        private readonly Actor actor;
-        private readonly IMailbox mailbox;
+        private readonly Actor _actor;
+        private readonly IMailbox _mailbox;
 
         public ResponseSenderChannel__Proxy(Actor actor, IMailbox mailbox)
         {
-            this.actor = actor;
-            this.mailbox = mailbox;
+            _actor = actor;
+            _mailbox = mailbox;
         }
 
-        public void Abandon(Vlingo.Wire.Channel.RequestResponseContext context)
+        public void Abandon(RequestResponseContext context)
         {
-            if (!this.actor.IsStopped)
+            if (!_actor.IsStopped)
             {
-                Action<Vlingo.Wire.Channel.IResponseSenderChannel> cons8585439 = __ => __.Abandon(context);
-                if (this.mailbox.IsPreallocated)
+                Action<IResponseSenderChannel> cons8585439 = __ => __.Abandon(context);
+                if (_mailbox.IsPreallocated)
                 {
-                    this.mailbox.Send(this.actor, cons8585439, null, AbandonRepresentation1);
+                    _mailbox.Send(_actor, cons8585439, null, AbandonRepresentation1);
                 }
                 else
                 {
-                    this.mailbox.Send(
-                        new LocalMessage<Vlingo.Wire.Channel.IResponseSenderChannel>(this.actor, cons8585439,
+                    _mailbox.Send(
+                        new LocalMessage<IResponseSenderChannel>(_actor, cons8585439,
                             AbandonRepresentation1));
                 }
             }
             else
             {
-                this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, AbandonRepresentation1));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, AbandonRepresentation1));
             }
         }
 
-        public void RespondWith(Vlingo.Wire.Channel.RequestResponseContext context,
-            Vlingo.Wire.Message.IConsumerByteBuffer buffer)
+        public void RespondWith(RequestResponseContext context,
+            Message.IConsumerByteBuffer buffer)
         {
-            if (!this.actor.IsStopped)
+            if (!_actor.IsStopped)
             {
-                Action<Vlingo.Wire.Channel.IResponseSenderChannel>
+                Action<IResponseSenderChannel>
                     cons851152435 = __ => __.RespondWith(context, buffer);
-                if (this.mailbox.IsPreallocated)
+                if (_mailbox.IsPreallocated)
                 {
-                    this.mailbox.Send(this.actor, cons851152435, null, RespondWithRepresentation2);
+                    _mailbox.Send(_actor, cons851152435, null, RespondWithRepresentation2);
                 }
                 else
                 {
-                    this.mailbox.Send(new LocalMessage<Vlingo.Wire.Channel.IResponseSenderChannel>(this.actor,
+                    _mailbox.Send(new LocalMessage<IResponseSenderChannel>(_actor,
                         cons851152435, RespondWithRepresentation2));
                 }
             }
             else
             {
-                this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, RespondWithRepresentation2));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, RespondWithRepresentation2));
             }
         }
 
-        public void RespondWith(Vlingo.Wire.Channel.RequestResponseContext context,
-            Vlingo.Wire.Message.IConsumerByteBuffer buffer, bool closeFollowing)
+        public void RespondWith(RequestResponseContext context,
+            Message.IConsumerByteBuffer buffer, bool closeFollowing)
         {
-            if (!this.actor.IsStopped)
+            if (!_actor.IsStopped)
             {
-                Action<Vlingo.Wire.Channel.IResponseSenderChannel> cons829071244 = __ =>
+                Action<IResponseSenderChannel> cons829071244 = __ =>
                     __.RespondWith(context, buffer, closeFollowing);
-                if (this.mailbox.IsPreallocated)
+                if (_mailbox.IsPreallocated)
                 {
-                    this.mailbox.Send(this.actor, cons829071244, null, RespondWithRepresentation3);
+                    _mailbox.Send(_actor, cons829071244, null, RespondWithRepresentation3);
                 }
                 else
                 {
-                    this.mailbox.Send(new LocalMessage<Vlingo.Wire.Channel.IResponseSenderChannel>(this.actor,
+                    _mailbox.Send(new LocalMessage<IResponseSenderChannel>(_actor,
                         cons829071244, RespondWithRepresentation3));
                 }
             }
             else
             {
-                this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, RespondWithRepresentation3));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, RespondWithRepresentation3));
             }
         }
 
-        public void RespondWith(Vlingo.Wire.Channel.RequestResponseContext context, object response,
+        public void RespondWith(RequestResponseContext context, object response,
             bool closeFollowing)
         {
-            if (!this.actor.IsStopped)
+            if (!_actor.IsStopped)
             {
-                Action<Vlingo.Wire.Channel.IResponseSenderChannel> cons1528567494 = __ =>
+                Action<IResponseSenderChannel> cons1528567494 = __ =>
                     __.RespondWith(context, response, closeFollowing);
-                if (this.mailbox.IsPreallocated)
+                if (_mailbox.IsPreallocated)
                 {
-                    this.mailbox.Send(this.actor, cons1528567494, null, RespondWithRepresentation4);
+                    _mailbox.Send(_actor, cons1528567494, null, RespondWithRepresentation4);
                 }
                 else
                 {
-                    this.mailbox.Send(new LocalMessage<Vlingo.Wire.Channel.IResponseSenderChannel>(this.actor,
+                    _mailbox.Send(new LocalMessage<IResponseSenderChannel>(_actor,
                         cons1528567494, RespondWithRepresentation4));
                 }
             }
             else
             {
-                this.actor.DeadLetters.FailedDelivery(new DeadLetter(this.actor, RespondWithRepresentation4));
+                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, RespondWithRepresentation4));
             }
         }
     }

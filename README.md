@@ -1,6 +1,7 @@
 # vlingo-net-wire
 
-[![Build status](https://ci.appveyor.com/api/projects/status/mxhw7gsnhcgjomty?svg=true)](https://ci.appveyor.com/project/VlingoNetOwner/vlingo-net-wire/branch/master) 
+[![Build status](https://ci.appveyor.com/api/projects/status/mxhw7gsnhcgjomty?svg=true)](https://ci.appveyor.com/project/VlingoNetOwner/vlingo-net-wire/branch/master)
+![Build master](https://github.com/vlingo-net/vlingo-net-wire/workflows/.NET/badge.svg)
 [![NuGet](https://img.shields.io/nuget/v/Vlingo.Wire.svg)](https://www.nuget.org/packages/Vlingo.Wire)
 [![Gitter](https://badges.gitter.im/vlingo-platform-net/community.svg)](https://gitter.im/vlingo-platform-net/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 

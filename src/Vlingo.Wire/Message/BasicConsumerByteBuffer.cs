@@ -18,6 +18,8 @@ namespace Vlingo.Wire.Message
         private string? _tag;
         private long _mark;
 
+        public static IConsumerByteBuffer Empty => new BasicConsumerByteBuffer(-1, 0);
+
         public BasicConsumerByteBuffer(int id, int maxBufferSize)
         {
             _id = id;

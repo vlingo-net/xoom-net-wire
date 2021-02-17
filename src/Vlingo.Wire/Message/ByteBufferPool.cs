@@ -22,7 +22,8 @@ namespace Vlingo.Wire.Message
             _poolSize = poolSize;
             _pool = new PooledByteBuffer[poolSize];
             
-            for (int idx = 0; idx < poolSize; ++idx) {
+            for (int idx = 0; idx < poolSize; ++idx)
+            {
                 _pool[idx] = new PooledByteBuffer(idx, maxBufferSize);
             }
         }
@@ -34,8 +35,10 @@ namespace Vlingo.Wire.Message
             // and/or the result is answered.
             var available = _poolSize;
     
-            for (int idx = 0; idx < _poolSize; ++idx) {
-                if (_pool[idx].IsInUse()) {
+            for (var idx = 0; idx < _poolSize; ++idx)
+            {
+                if (_pool[idx].IsInUse())
+                {
                     --available;
                 }
             }
@@ -49,10 +52,13 @@ namespace Vlingo.Wire.Message
 
         public PooledByteBuffer AccessFor(string tag, int retries)
         {
-            while (true) {
-                for (var idx = 0; idx < _poolSize; ++idx) {
+            while (true)
+            {
+                for (var idx = 0; idx < _poolSize; ++idx)
+                {
                     var buffer = _pool[idx];
-                    if (buffer.ClaimUse(tag)) {
+                    if (buffer.ClaimUse(tag))
+                    {
                         return buffer;
                     }
                 }

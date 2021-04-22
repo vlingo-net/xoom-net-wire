@@ -9,13 +9,13 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using Vlingo.Actors;
-using Vlingo.Common.Pool;
+using Vlingo.Xoom.Common.Pool;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Fdx.Bidirectional
 {
-    using Common;
+    using Xoom.Common;
     
     public sealed class ServerRequestResponseChannelActor : Actor, IServerRequestResponseChannel, IScheduled<object>
     {

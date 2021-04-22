@@ -9,12 +9,12 @@ using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using Vlingo.Actors;
-using Vlingo.Common.Pool;
+using Vlingo.Xoom.Common.Pool;
 using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Channel
 {
-    using Common;
+    using Xoom.Common;
     
     public sealed class SocketChannelSelectionProcessorActor : Actor,
                                                         ISocketChannelSelectionProcessor,

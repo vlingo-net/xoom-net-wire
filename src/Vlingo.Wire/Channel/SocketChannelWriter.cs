@@ -10,7 +10,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using Vlingo.Actors;
-using Vlingo.Common;
+using Vlingo.Xoom.Common;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Node;
 

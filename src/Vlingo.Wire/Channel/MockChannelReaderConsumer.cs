@@ -7,7 +7,7 @@
 
 using System.Collections.Generic;
 using Vlingo.Actors.TestKit;
-using Vlingo.Common;
+using Vlingo.Xoom.Common;
 using Vlingo.Wire.Message;
 
 namespace Vlingo.Wire.Channel

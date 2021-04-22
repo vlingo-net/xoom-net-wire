@@ -11,7 +11,7 @@ using System.Linq;
 using System.Threading;
 using Vlingo.Actors;
 using Vlingo.Actors.Plugin.Logging.Console;
-using Vlingo.Common;
+using Vlingo.Xoom.Common;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Fdx.Bidirectional;
 using Vlingo.Wire.Message;

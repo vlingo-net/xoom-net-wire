@@ -6,8 +6,8 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.Diagnostics;
-using Vlingo.Common;
-using Vlingo.Common.Pool;
+using Vlingo.Xoom.Common;
+using Vlingo.Xoom.Common.Pool;
 
 namespace Vlingo.Wire.Message
 {

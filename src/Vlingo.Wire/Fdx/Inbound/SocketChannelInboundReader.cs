@@ -9,9 +9,9 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using Vlingo.Actors;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
+using Vlingo.Xoom.Actors;
 
 namespace Vlingo.Wire.Fdx.Inbound
 {

@@ -7,10 +7,10 @@
 
 using System;
 using System.Linq;
-using Vlingo.Actors.TestKit;
 using Vlingo.Wire.Fdx.Inbound;
 using Vlingo.Wire.Node;
 using Vlingo.Wire.Tests.Channel;
+using Vlingo.Xoom.Actors.TestKit;
 using Xunit;
 using Xunit.Abstractions;
 

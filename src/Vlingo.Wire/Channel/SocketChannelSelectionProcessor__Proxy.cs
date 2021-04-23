@@ -7,7 +7,7 @@
 
 using System;
 using System.Net.Sockets;
-using Vlingo.Actors;
+using Vlingo.Xoom.Actors;
 
 namespace Vlingo.Wire.Channel
 {

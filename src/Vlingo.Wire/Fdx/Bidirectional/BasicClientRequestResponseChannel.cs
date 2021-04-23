@@ -8,11 +8,11 @@
 using System;
 using System.Net.Sockets;
 using System.Threading;
-using Vlingo.Actors;
 using Vlingo.Xoom.Common.Pool;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Node;
+using Vlingo.Xoom.Actors;
 
 namespace Vlingo.Wire.Fdx.Bidirectional
 {

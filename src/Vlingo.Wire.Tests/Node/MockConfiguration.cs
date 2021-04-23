@@ -7,7 +7,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Vlingo.Actors;
+using Vlingo.Xoom.Actors;
 
 namespace Vlingo.Wire.Tests.Node
 {

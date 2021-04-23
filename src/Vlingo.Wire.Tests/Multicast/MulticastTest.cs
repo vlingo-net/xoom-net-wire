@@ -8,11 +8,11 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Multicast;
 using Vlingo.Wire.Node;
+using Vlingo.Xoom.Actors.Plugin.Logging.Console;
 using Xunit;
 using Xunit.Abstractions;
 

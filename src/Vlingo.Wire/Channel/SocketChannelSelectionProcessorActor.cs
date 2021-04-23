@@ -8,9 +8,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
-using Vlingo.Actors;
 using Vlingo.Xoom.Common.Pool;
 using Vlingo.Wire.Message;
+using Vlingo.Xoom.Actors;
 
 namespace Vlingo.Wire.Channel
 {

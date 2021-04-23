@@ -6,7 +6,7 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
-using Vlingo.Actors;
+using Vlingo.Xoom.Actors;
 using Vlingo.Xoom.Common;
 
 namespace Vlingo.Wire.Fdx.Bidirectional
@@ -14,10 +14,10 @@ namespace Vlingo.Wire.Fdx.Bidirectional
     public class ServerRequestResponseChannel__Proxy : IServerRequestResponseChannel
     {
         private const string StartRepresentation1 =
-            "Start(Vlingo.Actors.Stage, Vlingo.Wire.Channel.IRequestChannelConsumerProvider, int, string, int, int, int, long, long)";
+            "Start(Vlingo.Xoom.Actors.Stage, Vlingo.Wire.Channel.IRequestChannelConsumerProvider, int, string, int, int, int, long, long)";
 
         private const string StartRepresentation2 =
-            "Start(Vlingo.Actors.Stage, Vlingo.Actors.IAddress, string, Vlingo.Wire.Channel.IRequestChannelConsumerProvider, int, string, int, int, int, long, long)";
+            "Start(Vlingo.Xoom.Actors.Stage, Vlingo.Xoom.Actors.IAddress, string, Vlingo.Wire.Channel.IRequestChannelConsumerProvider, int, string, int, int, int, long, long)";
 
         private const string CloseRepresentation3 = "Close()";
         private const string PortRepresentation4 = "Port()";

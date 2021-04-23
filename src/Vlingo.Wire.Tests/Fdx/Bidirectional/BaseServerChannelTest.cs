@@ -9,12 +9,12 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Vlingo.Actors;
-using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Xoom.Common;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Fdx.Bidirectional;
 using Vlingo.Wire.Message;
+using Vlingo.Xoom.Actors;
+using Vlingo.Xoom.Actors.Plugin.Logging.Console;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -8,10 +8,10 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
-using Vlingo.Actors.TestKit;
 using Vlingo.Xoom.Common;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Message;
+using Vlingo.Xoom.Actors.TestKit;
 
 namespace Vlingo.Wire.Tests.Fdx.Bidirectional
 {

@@ -9,11 +9,11 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Vlingo.Actors.Plugin.Logging.Console;
 using Vlingo.Wire.Channel;
 using Vlingo.Wire.Fdx.Inbound;
 using Vlingo.Wire.Fdx.Outbound;
 using Vlingo.Wire.Message;
+using Vlingo.Xoom.Actors.Plugin.Logging.Console;
 using Xunit;
 using Xunit.Abstractions;
 

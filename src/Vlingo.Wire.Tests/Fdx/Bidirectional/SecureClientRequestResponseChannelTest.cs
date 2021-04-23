@@ -9,10 +9,10 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Vlingo.Actors;
 using Vlingo.Wire.Fdx.Bidirectional;
 using Vlingo.Wire.Message;
 using Vlingo.Wire.Node;
+using Vlingo.Xoom.Actors;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -8,9 +8,9 @@ configuration: Release
 skip_commits:
   message: /.*\[ci\-skip\].*/ 
 before_build:
-- dotnet restore src/Vlingo.Wire.sln
+- dotnet restore src/Vlingo.Xoom.Wire.sln
 build:
-  project: src/Vlingo.Wire.sln
+  project: src/Vlingo.Xoom.Wire.sln
   verbosity: minimal
   publish_nuget: true
 for:
@@ -44,7 +44,7 @@ for:
     after_test:
       - netsh advfirewall set  currentprofile state on
 test_script:
-- dotnet test src/Vlingo.Wire.Tests
+- dotnet test src/Vlingo.Xoom.Wire.Tests
 deploy:
 - provider: NuGet
   api_key:

@@ -9,24 +9,23 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
-using Vlingo.Wire.Channel;
 using Vlingo.Xoom.Actors;
+using Vlingo.Xoom.Wire.Channel;
+using Vlingo.Xoom.Wire.Node;
 
-namespace Vlingo.Wire.Fdx.Outbound
+namespace Vlingo.Xoom.Wire.Fdx.Outbound
 {
-    using Node;
-    
     public class ManagedOutboundSocketChannel: IManagedOutboundChannel, IDisposable
     {
         private Socket? _channel;
         private readonly Address _address;
-        private readonly Node _node;
+        private readonly Node.Node _node;
         private readonly ILogger _logger;
         private bool _disposed;
         private readonly SemaphoreSlim _connectAtOnce;
         private readonly ManualResetEvent _connectDone;
 
-        public ManagedOutboundSocketChannel(Node node, Address address, ILogger logger)
+        public ManagedOutboundSocketChannel(Node.Node node, Address address, ILogger logger)
         {
             _node = node;
             _address = address;

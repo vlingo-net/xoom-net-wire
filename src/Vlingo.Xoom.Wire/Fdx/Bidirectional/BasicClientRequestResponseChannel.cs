@@ -8,13 +8,13 @@
 using System;
 using System.Net.Sockets;
 using System.Threading;
-using Vlingo.Xoom.Common.Pool;
-using Vlingo.Wire.Channel;
-using Vlingo.Wire.Message;
-using Vlingo.Wire.Node;
 using Vlingo.Xoom.Actors;
+using Vlingo.Xoom.Common.Pool;
+using Vlingo.Xoom.Wire.Channel;
+using Vlingo.Xoom.Wire.Message;
+using Vlingo.Xoom.Wire.Node;
 
-namespace Vlingo.Wire.Fdx.Bidirectional
+namespace Vlingo.Xoom.Wire.Fdx.Bidirectional
 {
     public class BasicClientRequestResponseChannel : IClientRequestResponseChannel, IDisposable
     {

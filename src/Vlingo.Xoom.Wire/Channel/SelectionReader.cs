@@ -6,9 +6,9 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.Net.Sockets;
-using Vlingo.Wire.Message;
+using Vlingo.Xoom.Wire.Message;
 
-namespace Vlingo.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel
 {
     public abstract class SelectionReader
     {

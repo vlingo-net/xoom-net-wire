@@ -9,10 +9,10 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
-using Vlingo.Wire.Message;
 using Vlingo.Xoom.Actors;
+using Vlingo.Xoom.Wire.Message;
 
-namespace Vlingo.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel
 {
     public class SocketChannelSelectionReader: SelectionReader
     {

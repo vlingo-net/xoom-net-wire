@@ -6,15 +6,14 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
-using Vlingo.Wire.Channel;
-using Vlingo.Wire.Message;
-using Vlingo.Wire.Node;
 using Vlingo.Xoom.Actors;
+using Vlingo.Xoom.Common;
+using Vlingo.Xoom.Wire.Channel;
+using Vlingo.Xoom.Wire.Message;
+using Vlingo.Xoom.Wire.Node;
 
-namespace Vlingo.Wire.Fdx.Inbound
+namespace Vlingo.Xoom.Wire.Fdx.Inbound
 {
-    using Xoom.Common;
-    
     public class InboundStreamActor: Actor, IInboundStream, IChannelReaderConsumer, IScheduled<object>
     {
         private readonly AddressType _addressType;

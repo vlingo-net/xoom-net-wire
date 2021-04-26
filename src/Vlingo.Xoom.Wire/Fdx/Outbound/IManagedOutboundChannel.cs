@@ -7,7 +7,7 @@
 
 using System.IO;
 
-namespace Vlingo.Wire.Fdx.Outbound
+namespace Vlingo.Xoom.Wire.Fdx.Outbound
 {
     public interface IManagedOutboundChannel
     {

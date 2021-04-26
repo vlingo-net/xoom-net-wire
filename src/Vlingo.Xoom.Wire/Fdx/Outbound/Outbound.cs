@@ -6,12 +6,11 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
-using Vlingo.Wire.Message;
+using Vlingo.Xoom.Wire.Message;
+using Vlingo.Xoom.Wire.Node;
 
-namespace Vlingo.Wire.Fdx.Outbound
+namespace Vlingo.Xoom.Wire.Fdx.Outbound
 {
-    using Node;
-    
     public class Outbound
     {
         private readonly ConsumerByteBufferPool _pool;
@@ -36,13 +35,13 @@ namespace Vlingo.Wire.Fdx.Outbound
             Broadcast(_provider.AllOtherNodeChannels, buffer);
         }
 
-        public void Broadcast(IEnumerable<Node> selectNodes, RawMessage message)
+        public void Broadcast(IEnumerable<Node.Node> selectNodes, RawMessage message)
         {
             var buffer = _pool.Acquire();
             Broadcast(selectNodes, BytesFrom(message, buffer));
         }
 
-        public void Broadcast(IEnumerable<Node> selectNodes, IConsumerByteBuffer buffer)
+        public void Broadcast(IEnumerable<Node.Node> selectNodes, IConsumerByteBuffer buffer)
         {
             Broadcast(_provider.ChannelsFor(selectNodes), buffer);
         }

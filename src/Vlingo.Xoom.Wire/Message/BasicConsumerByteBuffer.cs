@@ -9,7 +9,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 
-namespace Vlingo.Wire.Message
+namespace Vlingo.Xoom.Wire.Message
 {
     public class BasicConsumerByteBuffer : IConsumerByteBuffer
     {

@@ -7,9 +7,9 @@
 
 using System;
 using System.IO;
-using Vlingo.Wire.Channel;
+using Vlingo.Xoom.Wire.Channel;
 
-namespace Vlingo.Wire.Message
+namespace Vlingo.Xoom.Wire.Message
 {
     /**
     * Reusable raw message with header. Assume one instance per client channel.

@@ -8,7 +8,7 @@
 using System;
 using Vlingo.Xoom.Common;
 
-namespace Vlingo.Wire.Message
+namespace Vlingo.Xoom.Wire.Message
 {
     [Obsolete("Use ConsumerByteBufferPool instead")]
     public class ByteBufferPool

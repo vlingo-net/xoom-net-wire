@@ -8,9 +8,9 @@
 using System;
 using System.IO;
 using System.Text;
-using Vlingo.Wire.Channel;
+using Vlingo.Xoom.Wire.Channel;
 
-namespace Vlingo.Wire.Message
+namespace Vlingo.Xoom.Wire.Message
 {
     public static class Converters
     {

@@ -9,14 +9,14 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Vlingo.Wire.Fdx.Bidirectional;
-using Vlingo.Wire.Message;
-using Vlingo.Wire.Node;
 using Vlingo.Xoom.Actors;
+using Vlingo.Xoom.Wire.Fdx.Bidirectional;
+using Vlingo.Xoom.Wire.Message;
+using Vlingo.Xoom.Wire.Node;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Vlingo.Wire.Tests.Fdx.Bidirectional
+namespace Vlingo.Xoom.Wire.Tests.Fdx.Bidirectional
 {
     public class SecureClientRequestResponseChannelTest : IDisposable
     {

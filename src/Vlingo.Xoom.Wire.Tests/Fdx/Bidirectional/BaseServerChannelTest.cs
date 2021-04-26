@@ -9,16 +9,16 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Vlingo.Xoom.Common;
-using Vlingo.Wire.Channel;
-using Vlingo.Wire.Fdx.Bidirectional;
-using Vlingo.Wire.Message;
 using Vlingo.Xoom.Actors;
 using Vlingo.Xoom.Actors.Plugin.Logging.Console;
+using Vlingo.Xoom.Common;
+using Vlingo.Xoom.Wire.Channel;
+using Vlingo.Xoom.Wire.Fdx.Bidirectional;
+using Vlingo.Xoom.Wire.Message;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Vlingo.Wire.Tests.Fdx.Bidirectional
+namespace Vlingo.Xoom.Wire.Tests.Fdx.Bidirectional
 {
     public abstract class BaseServerChannelTest : IDisposable
     {

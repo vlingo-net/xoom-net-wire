@@ -6,19 +6,18 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
+using Vlingo.Xoom.Wire.Node;
 
-namespace Vlingo.Wire.Fdx.Outbound
+namespace Vlingo.Xoom.Wire.Fdx.Outbound
 {
-    using Node;
-    
     public class ManagedOutboundSocketChannelProvider : IManagedOutboundChannelProvider
     {
         private readonly IConfiguration _configuration;
-        private readonly Node _node;
+        private readonly Node.Node _node;
         private readonly Dictionary<Id, IManagedOutboundChannel> _nodeChannels;
         private readonly AddressType _type;
 
-        public ManagedOutboundSocketChannelProvider(Node node, AddressType type, IConfiguration configuration)
+        public ManagedOutboundSocketChannelProvider(Node.Node node, AddressType type, IConfiguration configuration)
         {
             _node = node;
             _type = type;
@@ -44,7 +43,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             return unopenedChannel;
         }
 
-        public IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Node> nodes)
+        public IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Node.Node> nodes)
         {
             var channels = new Dictionary<Id, IManagedOutboundChannel>();
 
@@ -89,7 +88,7 @@ namespace Vlingo.Wire.Fdx.Outbound
             }
         }
 
-        private IManagedOutboundChannel UnopenedChannelFor(Node node)
+        private IManagedOutboundChannel UnopenedChannelFor(Node.Node node)
         {
             var address = _type.IsOperational ? _node.OperationalAddress : _node.ApplicationAddress;
 

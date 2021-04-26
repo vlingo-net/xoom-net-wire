@@ -8,7 +8,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Vlingo.Wire.Node
+namespace Vlingo.Xoom.Wire.Node
 {
     public sealed class Node : IComparable<Node>
     {

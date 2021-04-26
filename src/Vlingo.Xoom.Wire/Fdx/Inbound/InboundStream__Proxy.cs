@@ -8,7 +8,7 @@
 using System;
 using Vlingo.Xoom.Actors;
 
-namespace Vlingo.Wire.Fdx.Inbound
+namespace Vlingo.Xoom.Wire.Fdx.Inbound
 {
     public class InboundStream__Proxy : IInboundStream
     {

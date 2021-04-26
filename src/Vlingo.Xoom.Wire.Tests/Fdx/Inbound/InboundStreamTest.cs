@@ -7,14 +7,14 @@
 
 using System;
 using System.Linq;
-using Vlingo.Wire.Fdx.Inbound;
-using Vlingo.Wire.Node;
-using Vlingo.Wire.Tests.Channel;
 using Vlingo.Xoom.Actors.TestKit;
+using Vlingo.Xoom.Wire.Fdx.Inbound;
+using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Tests.Channel;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Vlingo.Wire.Tests.Fdx.Inbound
+namespace Vlingo.Xoom.Wire.Tests.Fdx.Inbound
 {
     public class InboundStreamTest : IDisposable
     {

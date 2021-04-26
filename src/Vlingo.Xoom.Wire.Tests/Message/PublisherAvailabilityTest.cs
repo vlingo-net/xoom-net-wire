@@ -6,12 +6,12 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
-using Vlingo.Wire.Message;
-using Vlingo.Wire.Node;
+using Vlingo.Xoom.Wire.Message;
+using Vlingo.Xoom.Wire.Node;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Vlingo.Wire.Tests.Message
+namespace Vlingo.Xoom.Wire.Tests.Message
 {
     public class PublisherAvailabilityTest
     {

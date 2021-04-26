@@ -9,18 +9,17 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Vlingo.Wire.Channel;
-using Vlingo.Wire.Fdx.Inbound;
-using Vlingo.Wire.Fdx.Outbound;
-using Vlingo.Wire.Message;
 using Vlingo.Xoom.Actors.Plugin.Logging.Console;
+using Vlingo.Xoom.Wire.Channel;
+using Vlingo.Xoom.Wire.Fdx.Inbound;
+using Vlingo.Xoom.Wire.Fdx.Outbound;
+using Vlingo.Xoom.Wire.Message;
+using Vlingo.Xoom.Wire.Node;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Vlingo.Wire.Tests.Fdx.Inbound
+namespace Vlingo.Xoom.Wire.Tests.Fdx.Inbound
 {
-    using Vlingo.Wire.Node;
-    
     public class InboundSocketChannelTest: IDisposable
     {
         private const string AppMessage = "APP TEST ";
@@ -97,7 +96,7 @@ namespace Vlingo.Wire.Tests.Fdx.Inbound
         {
             var converter = new Converter(output);
             Console.SetOut(converter);
-            var node = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), _testPort, _testPort + 1);
+            var node = Xoom.Wire.Node.Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), _testPort, _testPort + 1);
             var logger = ConsoleLogger.TestInstance();
             _opChannel = new ManagedOutboundSocketChannel(node, node.OperationalAddress, logger);
             _appChannel = new ManagedOutboundSocketChannel(node, node.ApplicationAddress, logger);

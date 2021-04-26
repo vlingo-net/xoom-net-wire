@@ -7,7 +7,7 @@
 
 using System;
 
-namespace Vlingo.Wire.Node
+namespace Vlingo.Xoom.Wire.Node
 {
     public sealed class Address : IComparable<Address>
     {
@@ -15,8 +15,8 @@ namespace Vlingo.Wire.Node
         private readonly int _port;
         private readonly AddressType _type;
         
-        public static string NoHost { get; } = "?";
-        public static int NoPort { get; } = -1;
+        public static string NoHost => "?";
+        public static int NoPort => -1;
         public static Address NoNodeAddress { get; } = new Address(Host.Of(NoHost), NoPort, AddressType.None);
         
         public Address(Host host, int port, AddressType type)

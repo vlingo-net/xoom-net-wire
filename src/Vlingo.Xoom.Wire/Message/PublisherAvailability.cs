@@ -6,13 +6,13 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.Text;
-using Vlingo.Wire.Node;
+using Vlingo.Xoom.Wire.Node;
 
-namespace Vlingo.Wire.Message
+namespace Vlingo.Xoom.Wire.Message
 {
     public class PublisherAvailability
     {
-        public static string TypeName { get; } = "PUB";
+        public static string TypeName => "PUB";
 
         private readonly string _host;
         private readonly string _name;

@@ -6,15 +6,15 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.Collections.Concurrent;
-using Vlingo.Xoom.Common;
-using Vlingo.Wire.Fdx.Inbound;
-using Vlingo.Wire.Message;
-using Vlingo.Wire.Node;
-using Vlingo.Wire.Tests.Message;
 using Vlingo.Xoom.Actors.TestKit;
+using Vlingo.Xoom.Common;
+using Vlingo.Xoom.Wire.Fdx.Inbound;
+using Vlingo.Xoom.Wire.Message;
+using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Tests.Message;
 using Xunit.Abstractions;
 
-namespace Vlingo.Wire.Tests.Fdx.Inbound
+namespace Vlingo.Xoom.Wire.Tests.Fdx.Inbound
 {
     public class MockInboundStreamInterest : AbstractMessageTool, IInboundStreamInterest
     {

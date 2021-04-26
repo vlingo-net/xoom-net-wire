@@ -7,7 +7,7 @@
 
 using System.IO;
 
-namespace Vlingo.Wire.Fdx.Inbound
+namespace Vlingo.Xoom.Wire.Fdx.Inbound
 {
     public interface IInboundResponder
     {

@@ -10,11 +10,11 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using Vlingo.Wire.Channel;
-using Vlingo.Wire.Message;
 using Vlingo.Xoom.Actors;
+using Vlingo.Xoom.Wire.Channel;
+using Vlingo.Xoom.Wire.Message;
 
-namespace Vlingo.Wire.Multicast
+namespace Vlingo.Xoom.Wire.Multicast
 {
     public class MulticastPublisherReader : ChannelMessageDispatcher, IChannelPublisher, IDisposable
     {

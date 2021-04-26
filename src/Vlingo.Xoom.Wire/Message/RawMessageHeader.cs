@@ -8,7 +8,7 @@
 using System;
 using System.IO;
 
-namespace Vlingo.Wire.Message
+namespace Vlingo.Xoom.Wire.Message
 {
     public class RawMessageHeader
     {

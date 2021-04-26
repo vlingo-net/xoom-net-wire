@@ -8,15 +8,15 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using Vlingo.Wire.Channel;
-using Vlingo.Wire.Message;
-using Vlingo.Wire.Multicast;
-using Vlingo.Wire.Node;
 using Vlingo.Xoom.Actors.Plugin.Logging.Console;
+using Vlingo.Xoom.Wire.Channel;
+using Vlingo.Xoom.Wire.Message;
+using Vlingo.Xoom.Wire.Multicast;
+using Vlingo.Xoom.Wire.Node;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Vlingo.Wire.Tests.Multicast
+namespace Vlingo.Xoom.Wire.Tests.Multicast
 {
     public class MulticastTest
     {

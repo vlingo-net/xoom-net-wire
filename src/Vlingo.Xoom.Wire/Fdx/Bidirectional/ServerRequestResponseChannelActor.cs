@@ -8,15 +8,14 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using Vlingo.Xoom.Common.Pool;
-using Vlingo.Wire.Channel;
-using Vlingo.Wire.Message;
 using Vlingo.Xoom.Actors;
+using Vlingo.Xoom.Common;
+using Vlingo.Xoom.Common.Pool;
+using Vlingo.Xoom.Wire.Channel;
+using Vlingo.Xoom.Wire.Message;
 
-namespace Vlingo.Wire.Fdx.Bidirectional
+namespace Vlingo.Xoom.Wire.Fdx.Bidirectional
 {
-    using Xoom.Common;
-    
     public sealed class ServerRequestResponseChannelActor : Actor, IServerRequestResponseChannel, IScheduled<object>
     {
         private readonly ICancellable _cancellable;

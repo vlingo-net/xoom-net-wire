@@ -7,14 +7,13 @@
 
 using System;
 using System.IO;
-using Vlingo.Wire.Channel;
-using Vlingo.Wire.Message;
+using Vlingo.Xoom.Wire.Channel;
+using Vlingo.Xoom.Wire.Message;
+using Vlingo.Xoom.Wire.Node;
 using Xunit;
 
-namespace Vlingo.Wire.Tests.Message
+namespace Vlingo.Xoom.Wire.Tests.Message
 {
-    using Vlingo.Wire.Node;
-    
     public class RawMessageTest
     {
         [Fact]
@@ -22,7 +21,7 @@ namespace Vlingo.Wire.Tests.Message
         {
             var buffer = new MemoryStream(1000);
             var text = "JOIN\nid=1 nm=node1 op=localhost:35745 app=localhost:35746";
-            var node1 = Node.With(Id.Of(1), Name.Of("node1"), Host.Of("localhost"), 35745, 35746);
+            var node1 = Xoom.Wire.Node.Node.With(Id.Of(1), Name.Of("node1"), Host.Of("localhost"), 35745, 35746);
             var bytes = Converters.TextToBytes(text);
             buffer.Write(bytes, 0, bytes.Length);
             buffer.Flip();

@@ -7,7 +7,7 @@
 
 using System.IO;
 
-namespace Vlingo.Wire.Message
+namespace Vlingo.Xoom.Wire.Message
 {
     public interface IConsumerByteBuffer
     {

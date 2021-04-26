@@ -6,11 +6,11 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using Vlingo.Xoom.Common;
-using Vlingo.Wire.Channel;
-using Vlingo.Wire.Message;
-using Vlingo.Wire.Tests.Message;
+using Vlingo.Xoom.Wire.Channel;
+using Vlingo.Xoom.Wire.Message;
+using Vlingo.Xoom.Wire.Tests.Message;
 
-namespace Vlingo.Wire.Tests.Channel
+namespace Vlingo.Xoom.Wire.Tests.Channel
 {
     public class MockChannelReader: AbstractMessageTool, IChannelReader
     {

@@ -7,7 +7,7 @@
 
 using System.Net.Sockets;
 
-namespace Vlingo.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel
 {
     public interface ISocketChannelSelectionProcessor
     {

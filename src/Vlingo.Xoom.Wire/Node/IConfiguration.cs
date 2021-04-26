@@ -8,7 +8,7 @@
 using System.Collections.Generic;
 using Vlingo.Xoom.Actors;
 
-namespace Vlingo.Wire.Node
+namespace Vlingo.Xoom.Wire.Node
 {
     public interface IConfiguration
     {   

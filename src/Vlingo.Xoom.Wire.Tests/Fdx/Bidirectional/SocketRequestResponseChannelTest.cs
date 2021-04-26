@@ -5,13 +5,13 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-using Vlingo.Wire.Channel;
-using Vlingo.Wire.Fdx.Bidirectional;
-using Vlingo.Wire.Node;
 using Vlingo.Xoom.Actors;
+using Vlingo.Xoom.Wire.Channel;
+using Vlingo.Xoom.Wire.Fdx.Bidirectional;
+using Vlingo.Xoom.Wire.Node;
 using Xunit.Abstractions;
 
-namespace Vlingo.Wire.Tests.Fdx.Bidirectional
+namespace Vlingo.Xoom.Wire.Tests.Fdx.Bidirectional
 {
     public sealed class SocketRequestResponseChannelTest : BaseServerChannelTest
     {

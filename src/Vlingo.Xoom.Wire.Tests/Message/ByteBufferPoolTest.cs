@@ -8,12 +8,13 @@
 using System;
 using System.Threading;
 using Vlingo.Xoom.Common;
-using Vlingo.Wire.Message;
+using Vlingo.Xoom.Wire.Message;
 using Xunit;
 using Xunit.Abstractions;
+
 #pragma warning disable 618
 
-namespace Vlingo.Wire.Tests.Message
+namespace Vlingo.Xoom.Wire.Tests.Message
 {
     public class ByteBufferPoolTest
     {

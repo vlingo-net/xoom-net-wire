@@ -9,7 +9,7 @@ using System;
 using System.Net.Sockets;
 using Vlingo.Xoom.Actors;
 
-namespace Vlingo.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel
 {
     public class SocketChannelSelectionProcessor__Proxy : ISocketChannelSelectionProcessor
     {

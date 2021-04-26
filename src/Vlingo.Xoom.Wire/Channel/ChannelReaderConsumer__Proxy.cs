@@ -6,10 +6,10 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
-using Vlingo.Wire.Message;
 using Vlingo.Xoom.Actors;
+using Vlingo.Xoom.Wire.Message;
 
-namespace Vlingo.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel
 {
     public class ChannelReaderConsumer__Proxy : IChannelReaderConsumer
     {

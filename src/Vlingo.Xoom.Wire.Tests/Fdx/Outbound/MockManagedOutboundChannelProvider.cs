@@ -6,17 +6,16 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
-using Vlingo.Wire.Fdx.Outbound;
+using Vlingo.Xoom.Wire.Fdx.Outbound;
+using Vlingo.Xoom.Wire.Node;
 
-namespace Vlingo.Wire.Tests.Fdx.Outbound
+namespace Vlingo.Xoom.Wire.Tests.Fdx.Outbound
 {
-    using Vlingo.Wire.Node;
-    
     public class MockManagedOutboundChannelProvider : IManagedOutboundChannelProvider
     {
         private readonly Dictionary<Id, IManagedOutboundChannel> _allChannels = new Dictionary<Id, IManagedOutboundChannel>();
         private readonly IConfiguration _configuration;
-        private Id _localNodeId;
+        private readonly Id _localNodeId;
 
         public MockManagedOutboundChannelProvider(Id localNodeId, IConfiguration configuration)
         {
@@ -52,7 +51,7 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             return _allChannels[id];
         }
 
-        public IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Node> nodes)
+        public IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Xoom.Wire.Node.Node> nodes)
         {
             var others = new Dictionary<Id, IManagedOutboundChannel>();
 

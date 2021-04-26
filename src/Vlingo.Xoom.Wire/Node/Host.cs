@@ -7,11 +7,11 @@
 
 using System;
 
-namespace Vlingo.Wire.Node
+namespace Vlingo.Xoom.Wire.Node
 {
     public sealed class Host : IComparable<Host>
     {
-        public static string NoName { get; } = "?";
+        public static string NoName => "?";
         public static Host NoHostName { get; } = new Host(NoName);
         
         public string Name { get; }

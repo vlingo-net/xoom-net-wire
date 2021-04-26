@@ -9,16 +9,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Vlingo.Xoom.Common.Pool;
-using Vlingo.Wire.Message;
-using Vlingo.Wire.Tests.Message;
+using Vlingo.Xoom.Wire.Message;
+using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Tests.Message;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Vlingo.Wire.Tests.Fdx.Outbound
+namespace Vlingo.Xoom.Wire.Tests.Fdx.Outbound
 {
-    using Vlingo.Wire.Node;
-    using Wire.Fdx.Outbound;
-    
     public class OutboundTest : AbstractMessageTool
     {
         private static readonly string Message1 = "Message1";
@@ -27,7 +25,7 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
 
         private readonly MockManagedOutboundChannelProvider _channelProvider;
         private readonly ConsumerByteBufferPool _pool;
-        private readonly Outbound _outbound;
+        private readonly Xoom.Wire.Fdx.Outbound.Outbound _outbound;
 
         [Fact]
         public void TestBroadcast()
@@ -85,7 +83,7 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             var rawMessage2 = RawMessage.From(0, 0, Message2);
             var rawMessage3 = RawMessage.From(0, 0, Message3);
 
-            var selectNodes = new List<Node> {Config.NodeMatching(Id.Of(3))};
+            var selectNodes = new List<Xoom.Wire.Node.Node> {Config.NodeMatching(Id.Of(3))};
             
             _outbound.Broadcast(selectNodes, rawMessage1);
             _outbound.Broadcast(selectNodes, rawMessage2);
@@ -151,7 +149,7 @@ namespace Vlingo.Wire.Tests.Fdx.Outbound
             Console.SetOut(converter);
             _pool = new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, string>.Config.Of(10), 1024);
             _channelProvider = new MockManagedOutboundChannelProvider(Id.Of(1), Config);
-            _outbound = new Outbound(_channelProvider, new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, string>.Config.Of(10), 10_000));
+            _outbound = new Xoom.Wire.Fdx.Outbound.Outbound(_channelProvider, new ConsumerByteBufferPool(ElasticResourcePool<IConsumerByteBuffer, string>.Config.Of(10), 10_000));
         }
     }
 }

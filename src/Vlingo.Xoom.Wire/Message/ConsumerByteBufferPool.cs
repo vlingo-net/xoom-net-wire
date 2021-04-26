@@ -9,7 +9,7 @@ using System.Diagnostics;
 using Vlingo.Xoom.Common;
 using Vlingo.Xoom.Common.Pool;
 
-namespace Vlingo.Wire.Message
+namespace Vlingo.Xoom.Wire.Message
 {
     public class ConsumerByteBufferPool : ElasticResourcePool<IConsumerByteBuffer, string>
     {

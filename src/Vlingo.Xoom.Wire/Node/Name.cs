@@ -7,11 +7,11 @@
 
 using System;
 
-namespace Vlingo.Wire.Node
+namespace Vlingo.Xoom.Wire.Node
 {
     public sealed class Name : IComparable<Name>
     {
-        public static string NoName { get; } = "?";
+        public static string NoName => "?";
         public static Name NoNodeName { get; } = new Name(NoName);
 
         public static Name Of(string name) => new Name(name);

@@ -5,10 +5,10 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-using Vlingo.Wire.Node;
 using Vlingo.Xoom.Actors;
+using Vlingo.Xoom.Wire.Node;
 
-namespace Vlingo.Wire.Fdx.Inbound
+namespace Vlingo.Xoom.Wire.Fdx.Inbound
 {
     public interface IInboundStream: IStartable, IStoppable
     {

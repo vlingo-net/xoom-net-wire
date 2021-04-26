@@ -6,13 +6,12 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
+using Vlingo.Xoom.Wire.Node;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Vlingo.Wire.Tests.Node
+namespace Vlingo.Xoom.Wire.Tests.Node
 {
-    using Vlingo.Wire.Node;
-    
     public class NodeTest
     {
         [Fact]
@@ -22,7 +21,7 @@ namespace Vlingo.Wire.Tests.Node
             var name1 = new Name("name1");
             var opAddress1 = new Address(Host.Of("localhost"), 11111, AddressType.Op);
             var appAddress1 = new Address(Host.Of("localhost"), 11112, AddressType.App);
-            var node1 = new Node(id1, name1, opAddress1, appAddress1);
+            var node1 = new Xoom.Wire.Node.Node(id1, name1, opAddress1, appAddress1);
             
             Assert.False(node1.HasMissingPart);
             Assert.True(node1.IsValid);
@@ -31,7 +30,7 @@ namespace Vlingo.Wire.Tests.Node
             var name2 = new Name("name2");
             var opAddress2 = new Address(Host.Of("localhost"), 11113, AddressType.Op);
             var appAddress2 = new Address(Host.Of("localhost"), 11114, AddressType.App);
-            var node2 = new Node(id2, name2, opAddress2, appAddress2);
+            var node2 = new Xoom.Wire.Node.Node(id2, name2, opAddress2, appAddress2);
             
             Assert.False(node2.HasMissingPart);
             Assert.True(node2.IsValid);

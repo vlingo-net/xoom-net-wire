@@ -5,9 +5,9 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-using Vlingo.Wire.Channel;
+using Vlingo.Xoom.Wire.Channel;
 
-namespace Vlingo.Wire.Tests.Fdx.Bidirectional
+namespace Vlingo.Xoom.Wire.Tests.Fdx.Bidirectional
 {
     public class TestRequestChannelConsumerProvider : IRequestChannelConsumerProvider
     {       

@@ -8,45 +8,44 @@
 using System.Collections.Generic;
 using System.Linq;
 using Vlingo.Xoom.Actors;
+using Vlingo.Xoom.Wire.Node;
 
-namespace Vlingo.Wire.Tests.Node
+namespace Vlingo.Xoom.Wire.Tests.Node
 {
-    using Vlingo.Wire.Node;
-    
     public class MockConfiguration : IConfiguration
     {
-        private readonly ISet<Node> _nodes;
+        private readonly ISet<Xoom.Wire.Node.Node> _nodes;
 
         public MockConfiguration()
         {
-            var node1 = Node.With(Id.Of(1), Name.Of("node1"), Host.Of("localhost"), 37371, 37372);
-            var node2 = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), 37373, 37374);
-            var node3 = Node.With(Id.Of(3), Name.Of("node3"), Host.Of("localhost"), 37375, 37376);
+            var node1 = Xoom.Wire.Node.Node.With(Id.Of(1), Name.Of("node1"), Host.Of("localhost"), 37371, 37372);
+            var node2 = Xoom.Wire.Node.Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), 37373, 37374);
+            var node3 = Xoom.Wire.Node.Node.With(Id.Of(3), Name.Of("node3"), Host.Of("localhost"), 37375, 37376);
             
-            _nodes = new SortedSet<Node>(new [] {node1, node2, node3});
+            _nodes = new SortedSet<Xoom.Wire.Node.Node>(new [] {node1, node2, node3});
         }
         
-        public IEnumerable<Node> AllNodesOf(IEnumerable<Id> ids) => new List<Node>();
+        public IEnumerable<Xoom.Wire.Node.Node> AllNodesOf(IEnumerable<Id> ids) => new List<Xoom.Wire.Node.Node>();
 
-        public IEnumerable<Node> AllGreaterNodes(Id id) => _nodes.Where(node => node.Id.GreaterThan(id));
+        public IEnumerable<Xoom.Wire.Node.Node> AllGreaterNodes(Id id) => _nodes.Where(node => node.Id.GreaterThan(id));
 
-        public IEnumerable<Node> AllOtherNodes(Id id) => _nodes.Where(node => !node.Id.Equals(id));
+        public IEnumerable<Xoom.Wire.Node.Node> AllOtherNodes(Id id) => _nodes.Where(node => !node.Id.Equals(id));
 
         public IEnumerable<Id> AllOtherNodesId(Id id) => AllOtherNodes(id).Select(node => node.Id);
 
-        public Node NodeMatching(Id id)
+        public Xoom.Wire.Node.Node NodeMatching(Id id)
         {
             var firstNode = _nodes.FirstOrDefault(node => node.Id.Equals(id));
             if (firstNode != null)
             {
                 return firstNode;
             }
-            return Node.NoNode;
+            return Xoom.Wire.Node.Node.NoNode;
         }
 
         public bool HasNode(Id id) => _nodes.Any(node => node.Id.Equals(id));
 
-        public IEnumerable<Node> AllNodes => _nodes;
+        public IEnumerable<Xoom.Wire.Node.Node> AllNodes => _nodes;
 
         public IEnumerable<string> AllNodeNames => _nodes.Select(node => node.Name.Value);
 

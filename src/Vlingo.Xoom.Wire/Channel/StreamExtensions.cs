@@ -7,7 +7,7 @@
 
 using System.IO;
 
-namespace Vlingo.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel
 {
     public static class StreamExtensions
     {

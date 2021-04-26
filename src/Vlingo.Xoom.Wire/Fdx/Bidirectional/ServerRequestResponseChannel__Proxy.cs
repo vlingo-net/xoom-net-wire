@@ -9,7 +9,7 @@ using System;
 using Vlingo.Xoom.Actors;
 using Vlingo.Xoom.Common;
 
-namespace Vlingo.Wire.Fdx.Bidirectional
+namespace Vlingo.Xoom.Wire.Fdx.Bidirectional
 {
     public class ServerRequestResponseChannel__Proxy : IServerRequestResponseChannel
     {

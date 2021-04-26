@@ -8,7 +8,7 @@
 using System;
 using Vlingo.Xoom.Actors;
 
-namespace Vlingo.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel
 {
     public class ResponseChannelConsumer__Proxy : IResponseChannelConsumer
     {

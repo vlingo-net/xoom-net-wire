@@ -9,12 +9,12 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
-using Vlingo.Xoom.Common;
-using Vlingo.Wire.Message;
-using Vlingo.Wire.Node;
 using Vlingo.Xoom.Actors;
+using Vlingo.Xoom.Common;
+using Vlingo.Xoom.Wire.Message;
+using Vlingo.Xoom.Wire.Node;
 
-namespace Vlingo.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel
 {
     public class SocketChannelWriter
     {

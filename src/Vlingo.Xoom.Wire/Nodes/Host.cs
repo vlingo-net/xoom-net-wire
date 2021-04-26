@@ -16,11 +16,8 @@ namespace Vlingo.Xoom.Wire.Nodes
         
         public string Name { get; }
 
-        public Host(string name)
-        {
-            Name = name;
-        }
-        
+        public Host(string name) => Name = name;
+
         public static Host Of(string name) => new Host(name);
         
         public bool HasNoName => Name == NoName;
@@ -49,9 +46,6 @@ namespace Vlingo.Xoom.Wire.Nodes
 
         public override int GetHashCode() => 31 * Name.GetHashCode();
         
-        public override string ToString()
-        {
-            return $"Host[{Name}]";
-        }
+        public override string ToString() => $"Host[{Name}]";
     }
 }

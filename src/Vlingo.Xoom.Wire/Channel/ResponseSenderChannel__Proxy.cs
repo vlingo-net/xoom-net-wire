@@ -12,16 +12,16 @@ namespace Vlingo.Wire.Channel
 {
     public class ResponseSenderChannel__Proxy : IResponseSenderChannel
     {
-        private const string AbandonRepresentation1 = "Abandon(Vlingo.Wire.Channel.RequestResponseContext)";
+        private const string AbandonRepresentation1 = "Abandon(Vlingo.Xoom.Wire.Channel.RequestResponseContext)";
 
         private const string RespondWithRepresentation2 =
-            "RespondWith(Vlingo.Wire.Channel.RequestResponseContext, Vlingo.Wire.Message.IConsumerByteBuffer)";
+            "RespondWith(Vlingo.Xoom.Wire.Channel.RequestResponseContext, Vlingo.Xoom.Wire.Message.IConsumerByteBuffer)";
 
         private const string RespondWithRepresentation3 =
-            "RespondWith(Vlingo.Wire.Channel.RequestResponseContext, Vlingo.Wire.Message.IConsumerByteBuffer, bool)";
+            "RespondWith(Vlingo.Xoom.Wire.Channel.RequestResponseContext, Vlingo.Xoom.Wire.Message.IConsumerByteBuffer, bool)";
 
         private const string RespondWithRepresentation4 =
-            "RespondWith(Vlingo.Wire.Channel.RequestResponseContext, object, bool)";
+            "RespondWith(Vlingo.Xoom.Wire.Channel.RequestResponseContext, object, bool)";
 
         private readonly Actor _actor;
         private readonly IMailbox _mailbox;

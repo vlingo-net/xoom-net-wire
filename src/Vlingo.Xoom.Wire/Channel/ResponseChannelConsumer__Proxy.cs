@@ -12,7 +12,7 @@ namespace Vlingo.Wire.Channel
 {
     public class ResponseChannelConsumer__Proxy : IResponseChannelConsumer
     {
-        private const string ConsumeRepresentation1 = "Consume(Vlingo.Wire.Message.IConsumerByteBuffer)";
+        private const string ConsumeRepresentation1 = "Consume(Vlingo.Xoom.Wire.Message.IConsumerByteBuffer)";
 
         private readonly Actor _actor;
         private readonly IMailbox _mailbox;

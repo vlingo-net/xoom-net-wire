@@ -14,10 +14,10 @@ namespace Vlingo.Wire.Fdx.Bidirectional
     public class ServerRequestResponseChannel__Proxy : IServerRequestResponseChannel
     {
         private const string StartRepresentation1 =
-            "Start(Vlingo.Xoom.Actors.Stage, Vlingo.Wire.Channel.IRequestChannelConsumerProvider, int, string, int, int, int, long, long)";
+            "Start(Vlingo.Xoom.Actors.Stage, Vlingo.Xoom.Wire.Channel.IRequestChannelConsumerProvider, int, string, int, int, int, long, long)";
 
         private const string StartRepresentation2 =
-            "Start(Vlingo.Xoom.Actors.Stage, Vlingo.Xoom.Actors.IAddress, string, Vlingo.Wire.Channel.IRequestChannelConsumerProvider, int, string, int, int, int, long, long)";
+            "Start(Vlingo.Xoom.Actors.Stage, Vlingo.Xoom.Actors.IAddress, string, Vlingo.Xoom.Wire.Channel.IRequestChannelConsumerProvider, int, string, int, int, int, long, long)";
 
         private const string CloseRepresentation3 = "Close()";
         private const string PortRepresentation4 = "Port()";

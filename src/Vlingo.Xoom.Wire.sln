@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.271
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vlingo.Wire", "Vlingo.Wire\Vlingo.Wire.csproj", "{3BFE01CE-D190-454B-B9D5-552D3DA1F3EC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vlingo.Xoom.Wire", "Vlingo.Xoom.Wire\Vlingo.Xoom.Wire.csproj", "{3BFE01CE-D190-454B-B9D5-552D3DA1F3EC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vlingo.Wire.Tests", "Vlingo.Wire.Tests\Vlingo.Wire.Tests.csproj", "{E8E442D5-BB69-49D6-9123-97CEDEA122C3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vlingo.Xoom.Wire.Tests", "Vlingo.Xoom.Wire.Tests\Vlingo.Xoom.Wire.Tests.csproj", "{E8E442D5-BB69-49D6-9123-97CEDEA122C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

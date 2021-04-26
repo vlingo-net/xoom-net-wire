@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Vlingo.Wire\Vlingo.Wire.csproj" />
+    <ProjectReference Include="..\Vlingo.Xoom.Wire\Vlingo.Xoom.Wire.csproj" />
   </ItemGroup>
 
   <ItemGroup>

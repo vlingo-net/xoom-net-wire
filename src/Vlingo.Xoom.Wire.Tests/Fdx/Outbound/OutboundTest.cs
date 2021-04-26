@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using Vlingo.Xoom.Common.Pool;
 using Vlingo.Xoom.Wire.Message;
-using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Nodes;
 using Vlingo.Xoom.Wire.Tests.Message;
 using Xunit;
 using Xunit.Abstractions;
@@ -83,7 +83,7 @@ namespace Vlingo.Xoom.Wire.Tests.Fdx.Outbound
             var rawMessage2 = RawMessage.From(0, 0, Message2);
             var rawMessage3 = RawMessage.From(0, 0, Message3);
 
-            var selectNodes = new List<Xoom.Wire.Node.Node> {Config.NodeMatching(Id.Of(3))};
+            var selectNodes = new List<Node> {Config.NodeMatching(Id.Of(3))};
             
             _outbound.Broadcast(selectNodes, rawMessage1);
             _outbound.Broadcast(selectNodes, rawMessage2);

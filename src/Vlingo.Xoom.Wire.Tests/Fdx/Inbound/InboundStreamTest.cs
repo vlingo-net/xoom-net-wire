@@ -9,7 +9,7 @@ using System;
 using System.Linq;
 using Vlingo.Xoom.Actors.TestKit;
 using Vlingo.Xoom.Wire.Fdx.Inbound;
-using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Nodes;
 using Vlingo.Xoom.Wire.Tests.Channel;
 using Xunit;
 using Xunit.Abstractions;

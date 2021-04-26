@@ -8,7 +8,7 @@
 using Vlingo.Xoom.Actors;
 using Vlingo.Xoom.Wire.Channel;
 using Vlingo.Xoom.Wire.Fdx.Bidirectional;
-using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Nodes;
 using Xunit.Abstractions;
 
 namespace Vlingo.Xoom.Wire.Tests.Fdx.Bidirectional

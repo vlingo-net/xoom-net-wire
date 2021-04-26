@@ -8,7 +8,7 @@
 using System;
 using System.Collections.Generic;
 using Vlingo.Xoom.Wire.Fdx.Outbound;
-using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Nodes;
 using Vlingo.Xoom.Wire.Tests.Message;
 using Xunit;
 using Xunit.Abstractions;
@@ -17,7 +17,7 @@ namespace Vlingo.Xoom.Wire.Tests.Fdx.Outbound
 {
     public class ManagedOutboundSocketChannelProviderTest : AbstractMessageTool
     {
-        private readonly IEnumerable<Xoom.Wire.Node.Node> _allOtherNodes;
+        private readonly IEnumerable<Node> _allOtherNodes;
         private readonly ManagedOutboundSocketChannelProvider _provider;
 
         [Fact]

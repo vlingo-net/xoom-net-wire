@@ -5,8 +5,8 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-using Vlingo.Xoom.Wire.Node;
-using Vlingo.Xoom.Wire.Tests.Node;
+using Vlingo.Xoom.Wire.Nodes;
+using Vlingo.Xoom.Wire.Tests.Nodes;
 
 namespace Vlingo.Xoom.Wire.Tests.Message
 {

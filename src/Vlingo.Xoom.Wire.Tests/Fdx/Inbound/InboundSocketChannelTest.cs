@@ -14,7 +14,7 @@ using Vlingo.Xoom.Wire.Channel;
 using Vlingo.Xoom.Wire.Fdx.Inbound;
 using Vlingo.Xoom.Wire.Fdx.Outbound;
 using Vlingo.Xoom.Wire.Message;
-using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Nodes;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -96,7 +96,7 @@ namespace Vlingo.Xoom.Wire.Tests.Fdx.Inbound
         {
             var converter = new Converter(output);
             Console.SetOut(converter);
-            var node = Xoom.Wire.Node.Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), _testPort, _testPort + 1);
+            var node = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), _testPort, _testPort + 1);
             var logger = ConsoleLogger.TestInstance();
             _opChannel = new ManagedOutboundSocketChannel(node, node.OperationalAddress, logger);
             _appChannel = new ManagedOutboundSocketChannel(node, node.ApplicationAddress, logger);

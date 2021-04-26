@@ -6,7 +6,7 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
-using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Nodes;
 
 namespace Vlingo.Xoom.Wire.Fdx.Outbound
 {
@@ -16,7 +16,7 @@ namespace Vlingo.Xoom.Wire.Fdx.Outbound
         
         IManagedOutboundChannel ChannelFor(Id id);
 
-        IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Node.Node> nodes);
+        IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Node> nodes);
 
         void Close();
 

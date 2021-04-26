@@ -13,7 +13,7 @@ using Vlingo.Xoom.Actors.Plugin.Logging.Console;
 using Vlingo.Xoom.Wire.Channel;
 using Vlingo.Xoom.Wire.Fdx.Inbound;
 using Vlingo.Xoom.Wire.Message;
-using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Nodes;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -60,7 +60,7 @@ namespace Vlingo.Xoom.Wire.Tests.Channel
             var converter = new Converter(output);
             Console.SetOut(converter);
             
-            var node = Xoom.Wire.Node.Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), 37377, 37378);
+            var node = Node.With(Id.Of(2), Name.Of("node2"), Host.Of("localhost"), 37377, 37378);
             var logger = ConsoleLogger.TestInstance();
             _channelWriter = new SocketChannelWriter(node.OperationalAddress, logger);
             _channelReader = new SocketChannelInboundReader(node.OperationalAddress.Port, "test-reader", 1024, logger);

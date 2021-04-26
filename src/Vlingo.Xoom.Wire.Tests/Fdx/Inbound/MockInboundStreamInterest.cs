@@ -10,7 +10,7 @@ using Vlingo.Xoom.Actors.TestKit;
 using Vlingo.Xoom.Common;
 using Vlingo.Xoom.Wire.Fdx.Inbound;
 using Vlingo.Xoom.Wire.Message;
-using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Nodes;
 using Vlingo.Xoom.Wire.Tests.Message;
 using Xunit.Abstractions;
 

@@ -7,7 +7,7 @@
 
 using System.Collections.Generic;
 using Vlingo.Xoom.Wire.Message;
-using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Nodes;
 
 namespace Vlingo.Xoom.Wire.Fdx.Outbound
 {
@@ -35,13 +35,13 @@ namespace Vlingo.Xoom.Wire.Fdx.Outbound
             Broadcast(_provider.AllOtherNodeChannels, buffer);
         }
 
-        public void Broadcast(IEnumerable<Node.Node> selectNodes, RawMessage message)
+        public void Broadcast(IEnumerable<Node> selectNodes, RawMessage message)
         {
             var buffer = _pool.Acquire();
             Broadcast(selectNodes, BytesFrom(message, buffer));
         }
 
-        public void Broadcast(IEnumerable<Node.Node> selectNodes, IConsumerByteBuffer buffer)
+        public void Broadcast(IEnumerable<Node> selectNodes, IConsumerByteBuffer buffer)
         {
             Broadcast(_provider.ChannelsFor(selectNodes), buffer);
         }

@@ -6,11 +6,11 @@
 // one at https://mozilla.org/MPL/2.0/.
 
 using System;
-using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Nodes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Vlingo.Xoom.Wire.Tests.Node
+namespace Vlingo.Xoom.Wire.Tests.Nodes
 {
     public class NameTests
     {

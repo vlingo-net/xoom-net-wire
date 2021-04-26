@@ -7,7 +7,7 @@
 
 using System;
 
-namespace Vlingo.Xoom.Wire.Node
+namespace Vlingo.Xoom.Wire.Nodes
 {
     public sealed class Address : IComparable<Address>
     {

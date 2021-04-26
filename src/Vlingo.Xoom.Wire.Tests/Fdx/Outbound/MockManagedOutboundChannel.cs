@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using Vlingo.Xoom.Wire.Fdx.Outbound;
 using Vlingo.Xoom.Wire.Message;
-using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Nodes;
 
 namespace Vlingo.Xoom.Wire.Tests.Fdx.Outbound
 {

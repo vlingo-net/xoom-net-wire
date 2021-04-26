@@ -13,7 +13,7 @@ using Vlingo.Xoom.Actors;
 using Vlingo.Xoom.Common.Pool;
 using Vlingo.Xoom.Wire.Channel;
 using Vlingo.Xoom.Wire.Message;
-using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Nodes;
 
 namespace Vlingo.Xoom.Wire.Fdx.Bidirectional
 {

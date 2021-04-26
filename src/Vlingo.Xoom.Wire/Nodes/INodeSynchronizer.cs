@@ -5,7 +5,7 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-namespace Vlingo.Xoom.Wire.Node
+namespace Vlingo.Xoom.Wire.Nodes
 {
     public interface INodeSynchronizer
     {

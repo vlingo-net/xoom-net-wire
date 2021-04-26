@@ -7,7 +7,7 @@
 
 using System.Collections.Generic;
 using Vlingo.Xoom.Wire.Fdx.Outbound;
-using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Nodes;
 
 namespace Vlingo.Xoom.Wire.Tests.Fdx.Outbound
 {
@@ -51,7 +51,7 @@ namespace Vlingo.Xoom.Wire.Tests.Fdx.Outbound
             return _allChannels[id];
         }
 
-        public IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Xoom.Wire.Node.Node> nodes)
+        public IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Node> nodes)
         {
             var others = new Dictionary<Id, IManagedOutboundChannel>();
 

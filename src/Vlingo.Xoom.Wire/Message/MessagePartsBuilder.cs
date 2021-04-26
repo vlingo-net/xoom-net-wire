@@ -7,7 +7,7 @@
 
 using System;
 using System.Collections.Generic;
-using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Nodes;
 
 namespace Vlingo.Xoom.Wire.Message
 {
@@ -44,9 +44,9 @@ namespace Vlingo.Xoom.Wire.Message
             return addresses;
         }
 
-        public static IEnumerable<Node.Node> NodesFrom(string content)
+        public static IEnumerable<Node> NodesFrom(string content)
         {
-            var nodeEntries = new HashSet<Node.Node>();
+            var nodeEntries = new HashSet<Node>();
 
             var parts = content.Split('\n');
 
@@ -63,26 +63,26 @@ namespace Vlingo.Xoom.Wire.Message
             return nodeEntries;
         }
 
-        public static Node.Node NodeFrom(string content)
+        public static Node NodeFrom(string content)
         {
             var parts = content.Split('\n');
 
             if (parts.Length < 2)
             {
-                return Node.Node.NoNode;
+                return Node.NoNode;
             }
 
             return NodeFromRecord(parts[1]);
         }
 
-        public static Node.Node NodeFromRecord(string record)
+        public static Node NodeFromRecord(string record)
         {
             var id = IdFromRecord(record);
             var name = NameFromRecord(record);
             var opAddress = AddressFromRecord(record, AddressType.Op);
             var appAddress = AddressFromRecord(record, AddressType.App);
 
-            return new Node.Node(id, name, opAddress, appAddress);
+            return new Node(id, name, opAddress, appAddress);
         }
 
         public static Id IdFrom(string content)

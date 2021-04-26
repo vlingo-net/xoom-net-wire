@@ -12,7 +12,7 @@ using Vlingo.Xoom.Actors.Plugin.Logging.Console;
 using Vlingo.Xoom.Wire.Channel;
 using Vlingo.Xoom.Wire.Message;
 using Vlingo.Xoom.Wire.Multicast;
-using Vlingo.Xoom.Wire.Node;
+using Vlingo.Xoom.Wire.Nodes;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -23,13 +23,13 @@ jobs:
         dotnet-version: 3.1.402
     - name: Restore dependencies
       id: restore-deps
-      run: dotnet restore ./src/Vlingo.Wire.sln
+      run: dotnet restore ./src/Vlingo.Xoom.Wire.sln
     - name: Build
       id: build
-      run: dotnet build ./src/Vlingo.Wire.sln --no-restore
+      run: dotnet build ./src/Vlingo.Xoom.Wire.sln --no-restore
     - name: Test
       id: test
-      run: dotnet test ./src/Vlingo.Wire.Tests/Vlingo.Wire.Tests.csproj --no-build --verbosity normal
+      run: dotnet test ./src/Vlingo.Xoom.Wire.Tests/Vlingo.Xoom.Wire.Tests.csproj --no-build --verbosity normal
     - name: slack - GitHub Actions Slack integration
       uses: act10ns/slack@v1.2.2
       env:

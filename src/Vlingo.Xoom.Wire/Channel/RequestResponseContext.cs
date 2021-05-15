@@ -5,14 +5,15 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
+using System;
 using Vlingo.Xoom.Wire.Message;
 
 namespace Vlingo.Xoom.Wire.Channel
 {
     public abstract class RequestResponseContext
     {
-        public abstract TR ConsumerData<TR>();
-        public abstract TR ConsumerData<TR>(TR data);
+        public abstract Tr ConsumerData<Tr>();
+        public abstract Tr ConsumerData<Tr>(Tr data);
         public abstract bool HasConsumerData { get; }
         public abstract string Id { get; }
         public abstract IResponseSenderChannel Sender { get; }
@@ -21,5 +22,7 @@ namespace Vlingo.Xoom.Wire.Channel
         public void Abandon() => Sender.Abandon(this);
 
         public void RespondWith(IConsumerByteBuffer buffer) => Sender.RespondWith(this, buffer);
+        
+        public virtual string? RemoteAddress() => throw new InvalidOperationException("Remote address is unavailable by default");
     }
 }

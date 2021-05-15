@@ -410,6 +410,19 @@ namespace Vlingo.Xoom.Wire.Channel
 
             public IRequestChannelConsumer Consumer => _consumer;
 
+            public override string? RemoteAddress()
+            {
+                try
+                {
+                    return _clientChannel.RemoteEndPoint.ToString();
+                }
+                catch (Exception)
+                {
+                    _parent.Logger.Error("Unable to retrieve remote address");
+                    return string.Empty;
+                }
+            }
+
             public bool HasNextWritable => _writables.Count > 0;
 
             public IConsumerByteBuffer? NextWritable()

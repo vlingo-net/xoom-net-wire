@@ -10,6 +10,7 @@ using System.Collections.Generic;
 
 namespace Vlingo.Xoom.Wire.Nodes
 {
+    [Serializable]
     public sealed class Id : IComparable<Id>
     {
         public static short UndefinedId => -1;
@@ -17,14 +18,11 @@ namespace Vlingo.Xoom.Wire.Nodes
 
         public short Value { get; }
 
-        public Id(int id) : this((short)id)
+        public Id(int value) : this((short)value)
         {
         }
-        
-        public Id(short id)
-        {
-            Value = id;
-        }
+
+        public Id(short value) => Value = value;
 
         public static Id Of(int id) => new Id(id);
 
@@ -61,9 +59,6 @@ namespace Vlingo.Xoom.Wire.Nodes
 
         public override int GetHashCode() => 31 * Value.GetHashCode();
 
-        public override string ToString()
-        {
-            return $"Id[{Value}]";
-        }
+        public override string ToString() => $"Id[{Value}]";
     }
 }

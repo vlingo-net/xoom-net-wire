@@ -86,7 +86,7 @@ namespace Vlingo.Xoom.Wire.Message
                 else
                 {
                     utf8Length += 2;
-                    if (char.IsSurrogate(c))
+                    if (char.IsSurrogate©)
                     {
                         // Check that we have a well-formed surrogate pair.
                         if (sequence[i] == c)

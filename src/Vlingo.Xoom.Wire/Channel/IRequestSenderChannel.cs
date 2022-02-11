@@ -5,12 +5,11 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-namespace Vlingo.Xoom.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel;
+
+public interface IRequestSenderChannel
 {
-    public interface IRequestSenderChannel
-    {
-        void Close();
+    void Close();
         
-        void RequestWith(byte[] buffer);
-    }
+    void RequestWith(byte[] buffer);
 }

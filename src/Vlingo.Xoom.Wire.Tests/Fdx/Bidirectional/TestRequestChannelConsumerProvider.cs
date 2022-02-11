@@ -7,12 +7,11 @@
 
 using Vlingo.Xoom.Wire.Channel;
 
-namespace Vlingo.Xoom.Wire.Tests.Fdx.Bidirectional
-{
-    public class TestRequestChannelConsumerProvider : IRequestChannelConsumerProvider
-    {       
-        public IRequestChannelConsumer Consumer { get; } = new TestRequestChannelConsumer();
+namespace Vlingo.Xoom.Wire.Tests.Fdx.Bidirectional;
 
-        public IRequestChannelConsumer RequestChannelConsumer() => Consumer;
-    }
+public class TestRequestChannelConsumerProvider : IRequestChannelConsumerProvider
+{       
+    public IRequestChannelConsumer Consumer { get; } = new TestRequestChannelConsumer();
+
+    public IRequestChannelConsumer RequestChannelConsumer() => Consumer;
 }

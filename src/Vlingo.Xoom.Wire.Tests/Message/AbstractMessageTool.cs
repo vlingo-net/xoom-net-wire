@@ -8,10 +8,9 @@
 using Vlingo.Xoom.Wire.Nodes;
 using Vlingo.Xoom.Wire.Tests.Nodes;
 
-namespace Vlingo.Xoom.Wire.Tests.Message
+namespace Vlingo.Xoom.Wire.Tests.Message;
+
+public class AbstractMessageTool
 {
-    public class AbstractMessageTool
-    {
-        protected IConfiguration Config = new MockConfiguration();
-    }
+    protected IConfiguration Config = new MockConfiguration();
 }

@@ -7,13 +7,12 @@
 
 using Vlingo.Xoom.Wire.Message;
 
-namespace Vlingo.Xoom.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel;
+
+public interface IResponseSenderChannel
 {
-    public interface IResponseSenderChannel
-    {
-        void Abandon(RequestResponseContext context);
-        void RespondWith(RequestResponseContext context, IConsumerByteBuffer buffer);
-        void RespondWith(RequestResponseContext context, IConsumerByteBuffer buffer, bool closeFollowing);
-        void RespondWith(RequestResponseContext context, object response, bool closeFollowing);
-    }
+    void Abandon(RequestResponseContext context);
+    void RespondWith(RequestResponseContext context, IConsumerByteBuffer buffer);
+    void RespondWith(RequestResponseContext context, IConsumerByteBuffer buffer, bool closeFollowing);
+    void RespondWith(RequestResponseContext context, object response, bool closeFollowing);
 }

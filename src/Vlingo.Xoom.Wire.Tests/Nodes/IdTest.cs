@@ -10,35 +10,34 @@ using Vlingo.Xoom.Wire.Nodes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Vlingo.Xoom.Wire.Tests.Nodes
-{
-    public class IdTest
-    {
-        [Fact]
-        public void TestIdCreationState()
-        {
-            var id = Id.Of(1);
-            Assert.Equal(id, Id.Of(1));
-            Assert.Equal(1, id.Value);
-            Assert.False(id.HasNoId);
-            Assert.True(id.IsValid);
-        }
-        
-        [Fact]
-        public void TestIdComparisons()
-        {
-            var id1 = Id.Of(1);
-            var id2 = Id.Of(2);
-            Assert.NotEqual(0, id1.CompareTo(id2));
-            Assert.Equal(-1, id1.CompareTo(id2));
-            Assert.True(id2.GreaterThan(id1));
-            Assert.False(id1.GreaterThan(id2));
-        }
+namespace Vlingo.Xoom.Wire.Tests.Nodes;
 
-        public IdTest(ITestOutputHelper output)
-        {
-            var converter = new Converter(output);
-            Console.SetOut(converter);
-        }
+public class IdTest
+{
+    [Fact]
+    public void TestIdCreationState()
+    {
+        var id = Id.Of(1);
+        Assert.Equal(id, Id.Of(1));
+        Assert.Equal(1, id.Value);
+        Assert.False(id.HasNoId);
+        Assert.True(id.IsValid);
+    }
+        
+    [Fact]
+    public void TestIdComparisons()
+    {
+        var id1 = Id.Of(1);
+        var id2 = Id.Of(2);
+        Assert.NotEqual(0, id1.CompareTo(id2));
+        Assert.Equal(-1, id1.CompareTo(id2));
+        Assert.True(id2.GreaterThan(id1));
+        Assert.False(id1.GreaterThan(id2));
+    }
+
+    public IdTest(ITestOutputHelper output)
+    {
+        var converter = new Converter(output);
+        Console.SetOut(converter);
     }
 }

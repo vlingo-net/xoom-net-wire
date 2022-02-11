@@ -10,41 +10,40 @@ using Vlingo.Xoom.Wire.Channel;
 using Vlingo.Xoom.Wire.Message;
 using Vlingo.Xoom.Wire.Tests.Message;
 
-namespace Vlingo.Xoom.Wire.Tests.Channel
+namespace Vlingo.Xoom.Wire.Tests.Channel;
+
+public class MockChannelReader: AbstractMessageTool, IChannelReader
 {
-    public class MockChannelReader: AbstractMessageTool, IChannelReader
+    private IChannelReaderConsumer _consumer;
+        
+    public MockChannelReader()
     {
-        private IChannelReaderConsumer _consumer;
+        ProbeChannelCount = new AtomicInteger(0);
+    }
         
-        public MockChannelReader()
-        {
-            ProbeChannelCount = new AtomicInteger(0);
-        }
-        
-        public static readonly string MessagePrefix = "Message-";
+    public static readonly string MessagePrefix = "Message-";
 
-        public AtomicInteger ProbeChannelCount { get; }
+    public AtomicInteger ProbeChannelCount { get; }
         
-        public void Close()
-        {
-        }
+    public void Close()
+    {
+    }
 
-        public string Name { get; } = "mock";
+    public string Name { get; } = "mock";
         
-        public int Port { get; } = 0;
+    public int Port { get; } = 0;
         
-        public void OpenFor(IChannelReaderConsumer consumer)
-        {
-            _consumer = consumer;
-        }
+    public void OpenFor(IChannelReaderConsumer consumer)
+    {
+        _consumer = consumer;
+    }
 
-        public void ProbeChannel()
-        {
-            ProbeChannelCount.IncrementAndGet();
+    public void ProbeChannel()
+    {
+        ProbeChannelCount.IncrementAndGet();
             
-            var message = RawMessage.From(0, 0, MessagePrefix + ProbeChannelCount.Get());
+        var message = RawMessage.From(0, 0, MessagePrefix + ProbeChannelCount.Get());
             
-            _consumer.Consume(message);
-        }
+        _consumer.Consume(message);
     }
 }

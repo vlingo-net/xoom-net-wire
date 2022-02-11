@@ -8,18 +8,17 @@
 using System.Collections.Generic;
 using Vlingo.Xoom.Wire.Nodes;
 
-namespace Vlingo.Xoom.Wire.Fdx.Outbound
+namespace Vlingo.Xoom.Wire.Fdx.Outbound;
+
+public interface IManagedOutboundChannelProvider
 {
-    public interface IManagedOutboundChannelProvider
-    {
-        IReadOnlyDictionary<Id, IManagedOutboundChannel> AllOtherNodeChannels { get; }
+    IReadOnlyDictionary<Id, IManagedOutboundChannel> AllOtherNodeChannels { get; }
         
-        IManagedOutboundChannel ChannelFor(Id id);
+    IManagedOutboundChannel ChannelFor(Id id);
 
-        IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Node> nodes);
+    IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Node> nodes);
 
-        void Close();
+    void Close();
 
-        void Close(Id id);
-    }
+    void Close(Id id);
 }

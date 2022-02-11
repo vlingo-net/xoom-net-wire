@@ -8,30 +8,29 @@
 using System.Collections.Generic;
 using Vlingo.Xoom.Actors;
 
-namespace Vlingo.Xoom.Wire.Nodes
-{
-    public interface IConfiguration
-    {   
-        IEnumerable<Node> AllNodesOf(IEnumerable<Id> ids);
+namespace Vlingo.Xoom.Wire.Nodes;
 
-        IEnumerable<Node> AllGreaterNodes(Id id);
+public interface IConfiguration
+{   
+    IEnumerable<Node> AllNodesOf(IEnumerable<Id> ids);
 
-        IEnumerable<Node> AllOtherNodes(Id id);
+    IEnumerable<Node> AllGreaterNodes(Id id);
 
-        IEnumerable<Id> AllOtherNodesId(Id id);
+    IEnumerable<Node> AllOtherNodes(Id id);
 
-        Node NodeMatching(Id id);
+    IEnumerable<Id> AllOtherNodesId(Id id);
 
-        bool HasNode(Id id);
+    Node NodeMatching(Id id);
+
+    bool HasNode(Id id);
         
-        IEnumerable<Node> AllNodes { get; }
+    IEnumerable<Node> AllNodes { get; }
         
-        IEnumerable<string> AllNodeNames { get; }
+    IEnumerable<string> AllNodeNames { get; }
         
-        Id GreatestNodeId { get; }
+    Id GreatestNodeId { get; }
         
-        int TotalNodes { get; }
+    int TotalNodes { get; }
         
-        ILogger Logger { get; }
-    }
+    ILogger Logger { get; }
 }

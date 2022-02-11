@@ -11,44 +11,43 @@ using Vlingo.Xoom.Common;
 using Vlingo.Xoom.Wire.Channel;
 using Vlingo.Xoom.Wire.Message;
 
-namespace Vlingo.Xoom.Wire.Tests.Fdx.Bidirectional
+namespace Vlingo.Xoom.Wire.Tests.Fdx.Bidirectional;
+
+public class TestSecureResponseChannelConsumer : IResponseChannelConsumer
 {
-    public class TestSecureResponseChannelConsumer : IResponseChannelConsumer
+    private AccessSafely _access;
+    private readonly List<string> _responses = new List<string>();
+
+    public int CurrentExpectedResponseLength { get; set; }
+
+    public IEnumerable<string> Responses => _responses;
+
+    public AtomicInteger ConsumeCount { get; } = new AtomicInteger(0);
+        
+    public int TotalWrites => _access.TotalWrites;
+        
+    public void Consume(IConsumerByteBuffer buffer)
     {
-        private AccessSafely _access;
-        private readonly List<string> _responses = new List<string>();
-
-        public int CurrentExpectedResponseLength { get; set; }
-
-        public IEnumerable<string> Responses => _responses;
-
-        public AtomicInteger ConsumeCount { get; } = new AtomicInteger(0);
+        var responsePart = buffer.ToArray().BytesToText(0, (int)buffer.Limit());
+        buffer.Release();
+        _access.WriteUsing("responses", responsePart);
+    }
         
-        public int TotalWrites => _access.TotalWrites;
-        
-        public void Consume(IConsumerByteBuffer buffer)
-        {
-            var responsePart = buffer.ToArray().BytesToText(0, (int)buffer.Limit());
-            buffer.Release();
-            _access.WriteUsing("responses", responsePart);
-        }
-        
-        public int GetConsumeCount() => _access.ReadFrom<int>("consumeCount");
+    public int GetConsumeCount() => _access.ReadFrom<int>("consumeCount");
 
-        public IEnumerable<string> GetResponses() => _access.ReadFrom<IEnumerable<string>>("responses");
-        public AccessSafely AfterCompleting(int times)
-        {
-            _access = AccessSafely.AfterCompleting(times);
+    public IEnumerable<string> GetResponses() => _access.ReadFrom<IEnumerable<string>>("responses");
+    public AccessSafely AfterCompleting(int times)
+    {
+        _access = AccessSafely.AfterCompleting(times);
 
-            _access.WritingWith<string>("responses", (response) => {
-                _responses.Add(response);
-                ConsumeCount.IncrementAndGet();
-            });
+        _access.WritingWith<string>("responses", (response) => {
+            _responses.Add(response);
+            ConsumeCount.IncrementAndGet();
+        });
 
-            _access.ReadingWith<IEnumerable<string>>("responses", () => _responses);
-            _access.ReadingWith("consumeCount", () => ConsumeCount.Get());
+        _access.ReadingWith<IEnumerable<string>>("responses", () => _responses);
+        _access.ReadingWith("consumeCount", () => ConsumeCount.Get());
 
-            return _access;
-        }
+        return _access;
     }
 }

@@ -7,13 +7,12 @@
 
 using Vlingo.Xoom.Wire.Message;
 
-namespace Vlingo.Xoom.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel;
+
+public interface IChannelPublisher
 {
-    public interface IChannelPublisher
-    {
-        void Close();
-        void ProcessChannel();
-        void SendAvailability();
-        void Send(RawMessage message);
-    }
+    void Close();
+    void ProcessChannel();
+    void SendAvailability();
+    void Send(RawMessage message);
 }

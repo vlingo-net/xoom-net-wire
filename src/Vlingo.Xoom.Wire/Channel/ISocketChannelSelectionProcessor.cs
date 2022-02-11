@@ -7,12 +7,11 @@
 
 using System.Net.Sockets;
 
-namespace Vlingo.Xoom.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel;
+
+public interface ISocketChannelSelectionProcessor
 {
-    public interface ISocketChannelSelectionProcessor
-    {
-        void Close();
+    void Close();
         
-        void Process(Socket channel);
-    }
+    void Process(Socket channel);
 }

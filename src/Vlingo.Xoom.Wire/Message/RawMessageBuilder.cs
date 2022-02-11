@@ -9,123 +9,122 @@ using System;
 using System.IO;
 using Vlingo.Xoom.Wire.Channel;
 
-namespace Vlingo.Xoom.Wire.Message
-{
-    public class RawMessageBuilder
-    {
-        private ScanMode _mode;
-        private readonly RawMessage _rawMessage;
-        private readonly MemoryStream _workBuffer;
-      
-        public RawMessageBuilder(int maxMessageSize)
-        {
-            _rawMessage = new RawMessage(maxMessageSize);
-            _workBuffer = new MemoryStream(maxMessageSize);
-            _workBuffer.SetLength(maxMessageSize);
-            _mode = ScanMode.ReadHeader;
-        }
-      
-        public RawMessage CurrentRawMessage()
-        {
-            if (IsCurrentMessageIncomplete())
-            {
-                throw new InvalidOperationException("The current raw message is incomplete.");
-            }
-        
-            return _rawMessage;
-        }
-      
-        public bool HasContent => _workBuffer.Position > 0;
-      
-        public bool IsCurrentMessageComplete()
-        {
-            var length = Length;
-            var expected = _rawMessage.RequiredMessageLength;
-      
-            return length != 0 && length == expected;
-        }
-      
-        public bool IsCurrentMessageIncomplete() => Length < _rawMessage.RequiredMessageLength;
-      
-        public long Length => _rawMessage.Length;
-      
-        public RawMessageBuilder PrepareContent()
-        {
-            _workBuffer.Flip();
-            return this;
-        }
-      
-        public RawMessageBuilder PrepareForNextMessage()
-        {
-            _rawMessage.Reset();
-            return this;
-        }
-      
-        public void Sync()
-        {
-            if (!Underflow())
-            {
-                var content = _workBuffer.ToArray();
-                
-                if (_mode == ScanMode.ReadHeader)
-                {
-                    _rawMessage.HeaderFrom(_workBuffer);
-                }
-                
-                var messageTotalLength = _rawMessage.RequiredMessageLength;
-                var missingRawMessageLength = messageTotalLength - _rawMessage.Length;
-                var contentPosition = _workBuffer.Position;
-                var availableContentLength = _workBuffer.Length - contentPosition;
-            
-                var appendLength = Math.Min(missingRawMessageLength, availableContentLength);
-            
-                _rawMessage.Append(content, contentPosition, appendLength);
-                
-                _workBuffer.Position = contentPosition + appendLength;
-                
-                if (availableContentLength == missingRawMessageLength)
-                {
-                  _workBuffer.Clear();
-                  SetMode(ScanMode.ReadHeader);
-                }
-                else if (availableContentLength > missingRawMessageLength)
-                {
-                  SetMode(ScanMode.ReadHeader);
-                }
-                else if (availableContentLength < missingRawMessageLength)
-                {
-                  _workBuffer.Clear();
-                  SetMode(ScanMode.ReuseHeader);
-                }
-            }
-        }
+namespace Vlingo.Xoom.Wire.Message;
 
-        public Stream WorkBuffer() => _workBuffer;
+public class RawMessageBuilder
+{
+    private ScanMode _mode;
+    private readonly RawMessage _rawMessage;
+    private readonly MemoryStream _workBuffer;
       
-        private void SetMode(ScanMode mode) => _mode = mode;
+    public RawMessageBuilder(int maxMessageSize)
+    {
+        _rawMessage = new RawMessage(maxMessageSize);
+        _workBuffer = new MemoryStream(maxMessageSize);
+        _workBuffer.SetLength(maxMessageSize);
+        _mode = ScanMode.ReadHeader;
+    }
       
-        private bool Underflow()
+    public RawMessage CurrentRawMessage()
+    {
+        if (IsCurrentMessageIncomplete())
         {
-            var remainingContentLength = _workBuffer.Length - _workBuffer.Position;
-            var minimumRequiredLength = RawMessageHeader.Bytes + 1;
-            
-            if (_rawMessage.RequiredMessageLength == 0 && remainingContentLength < minimumRequiredLength)
+            throw new InvalidOperationException("The current raw message is incomplete.");
+        }
+        
+        return _rawMessage;
+    }
+      
+    public bool HasContent => _workBuffer.Position > 0;
+      
+    public bool IsCurrentMessageComplete()
+    {
+        var length = Length;
+        var expected = _rawMessage.RequiredMessageLength;
+      
+        return length != 0 && length == expected;
+    }
+      
+    public bool IsCurrentMessageIncomplete() => Length < _rawMessage.RequiredMessageLength;
+      
+    public long Length => _rawMessage.Length;
+      
+    public RawMessageBuilder PrepareContent()
+    {
+        _workBuffer.Flip();
+        return this;
+    }
+      
+    public RawMessageBuilder PrepareForNextMessage()
+    {
+        _rawMessage.Reset();
+        return this;
+    }
+      
+    public void Sync()
+    {
+        if (!Underflow())
+        {
+            var content = _workBuffer.ToArray();
+                
+            if (_mode == ScanMode.ReadHeader)
             {
-                var content = _workBuffer.ToArray();
-                Array.Copy(content, _workBuffer.Position, content, 0, remainingContentLength);
-                _workBuffer.Position = 0;
-                _workBuffer.SetLength(remainingContentLength);
-                SetMode(ScanMode.ReadHeader);
-                return true;
+                _rawMessage.HeaderFrom(_workBuffer);
             }
+                
+            var messageTotalLength = _rawMessage.RequiredMessageLength;
+            var missingRawMessageLength = messageTotalLength - _rawMessage.Length;
+            var contentPosition = _workBuffer.Position;
+            var availableContentLength = _workBuffer.Length - contentPosition;
             
-            return false;
+            var appendLength = Math.Min(missingRawMessageLength, availableContentLength);
+            
+            _rawMessage.Append(content, contentPosition, appendLength);
+                
+            _workBuffer.Position = contentPosition + appendLength;
+                
+            if (availableContentLength == missingRawMessageLength)
+            {
+                _workBuffer.Clear();
+                SetMode(ScanMode.ReadHeader);
+            }
+            else if (availableContentLength > missingRawMessageLength)
+            {
+                SetMode(ScanMode.ReadHeader);
+            }
+            else if (availableContentLength < missingRawMessageLength)
+            {
+                _workBuffer.Clear();
+                SetMode(ScanMode.ReuseHeader);
+            }
         }
+    }
+
+    public Stream WorkBuffer() => _workBuffer;
       
-        private enum ScanMode
+    private void SetMode(ScanMode mode) => _mode = mode;
+      
+    private bool Underflow()
+    {
+        var remainingContentLength = _workBuffer.Length - _workBuffer.Position;
+        var minimumRequiredLength = RawMessageHeader.Bytes + 1;
+            
+        if (_rawMessage.RequiredMessageLength == 0 && remainingContentLength < minimumRequiredLength)
         {
-            ReadHeader,
-            ReuseHeader
+            var content = _workBuffer.ToArray();
+            Array.Copy(content, _workBuffer.Position, content, 0, remainingContentLength);
+            _workBuffer.Position = 0;
+            _workBuffer.SetLength(remainingContentLength);
+            SetMode(ScanMode.ReadHeader);
+            return true;
         }
+            
+        return false;
+    }
+      
+    private enum ScanMode
+    {
+        ReadHeader,
+        ReuseHeader
     }
 }

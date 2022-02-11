@@ -10,30 +10,29 @@ using Vlingo.Xoom.Actors.TestKit;
 using Vlingo.Xoom.Common;
 using Vlingo.Xoom.Wire.Message;
 
-namespace Vlingo.Xoom.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel;
+
+public class MockChannelReaderConsumer : IChannelReaderConsumer
 {
-    public class MockChannelReaderConsumer : IChannelReaderConsumer
+    private readonly List<string> _messages = new List<string>();
+    private AccessSafely _access = AccessSafely.AfterCompleting(0);
+    private readonly AtomicInteger _count = new AtomicInteger(0);
+
+    public void Consume(RawMessage message)
     {
-        private readonly List<string> _messages = new List<string>();
-        private AccessSafely _access = AccessSafely.AfterCompleting(0);
-        private readonly AtomicInteger _count = new AtomicInteger(0);
-
-        public void Consume(RawMessage message)
-        {
-            _messages.Add(message.AsTextMessage());
-            _access.WriteUsing("count", 1);
-        }
-        
-        public AccessSafely AfterCompleting(int times)
-        {
-            _access =
-                AccessSafely.AfterCompleting(times)
-                    .WritingWith<int>("count", value => _count.IncrementAndGet())
-                    .ReadingWith("count", () => _count.Get());
-
-            return _access;
-        }
-
-        public IReadOnlyCollection<string> Messages => _messages;
+        _messages.Add(message.AsTextMessage());
+        _access.WriteUsing("count", 1);
     }
+        
+    public AccessSafely AfterCompleting(int times)
+    {
+        _access =
+            AccessSafely.AfterCompleting(times)
+                .WritingWith<int>("count", value => _count.IncrementAndGet())
+                .ReadingWith("count", () => _count.Get());
+
+        return _access;
+    }
+
+    public IReadOnlyCollection<string> Messages => _messages;
 }

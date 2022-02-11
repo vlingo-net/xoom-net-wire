@@ -8,83 +8,82 @@
 using System;
 using Vlingo.Xoom.Actors;
 
-namespace Vlingo.Xoom.Wire.Fdx.Inbound
+namespace Vlingo.Xoom.Wire.Fdx.Inbound;
+
+public class InboundStream__Proxy : IInboundStream
 {
-    public class InboundStream__Proxy : IInboundStream
+    private const string RepresentationConclude0 = "Conclude()";
+    private const string StartRepresentation1 = "Start()";
+    private const string StopRepresentation2 = "Stop()";
+
+    private readonly Actor _actor;
+    private readonly IMailbox _mailbox;
+
+    public InboundStream__Proxy(Actor actor, IMailbox mailbox)
     {
-        private const string RepresentationConclude0 = "Conclude()";
-        private const string StartRepresentation1 = "Start()";
-        private const string StopRepresentation2 = "Stop()";
-
-        private readonly Actor _actor;
-        private readonly IMailbox _mailbox;
-
-        public InboundStream__Proxy(Actor actor, IMailbox mailbox)
-        {
-            _actor = actor;
-            _mailbox = mailbox;
-        }
+        _actor = actor;
+        _mailbox = mailbox;
+    }
         
-        public void Conclude()
+    public void Conclude()
+    {
+        if (!_actor.IsStopped)
         {
-            if (!_actor.IsStopped)
+            Action<IStoppable> consumer = x => x.Conclude();
+            if (_mailbox.IsPreallocated)
             {
-                Action<IStoppable> consumer = x => x.Conclude();
-                if (_mailbox.IsPreallocated)
-                {
-                    _mailbox.Send(_actor, consumer, null, RepresentationConclude0);
-                }
-                else
-                {
-                    _mailbox.Send(new LocalMessage<IStoppable>(_actor, consumer, RepresentationConclude0));
-                }
+                _mailbox.Send(_actor, consumer, null, RepresentationConclude0);
             }
             else
             {
-                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, RepresentationConclude0));
+                _mailbox.Send(new LocalMessage<IStoppable>(_actor, consumer, RepresentationConclude0));
             }
         }
-
-        public bool IsStopped => false;
-
-        public void Start()
+        else
         {
-            if (!_actor.IsStopped)
+            _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, RepresentationConclude0));
+        }
+    }
+
+    public bool IsStopped => false;
+
+    public void Start()
+    {
+        if (!_actor.IsStopped)
+        {
+            Action<IInboundStream> consumer = x => x.Start();
+            if (_mailbox.IsPreallocated)
             {
-                Action<IInboundStream> consumer = x => x.Start();
-                if (_mailbox.IsPreallocated)
-                {
-                    _mailbox.Send(_actor, consumer, null, StartRepresentation1);
-                }
-                else
-                {
-                    _mailbox.Send(new LocalMessage<IInboundStream>(_actor, consumer, StartRepresentation1));
-                }
+                _mailbox.Send(_actor, consumer, null, StartRepresentation1);
             }
             else
             {
-                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, StartRepresentation1));
+                _mailbox.Send(new LocalMessage<IInboundStream>(_actor, consumer, StartRepresentation1));
             }
         }
-
-        public void Stop()
+        else
         {
-            if (!_actor.IsStopped)
+            _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, StartRepresentation1));
+        }
+    }
+
+    public void Stop()
+    {
+        if (!_actor.IsStopped)
+        {
+            Action<IInboundStream> consumer = x => x.Stop();
+            if (_mailbox.IsPreallocated)
             {
-                Action<IInboundStream> consumer = x => x.Stop();
-                if (_mailbox.IsPreallocated)
-                {
-                    _mailbox.Send(_actor, consumer, null, StopRepresentation2);
-                }
-                else
-                {
-                    _mailbox.Send(new LocalMessage<IInboundStream>(_actor, consumer, StopRepresentation2));
-                }
+                _mailbox.Send(_actor, consumer, null, StopRepresentation2);
             }
             else
             {
-                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, StopRepresentation2));
+                _mailbox.Send(new LocalMessage<IInboundStream>(_actor, consumer, StopRepresentation2));
             }
+        }
+        else
+        {
+            _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, StopRepresentation2));
         }
     }
 }

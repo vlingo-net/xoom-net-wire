@@ -8,22 +8,21 @@
 using System.Net.Sockets;
 using Vlingo.Xoom.Wire.Message;
 
-namespace Vlingo.Xoom.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel;
+
+public abstract class SelectionReader
 {
-    public abstract class SelectionReader
+    protected readonly ChannelMessageDispatcher Dispatcher;
+
+    public SelectionReader(ChannelMessageDispatcher dispatcher)
     {
-        protected readonly ChannelMessageDispatcher Dispatcher;
+        Dispatcher = dispatcher;
+    }
 
-        public SelectionReader(ChannelMessageDispatcher dispatcher)
-        {
-            Dispatcher = dispatcher;
-        }
+    public abstract void Read(Socket channel, RawMessageBuilder builder);
 
-        public abstract void Read(Socket channel, RawMessageBuilder builder);
-
-        protected void CloseClientResources(Socket socket)
-        {
-            socket.Close();
-        }
+    protected void CloseClientResources(Socket socket)
+    {
+        socket.Close();
     }
 }

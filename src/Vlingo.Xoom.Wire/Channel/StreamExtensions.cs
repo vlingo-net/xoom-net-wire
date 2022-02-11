@@ -7,23 +7,22 @@
 
 using System.IO;
 
-namespace Vlingo.Xoom.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel;
+
+public static class StreamExtensions
 {
-    public static class StreamExtensions
+    public static void Flip(this Stream buffer)
     {
-        public static void Flip(this Stream buffer)
-        {
-            buffer.SetLength(buffer.Position);
-            buffer.Position = 0;
-        }
+        buffer.SetLength(buffer.Position);
+        buffer.Position = 0;
+    }
 
-        public static bool HasRemaining(this Stream buffer) => buffer.Length - buffer.Position > 0;
+    public static bool HasRemaining(this Stream buffer) => buffer.Length - buffer.Position > 0;
 
-        public static void Clear(this MemoryStream buffer)
-        {
-            buffer.SetLength(0);
-            buffer.Position = 0;
-            buffer.SetLength(buffer.Capacity);
-        }
+    public static void Clear(this MemoryStream buffer)
+    {
+        buffer.SetLength(0);
+        buffer.Position = 0;
+        buffer.SetLength(buffer.Capacity);
     }
 }

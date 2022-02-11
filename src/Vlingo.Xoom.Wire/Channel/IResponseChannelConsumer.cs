@@ -7,10 +7,9 @@
 
 using Vlingo.Xoom.Wire.Message;
 
-namespace Vlingo.Xoom.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel;
+
+public interface IResponseChannelConsumer
 {
-    public interface IResponseChannelConsumer
-    {
-        void Consume(IConsumerByteBuffer buffer);
-    }
+    void Consume(IConsumerByteBuffer buffer);
 }

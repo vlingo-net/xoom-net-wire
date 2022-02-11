@@ -9,53 +9,32 @@ using System.Collections.Generic;
 using Vlingo.Xoom.Wire.Fdx.Outbound;
 using Vlingo.Xoom.Wire.Nodes;
 
-namespace Vlingo.Xoom.Wire.Tests.Fdx.Outbound
+namespace Vlingo.Xoom.Wire.Tests.Fdx.Outbound;
+
+public class MockManagedOutboundChannelProvider : IManagedOutboundChannelProvider
 {
-    public class MockManagedOutboundChannelProvider : IManagedOutboundChannelProvider
+    private readonly Dictionary<Id, IManagedOutboundChannel> _allChannels = new Dictionary<Id, IManagedOutboundChannel>();
+    private readonly IConfiguration _configuration;
+    private readonly Id _localNodeId;
+
+    public MockManagedOutboundChannelProvider(Id localNodeId, IConfiguration configuration)
     {
-        private readonly Dictionary<Id, IManagedOutboundChannel> _allChannels = new Dictionary<Id, IManagedOutboundChannel>();
-        private readonly IConfiguration _configuration;
-        private readonly Id _localNodeId;
+        _localNodeId = localNodeId;
+        _configuration = configuration;
 
-        public MockManagedOutboundChannelProvider(Id localNodeId, IConfiguration configuration)
+        foreach (var node in _configuration.AllNodes)
         {
-            _localNodeId = localNodeId;
-            _configuration = configuration;
-
-            foreach (var node in _configuration.AllNodes)
-            {
-                _allChannels.Add(node.Id, new MockManagedOutboundChannel(node.Id));
-            }
+            _allChannels.Add(node.Id, new MockManagedOutboundChannel(node.Id));
         }
+    }
 
-        public IReadOnlyDictionary<Id, IManagedOutboundChannel> AllOtherNodeChannels
-        {
-            get
-            {
-                var others = new Dictionary<Id, IManagedOutboundChannel>();
-
-                foreach (var node in _configuration.AllNodes)
-                {
-                    if (!node.Id.Equals(_localNodeId))
-                    {
-                        others.Add(node.Id, _allChannels[node.Id]);
-                    }
-                }
-
-                return others;
-            }
-        }
-
-        public IManagedOutboundChannel ChannelFor(Id id)
-        {
-            return _allChannels[id];
-        }
-
-        public IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Node> nodes)
+    public IReadOnlyDictionary<Id, IManagedOutboundChannel> AllOtherNodeChannels
+    {
+        get
         {
             var others = new Dictionary<Id, IManagedOutboundChannel>();
 
-            foreach (var node in nodes)
+            foreach (var node in _configuration.AllNodes)
             {
                 if (!node.Id.Equals(_localNodeId))
                 {
@@ -65,13 +44,33 @@ namespace Vlingo.Xoom.Wire.Tests.Fdx.Outbound
 
             return others;
         }
+    }
 
-        public void Close()
+    public IManagedOutboundChannel ChannelFor(Id id)
+    {
+        return _allChannels[id];
+    }
+
+    public IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Node> nodes)
+    {
+        var others = new Dictionary<Id, IManagedOutboundChannel>();
+
+        foreach (var node in nodes)
         {
+            if (!node.Id.Equals(_localNodeId))
+            {
+                others.Add(node.Id, _allChannels[node.Id]);
+            }
         }
 
-        public void Close(Id id)
-        {
-        }
+        return others;
+    }
+
+    public void Close()
+    {
+    }
+
+    public void Close(Id id)
+    {
     }
 }

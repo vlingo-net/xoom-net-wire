@@ -8,41 +8,40 @@
 using System;
 using Vlingo.Xoom.Actors;
 
-namespace Vlingo.Xoom.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel;
+
+public class ResponseChannelConsumer__Proxy : IResponseChannelConsumer
 {
-    public class ResponseChannelConsumer__Proxy : IResponseChannelConsumer
+    private const string ConsumeRepresentation1 = "Consume(Vlingo.Xoom.Wire.Message.IConsumerByteBuffer)";
+
+    private readonly Actor _actor;
+    private readonly IMailbox _mailbox;
+
+    public ResponseChannelConsumer__Proxy(Actor actor, IMailbox mailbox)
     {
-        private const string ConsumeRepresentation1 = "Consume(Vlingo.Xoom.Wire.Message.IConsumerByteBuffer)";
+        _actor = actor;
+        _mailbox = mailbox;
+    }
 
-        private readonly Actor _actor;
-        private readonly IMailbox _mailbox;
-
-        public ResponseChannelConsumer__Proxy(Actor actor, IMailbox mailbox)
+    public void Consume(Message.IConsumerByteBuffer buffer)
+    {
+        if (!_actor.IsStopped)
         {
-            _actor = actor;
-            _mailbox = mailbox;
-        }
-
-        public void Consume(Message.IConsumerByteBuffer buffer)
-        {
-            if (!_actor.IsStopped)
+            Action<IResponseChannelConsumer> cons128873 = __ => __.Consume(buffer);
+            if (_mailbox.IsPreallocated)
             {
-                Action<IResponseChannelConsumer> cons128873 = __ => __.Consume(buffer);
-                if (_mailbox.IsPreallocated)
-                {
-                    _mailbox.Send(_actor, cons128873, null, ConsumeRepresentation1);
-                }
-                else
-                {
-                    _mailbox.Send(
-                        new LocalMessage<IResponseChannelConsumer>(_actor, cons128873,
-                            ConsumeRepresentation1));
-                }
+                _mailbox.Send(_actor, cons128873, null, ConsumeRepresentation1);
             }
             else
             {
-                _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, ConsumeRepresentation1));
+                _mailbox.Send(
+                    new LocalMessage<IResponseChannelConsumer>(_actor, cons128873,
+                        ConsumeRepresentation1));
             }
+        }
+        else
+        {
+            _actor.DeadLetters?.FailedDelivery(new DeadLetter(_actor, ConsumeRepresentation1));
         }
     }
 }

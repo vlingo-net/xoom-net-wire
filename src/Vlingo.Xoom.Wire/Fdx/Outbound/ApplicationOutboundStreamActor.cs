@@ -9,33 +9,32 @@ using Vlingo.Xoom.Actors;
 using Vlingo.Xoom.Wire.Message;
 using Vlingo.Xoom.Wire.Nodes;
 
-namespace Vlingo.Xoom.Wire.Fdx.Outbound
+namespace Vlingo.Xoom.Wire.Fdx.Outbound;
+
+public class ApplicationOutboundStreamActor : Actor, IApplicationOutboundStream
 {
-    public class ApplicationOutboundStreamActor : Actor, IApplicationOutboundStream
+    private readonly Outbound _outbound;
+
+    public ApplicationOutboundStreamActor(IManagedOutboundChannelProvider provider, ConsumerByteBufferPool byteBufferPool)
     {
-        private readonly Outbound _outbound;
-
-        public ApplicationOutboundStreamActor(IManagedOutboundChannelProvider provider, ConsumerByteBufferPool byteBufferPool)
-        {
-            _outbound = new Outbound(provider, byteBufferPool);
-        }
+        _outbound = new Outbound(provider, byteBufferPool);
+    }
         
-        //===================================
-        // ClusterApplicationOutboundStream
-        //===================================
+    //===================================
+    // ClusterApplicationOutboundStream
+    //===================================
 
-        public void Broadcast(RawMessage message) => _outbound.Broadcast(message);
+    public void Broadcast(RawMessage message) => _outbound.Broadcast(message);
 
-        public void SendTo(RawMessage message, Id targetId) => _outbound.SendTo(message, targetId);
+    public void SendTo(RawMessage message, Id targetId) => _outbound.SendTo(message, targetId);
         
-        //===================================
-        // Stoppable
-        //===================================
+    //===================================
+    // Stoppable
+    //===================================
 
-        public override void Stop()
-        {
-            _outbound.Close();
-            base.Stop();
-        }
+    public override void Stop()
+    {
+        _outbound.Close();
+        base.Stop();
     }
 }

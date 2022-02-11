@@ -7,124 +7,123 @@
 
 using System.IO;
 
-namespace Vlingo.Xoom.Wire.Message
+namespace Vlingo.Xoom.Wire.Message;
+
+public interface IConsumerByteBuffer
 {
-    public interface IConsumerByteBuffer
-    {
-        int Id { get; }
+    int Id { get; }
         
-        void Release();
-        string? Tag { get; set; }
+    void Release();
+    string? Tag { get; set; }
 
-        byte[] ToArray();
+    byte[] ToArray();
         
-        int ArrayOffset { get; }
+    int ArrayOffset { get; }
         
-        bool HasArray { get; }
+    bool HasArray { get; }
 
-        // asByteBuffer
-        // asCharBuffer
-        // asShortBuffer
-        // asIntBuffer
-        // asLongBuffer
-        // asFloatBuffer
-        // asDoubleBuffer
-        Stream AsStream();
+    // asByteBuffer
+    // asCharBuffer
+    // asShortBuffer
+    // asIntBuffer
+    // asLongBuffer
+    // asFloatBuffer
+    // asDoubleBuffer
+    Stream AsStream();
 
-        IConsumerByteBuffer Compact();
+    IConsumerByteBuffer Compact();
         
-        long Capacity { get; }
+    long Capacity { get; }
         
-        long Position();
+    long Position();
         
-        IConsumerByteBuffer Position(long newPosition);
+    IConsumerByteBuffer Position(long newPosition);
         
-        long Limit();
+    long Limit();
         
-        IConsumerByteBuffer Limit(long newLimit);
+    IConsumerByteBuffer Limit(long newLimit);
         
-        IConsumerByteBuffer Mark();
+    IConsumerByteBuffer Mark();
         
-        IConsumerByteBuffer Reset();
+    IConsumerByteBuffer Reset();
         
-        IConsumerByteBuffer Clear();
+    IConsumerByteBuffer Clear();
         
-        IConsumerByteBuffer Flip();
+    IConsumerByteBuffer Flip();
         
-        IConsumerByteBuffer Rewind();
+    IConsumerByteBuffer Rewind();
         
-        long Remaining { get; }
+    long Remaining { get; }
         
-        bool HasRemaining { get; }
+    bool HasRemaining { get; }
         
-        bool IsReadOnly { get; }
+    bool IsReadOnly { get; }
         
-        bool IsDirect { get; }
+    bool IsDirect { get; }
 
-        byte Get();
+    byte Get();
         
-        byte Get(int index);
+    byte Get(int index);
         
-        Stream Get(byte[] destination);
+    Stream Get(byte[] destination);
         
-        Stream Get(byte[] destination, int offset, int length);
+    Stream Get(byte[] destination, int offset, int length);
         
-        char GetChar();
+    char GetChar();
         
-        char GetChar(int index);
+    char GetChar(int index);
         
-        short GetShort();
+    short GetShort();
         
-        short GetShort(int index);
+    short GetShort(int index);
         
-        int GetInt();
+    int GetInt();
         
-        int GetInt(int index);
+    int GetInt(int index);
         
-        long GetLong();
+    long GetLong();
         
-        long GetLong(int index);
+    long GetLong(int index);
         
-        float GetFloat();
+    float GetFloat();
         
-        float GetFloat(int index);
+    float GetFloat(int index);
         
-        double GetDouble();
+    double GetDouble();
         
-        double GetDouble(int index);
+    double GetDouble(int index);
 
-        IConsumerByteBuffer Put(Stream source);
+    IConsumerByteBuffer Put(Stream source);
         
-        IConsumerByteBuffer Put(byte b);
+    IConsumerByteBuffer Put(byte b);
         
-        IConsumerByteBuffer Put(int index, byte b);
+    IConsumerByteBuffer Put(int index, byte b);
         
-        IConsumerByteBuffer Put(byte[] src, int offset, int length);
+    IConsumerByteBuffer Put(byte[] src, int offset, int length);
         
-        IConsumerByteBuffer Put(byte[] src);
+    IConsumerByteBuffer Put(byte[] src);
         
-        IConsumerByteBuffer PutChar(char value);
+    IConsumerByteBuffer PutChar(char value);
         
-        IConsumerByteBuffer PutChar(int index, char value);
+    IConsumerByteBuffer PutChar(int index, char value);
         
-        IConsumerByteBuffer PutShort(short value);
+    IConsumerByteBuffer PutShort(short value);
         
-        IConsumerByteBuffer PutShort(int index, short value);
+    IConsumerByteBuffer PutShort(int index, short value);
         
-        IConsumerByteBuffer PutInt(int value);
+    IConsumerByteBuffer PutInt(int value);
         
-        IConsumerByteBuffer PutInt(int index, int value);
+    IConsumerByteBuffer PutInt(int index, int value);
         
-        IConsumerByteBuffer PutLong(long value);
+    IConsumerByteBuffer PutLong(long value);
         
-        IConsumerByteBuffer PutLong(int index, long value);
+    IConsumerByteBuffer PutLong(int index, long value);
         
-        IConsumerByteBuffer PutFloat(float value);
+    IConsumerByteBuffer PutFloat(float value);
         
-        IConsumerByteBuffer PutFloat(int index, float value);
+    IConsumerByteBuffer PutFloat(int index, float value);
         
-        IConsumerByteBuffer PutDouble(double value);
+    IConsumerByteBuffer PutDouble(double value);
         
-        IConsumerByteBuffer PutDouble(int index, double value);
-    }
+    IConsumerByteBuffer PutDouble(int index, double value);
 }

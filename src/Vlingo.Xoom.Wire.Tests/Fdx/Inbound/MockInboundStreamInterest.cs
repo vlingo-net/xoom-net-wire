@@ -14,35 +14,34 @@ using Vlingo.Xoom.Wire.Nodes;
 using Vlingo.Xoom.Wire.Tests.Message;
 using Xunit.Abstractions;
 
-namespace Vlingo.Xoom.Wire.Tests.Fdx.Inbound
+namespace Vlingo.Xoom.Wire.Tests.Fdx.Inbound;
+
+public class MockInboundStreamInterest : AbstractMessageTool, IInboundStreamInterest
 {
-    public class MockInboundStreamInterest : AbstractMessageTool, IInboundStreamInterest
+    private readonly ITestOutputHelper _output;
+
+    public MockInboundStreamInterest(ITestOutputHelper output)
     {
-        private readonly ITestOutputHelper _output;
+        _output = output;
+        TestResult = new TestResults();
+    }
 
-        public MockInboundStreamInterest(ITestOutputHelper output)
-        {
-            _output = output;
-            TestResult = new TestResults();
-        }
+    public readonly TestResults TestResult;
 
-        public readonly TestResults TestResult;
+    public void HandleInboundStreamMessage(AddressType addressType, RawMessage message)
+    {
+        var textMessage = message.AsTextMessage();
+        TestResult.Messages.Add(textMessage);
+        TestResult.MessageCount.IncrementAndGet();
+        _output.WriteLine($"INTEREST: {textMessage} list-size: {TestResult.Messages.Count} count: {TestResult.MessageCount.Get()} count-down: {TestResult.Happenings - TestResult.UntilStops.TotalWrites}");
+        TestResult.UntilStops.WriteUsing("count", 1);            
+    }
 
-        public void HandleInboundStreamMessage(AddressType addressType, RawMessage message)
-        {
-            var textMessage = message.AsTextMessage();
-            TestResult.Messages.Add(textMessage);
-            TestResult.MessageCount.IncrementAndGet();
-            _output.WriteLine($"INTEREST: {textMessage} list-size: {TestResult.Messages.Count} count: {TestResult.MessageCount.Get()} count-down: {TestResult.Happenings - TestResult.UntilStops.TotalWrites}");
-            TestResult.UntilStops.WriteUsing("count", 1);            
-        }
-
-        public class TestResults
-        {
-            public readonly AtomicInteger MessageCount = new AtomicInteger(0);
-            public readonly ConcurrentBag<string> Messages = new ConcurrentBag<string>();
-            public AccessSafely UntilStops;
-            public int Happenings;
-        }
+    public class TestResults
+    {
+        public readonly AtomicInteger MessageCount = new AtomicInteger(0);
+        public readonly ConcurrentBag<string> Messages = new ConcurrentBag<string>();
+        public AccessSafely UntilStops;
+        public int Happenings;
     }
 }

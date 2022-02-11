@@ -7,10 +7,9 @@
 
 using System.IO;
 
-namespace Vlingo.Xoom.Wire.Fdx.Inbound
+namespace Vlingo.Xoom.Wire.Fdx.Inbound;
+
+public interface IInboundResponder
 {
-    public interface IInboundResponder
-    {
-        void RespondWith(Stream buffer);
-    }
+    void RespondWith(Stream buffer);
 }

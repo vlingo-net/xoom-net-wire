@@ -8,57 +8,56 @@
 using System;
 using System.Collections.Generic;
 
-namespace Vlingo.Xoom.Wire.Nodes
+namespace Vlingo.Xoom.Wire.Nodes;
+
+[Serializable]
+public sealed class Id : IComparable<Id>
 {
-    [Serializable]
-    public sealed class Id : IComparable<Id>
+    public static short UndefinedId => -1;
+    public static Id NoId { get; } = Of(UndefinedId);
+
+    public short Value { get; }
+
+    public Id(int value) : this((short)value)
     {
-        public static short UndefinedId => -1;
-        public static Id NoId { get; } = Of(UndefinedId);
-
-        public short Value { get; }
-
-        public Id(int value) : this((short)value)
-        {
-        }
-
-        public Id(short value) => Value = value;
-
-        public static Id Of(int id) => new Id(id);
-
-        public static Id Of(short id) => new Id(id);
-
-        public IEnumerable<Id> Collected => new[] {this};
-
-        public bool HasNoId => Value == UndefinedId;
-
-        public bool IsValid => !HasNoId;
-
-        public string ValueString() => Value.ToString();
-
-        public bool GreaterThan(Id other) => Value > other.Value;
-
-        public int CompareTo(Id? other)
-        {
-            if (other == null || other.GetType() != typeof(Id))
-            {
-                return 1;
-            }
-            return Value.CompareTo(other.Value);
-        }
-        
-        public override bool Equals(object? obj)
-        {
-            if (obj == null || obj.GetType() != typeof(Id))
-            {
-                return false;
-            }
-
-            return Value.Equals(((Id)obj).Value);
-        }
-
-        public override int GetHashCode() => 31 * Value.GetHashCode();
-
-        public override string ToString() => $"Id[{Value}]";
     }
+
+    public Id(short value) => Value = value;
+
+    public static Id Of(int id) => new Id(id);
+
+    public static Id Of(short id) => new Id(id);
+
+    public IEnumerable<Id> Collected => new[] {this};
+
+    public bool HasNoId => Value == UndefinedId;
+
+    public bool IsValid => !HasNoId;
+
+    public string ValueString() => Value.ToString();
+
+    public bool GreaterThan(Id other) => Value > other.Value;
+
+    public int CompareTo(Id? other)
+    {
+        if (other == null || other.GetType() != typeof(Id))
+        {
+            return 1;
+        }
+        return Value.CompareTo(other.Value);
+    }
+        
+    public override bool Equals(object? obj)
+    {
+        if (obj == null || obj.GetType() != typeof(Id))
+        {
+            return false;
+        }
+
+        return Value.Equals(((Id)obj).Value);
+    }
+
+    public override int GetHashCode() => 31 * Value.GetHashCode();
+
+    public override string ToString() => $"Id[{Value}]";
 }

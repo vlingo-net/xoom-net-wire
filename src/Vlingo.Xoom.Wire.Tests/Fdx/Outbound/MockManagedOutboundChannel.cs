@@ -11,28 +11,27 @@ using Vlingo.Xoom.Wire.Fdx.Outbound;
 using Vlingo.Xoom.Wire.Message;
 using Vlingo.Xoom.Wire.Nodes;
 
-namespace Vlingo.Xoom.Wire.Tests.Fdx.Outbound
-{
-    public class MockManagedOutboundChannel : IManagedOutboundChannel
-    {
-        public MockManagedOutboundChannel(Id id)
-        {
-            Id = id;
-        }
-        
-        public Id Id { get; }
-        
-        public List<string> Writes { get; } = new List<string>();
-        
-        public void Close()
-        {
-            Writes.Clear();
-        }
+namespace Vlingo.Xoom.Wire.Tests.Fdx.Outbound;
 
-        public void Write(Stream buffer)
-        {
-            var message = RawMessage.ReadFromWithHeader(buffer);
-            Writes.Add(message.AsTextMessage());
-        }
+public class MockManagedOutboundChannel : IManagedOutboundChannel
+{
+    public MockManagedOutboundChannel(Id id)
+    {
+        Id = id;
+    }
+        
+    public Id Id { get; }
+        
+    public List<string> Writes { get; } = new List<string>();
+        
+    public void Close()
+    {
+        Writes.Clear();
+    }
+
+    public void Write(Stream buffer)
+    {
+        var message = RawMessage.ReadFromWithHeader(buffer);
+        Writes.Add(message.AsTextMessage());
     }
 }

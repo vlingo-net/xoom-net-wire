@@ -7,11 +7,10 @@
 
 using Vlingo.Xoom.Wire.Message;
 
-namespace Vlingo.Xoom.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel;
+
+public interface IRequestChannelConsumer
 {
-    public interface IRequestChannelConsumer
-    {
-        void CloseWith(RequestResponseContext requestResponseContext, object? data);
-        void Consume(RequestResponseContext context, IConsumerByteBuffer buffer);
-    }
+    void CloseWith(RequestResponseContext requestResponseContext, object? data);
+    void Consume(RequestResponseContext context, IConsumerByteBuffer buffer);
 }

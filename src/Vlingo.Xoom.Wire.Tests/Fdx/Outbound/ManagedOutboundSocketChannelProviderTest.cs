@@ -13,50 +13,49 @@ using Vlingo.Xoom.Wire.Tests.Message;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Vlingo.Xoom.Wire.Tests.Fdx.Outbound
+namespace Vlingo.Xoom.Wire.Tests.Fdx.Outbound;
+
+public class ManagedOutboundSocketChannelProviderTest : AbstractMessageTool
 {
-    public class ManagedOutboundSocketChannelProviderTest : AbstractMessageTool
+    private readonly IEnumerable<Node> _allOtherNodes;
+    private readonly ManagedOutboundSocketChannelProvider _provider;
+
+    [Fact]
+    public void TestProviderProvides()
     {
-        private readonly IEnumerable<Node> _allOtherNodes;
-        private readonly ManagedOutboundSocketChannelProvider _provider;
-
-        [Fact]
-        public void TestProviderProvides()
-        {
-            Assert.Equal(2, _provider.AllOtherNodeChannels.Count);
-            Assert.NotNull(_provider.ChannelFor(Id.Of(2)));
-            Assert.NotNull(_provider.ChannelFor(Id.Of(3)));
-            Assert.Equal(2, _provider.ChannelsFor(_allOtherNodes).Count);
-        }
+        Assert.Equal(2, _provider.AllOtherNodeChannels.Count);
+        Assert.NotNull(_provider.ChannelFor(Id.Of(2)));
+        Assert.NotNull(_provider.ChannelFor(Id.Of(3)));
+        Assert.Equal(2, _provider.ChannelsFor(_allOtherNodes).Count);
+    }
         
-        [Fact]
-        public void TestProviderCloseAllReopen()
-        {
-            _provider.Close();
+    [Fact]
+    public void TestProviderCloseAllReopen()
+    {
+        _provider.Close();
             
-            Assert.NotNull(_provider.ChannelFor(Id.Of(3)));
-            Assert.NotNull(_provider.ChannelFor(Id.Of(2)));
-            Assert.NotNull(_provider.ChannelFor(Id.Of(1)));
+        Assert.NotNull(_provider.ChannelFor(Id.Of(3)));
+        Assert.NotNull(_provider.ChannelFor(Id.Of(2)));
+        Assert.NotNull(_provider.ChannelFor(Id.Of(1)));
             
-            Assert.Equal(2, _provider.AllOtherNodeChannels.Count);
-        }
+        Assert.Equal(2, _provider.AllOtherNodeChannels.Count);
+    }
         
-        [Fact]
-        public void TestProviderCloseOneChannelReopen()
-        {
-            _provider.Close(Id.Of(3));
+    [Fact]
+    public void TestProviderCloseOneChannelReopen()
+    {
+        _provider.Close(Id.Of(3));
             
-            Assert.NotNull(_provider.ChannelFor(Id.Of(3)));
+        Assert.NotNull(_provider.ChannelFor(Id.Of(3)));
             
-            Assert.Equal(2, _provider.AllOtherNodeChannels.Count);
-        }
+        Assert.Equal(2, _provider.AllOtherNodeChannels.Count);
+    }
 
-        public ManagedOutboundSocketChannelProviderTest(ITestOutputHelper output)
-        {
-            var converter = new Converter(output);
-            Console.SetOut(converter);
-            _allOtherNodes = Config.AllOtherNodes(Id.Of(1));
-            _provider = new ManagedOutboundSocketChannelProvider(Config.NodeMatching(Id.Of(1)), AddressType.Op, Config);
-        }
+    public ManagedOutboundSocketChannelProviderTest(ITestOutputHelper output)
+    {
+        var converter = new Converter(output);
+        Console.SetOut(converter);
+        _allOtherNodes = Config.AllOtherNodes(Id.Of(1));
+        _provider = new ManagedOutboundSocketChannelProvider(Config.NodeMatching(Id.Of(1)), AddressType.Op, Config);
     }
 }

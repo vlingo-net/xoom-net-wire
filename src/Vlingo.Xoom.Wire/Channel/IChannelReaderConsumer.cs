@@ -7,10 +7,9 @@
 
 using Vlingo.Xoom.Wire.Message;
 
-namespace Vlingo.Xoom.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel;
+
+public interface IChannelReaderConsumer
 {
-    public interface IChannelReaderConsumer
-    {
-        void Consume(RawMessage message);
-    }
+    void Consume(RawMessage message);
 }

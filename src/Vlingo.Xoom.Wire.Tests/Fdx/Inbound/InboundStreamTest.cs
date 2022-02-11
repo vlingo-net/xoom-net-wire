@@ -14,74 +14,73 @@ using Vlingo.Xoom.Wire.Tests.Channel;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Vlingo.Xoom.Wire.Tests.Fdx.Inbound
+namespace Vlingo.Xoom.Wire.Tests.Fdx.Inbound;
+
+public class InboundStreamTest : IDisposable
 {
-    public class InboundStreamTest : IDisposable
+    private readonly TestActor<IInboundStream> _inboundStream;
+    private readonly MockInboundStreamInterest _interest;
+    private readonly MockChannelReader _reader;
+    private readonly TestWorld _world;
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(5)]
+    public void TestInbound(int happenings)
     {
-        private readonly TestActor<IInboundStream> _inboundStream;
-        private readonly MockInboundStreamInterest _interest;
-        private readonly MockChannelReader _reader;
-        private readonly TestWorld _world;
+        var counter = 0;
+        var accessSafely = AccessSafely.AfterCompleting(happenings)
+            .WritingWith<int>("count", value => counter += value)
+            .ReadingWith("count", () => counter);
+        _interest.TestResult.UntilStops = accessSafely;
+        _interest.TestResult.Happenings = happenings;
 
-        [Theory]
-        [InlineData(1)]
-        [InlineData(5)]
-        public void TestInbound(int happenings)
-        {
-            var counter = 0;
-            var accessSafely = AccessSafely.AfterCompleting(happenings)
-                .WritingWith<int>("count", value => counter += value)
-                .ReadingWith("count", () => counter);
-            _interest.TestResult.UntilStops = accessSafely;
-            _interest.TestResult.Happenings = happenings;
+        ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("count") < 1, _reader);
 
-            ProbeUntilConsumed(() => accessSafely.ReadFrom<int>("count") < 1, _reader);
+        _inboundStream.Actor.Stop();
 
-            _inboundStream.Actor.Stop();
-
-            _interest.TestResult.UntilStops.ReadFromExpecting("count", happenings);
+        _interest.TestResult.UntilStops.ReadFromExpecting("count", happenings);
             
-            var count = 0;
-            var tempArray = _interest.TestResult.Messages.ToArray();
+        var count = 0;
+        var tempArray = _interest.TestResult.Messages.ToArray();
 
-            for (var i = 1; i < _interest.TestResult.Messages.Count + 1; i++)
+        for (var i = 1; i < _interest.TestResult.Messages.Count + 1; i++)
+        {
+            if (tempArray.Contains($"{MockChannelReader.MessagePrefix}{i}"))
             {
-                if (tempArray.Contains($"{MockChannelReader.MessagePrefix}{i}"))
-                {
-                    count++;
-                }
+                count++;
             }
+        }
             
-            Assert.True(_interest.TestResult.MessageCount.Get() > 0);
-            Assert.Equal(count, _reader.ProbeChannelCount.Get());
-        }
+        Assert.True(_interest.TestResult.MessageCount.Get() > 0);
+        Assert.Equal(count, _reader.ProbeChannelCount.Get());
+    }
 
-        public InboundStreamTest(ITestOutputHelper output)
-        {
-            var converter = new Converter(output);
-            Console.SetOut(converter);
+    public InboundStreamTest(ITestOutputHelper output)
+    {
+        var converter = new Converter(output);
+        Console.SetOut(converter);
 
-            _world = TestWorld.Start("test-inbound-stream");
+        _world = TestWorld.Start("test-inbound-stream");
 
-            _interest = new MockInboundStreamInterest(output);
+        _interest = new MockInboundStreamInterest(output);
 
-            _reader = new MockChannelReader();
+        _reader = new MockChannelReader();
             
-            _inboundStream = _world.ActorFor<IInboundStream>(
-                () => new InboundStreamActor(_interest, AddressType.Op, _reader, 10), "test-inbound");
-        }
+        _inboundStream = _world.ActorFor<IInboundStream>(
+            () => new InboundStreamActor(_interest, AddressType.Op, _reader, 10), "test-inbound");
+    }
 
-        public void Dispose()
-        {
-            _world.Terminate();
-        }
+    public void Dispose()
+    {
+        _world.Terminate();
+    }
 
-        private void ProbeUntilConsumed(Func<bool> reading, MockChannelReader reader)
+    private void ProbeUntilConsumed(Func<bool> reading, MockChannelReader reader)
+    {
+        do
         {
-            do
-            {
-                reader.ProbeChannel();
-            } while (reading());
-        }
+            reader.ProbeChannel();
+        } while (reading());
     }
 }

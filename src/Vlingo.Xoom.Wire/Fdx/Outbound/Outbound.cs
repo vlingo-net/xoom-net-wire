@@ -9,91 +9,90 @@ using System.Collections.Generic;
 using Vlingo.Xoom.Wire.Message;
 using Vlingo.Xoom.Wire.Nodes;
 
-namespace Vlingo.Xoom.Wire.Fdx.Outbound
+namespace Vlingo.Xoom.Wire.Fdx.Outbound;
+
+public class Outbound
 {
-    public class Outbound
+    private readonly ConsumerByteBufferPool _pool;
+    private readonly IManagedOutboundChannelProvider _provider;
+
+    public Outbound(IManagedOutboundChannelProvider provider, ConsumerByteBufferPool byteBufferPool)
     {
-        private readonly ConsumerByteBufferPool _pool;
-        private readonly IManagedOutboundChannelProvider _provider;
+        _provider = provider;
+        _pool = byteBufferPool;
+    }
 
-        public Outbound(IManagedOutboundChannelProvider provider, ConsumerByteBufferPool byteBufferPool)
+    public void Broadcast(RawMessage message)
+    {
+        var buffer = _pool.Acquire();
+        Broadcast(BytesFrom(message, buffer));
+    }
+
+    public void Broadcast(IConsumerByteBuffer buffer)
+    {
+        // currently based on configured nodes,
+        // but eventually could be live-node based
+        Broadcast(_provider.AllOtherNodeChannels, buffer);
+    }
+
+    public void Broadcast(IEnumerable<Node> selectNodes, RawMessage message)
+    {
+        var buffer = _pool.Acquire();
+        Broadcast(selectNodes, BytesFrom(message, buffer));
+    }
+
+    public void Broadcast(IEnumerable<Node> selectNodes, IConsumerByteBuffer buffer)
+    {
+        Broadcast(_provider.ChannelsFor(selectNodes), buffer);
+    }
+
+    public IConsumerByteBuffer BytesFrom(RawMessage message, IConsumerByteBuffer buffer)
+    {
+        message.CopyBytesTo(buffer.Clear().AsStream());
+        return buffer.Flip();
+    }
+
+    public void Close() => _provider.Close();
+
+    public void Close(Id id) => _provider.Close(id);
+
+    public void Open(Id id) => _provider.ChannelFor(id);
+
+    public IConsumerByteBuffer PooledByteBuffer() => _pool.Acquire();
+
+    public void SendTo(RawMessage message, Id id)
+    {
+        var buffer = _pool.Acquire();
+        SendTo(BytesFrom(message, buffer), id);
+    }
+
+    public void SendTo(IConsumerByteBuffer buffer, Id id)
+    {
+        try 
         {
-            _provider = provider;
-            _pool = byteBufferPool;
+            Open(id);
+            _provider.ChannelFor(id).Write(buffer.AsStream());
         }
-
-        public void Broadcast(RawMessage message)
+        finally
         {
-            var buffer = _pool.Acquire();
-            Broadcast(BytesFrom(message, buffer));
+            buffer.Release();
         }
+    }
 
-        public void Broadcast(IConsumerByteBuffer buffer)
+    private void Broadcast(IReadOnlyDictionary<Id, IManagedOutboundChannel> channels, IConsumerByteBuffer buffer)
+    {
+        try
         {
-            // currently based on configured nodes,
-            // but eventually could be live-node based
-            Broadcast(_provider.AllOtherNodeChannels, buffer);
-        }
-
-        public void Broadcast(IEnumerable<Node> selectNodes, RawMessage message)
-        {
-            var buffer = _pool.Acquire();
-            Broadcast(selectNodes, BytesFrom(message, buffer));
-        }
-
-        public void Broadcast(IEnumerable<Node> selectNodes, IConsumerByteBuffer buffer)
-        {
-            Broadcast(_provider.ChannelsFor(selectNodes), buffer);
-        }
-
-        public IConsumerByteBuffer BytesFrom(RawMessage message, IConsumerByteBuffer buffer)
-        {
-            message.CopyBytesTo(buffer.Clear().AsStream());
-            return buffer.Flip();
-        }
-
-        public void Close() => _provider.Close();
-
-        public void Close(Id id) => _provider.Close(id);
-
-        public void Open(Id id) => _provider.ChannelFor(id);
-
-        public IConsumerByteBuffer PooledByteBuffer() => _pool.Acquire();
-
-        public void SendTo(RawMessage message, Id id)
-        {
-            var buffer = _pool.Acquire();
-            SendTo(BytesFrom(message, buffer), id);
-        }
-
-        public void SendTo(IConsumerByteBuffer buffer, Id id)
-        {
-            try 
+            var bufferToWrite = buffer.AsStream();
+            foreach (var channel in channels.Values)
             {
-                Open(id);
-                _provider.ChannelFor(id).Write(buffer.AsStream());
-            }
-            finally
-            {
-                buffer.Release();
+                bufferToWrite.Position = 0;
+                channel.Write(bufferToWrite);
             }
         }
-
-        private void Broadcast(IReadOnlyDictionary<Id, IManagedOutboundChannel> channels, IConsumerByteBuffer buffer)
+        finally
         {
-            try
-            {
-                var bufferToWrite = buffer.AsStream();
-                foreach (var channel in channels.Values)
-                {
-                    bufferToWrite.Position = 0;
-                    channel.Write(bufferToWrite);
-                }
-            }
-            finally
-            {
-                buffer.Release();
-            }
+            buffer.Release();
         }
     }
 }

@@ -5,10 +5,9 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-namespace Vlingo.Xoom.Wire.Fdx.Inbound
+namespace Vlingo.Xoom.Wire.Fdx.Inbound;
+
+public interface IInboundClientReference<out T>
 {
-    public interface IInboundClientReference<out T>
-    {
-        T Reference { get; }
-    }
+    T Reference { get; }
 }

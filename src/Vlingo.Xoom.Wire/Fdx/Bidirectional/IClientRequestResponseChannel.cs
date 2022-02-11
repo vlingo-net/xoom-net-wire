@@ -7,9 +7,8 @@
 
 using Vlingo.Xoom.Wire.Channel;
 
-namespace Vlingo.Xoom.Wire.Fdx.Bidirectional
+namespace Vlingo.Xoom.Wire.Fdx.Bidirectional;
+
+public interface IClientRequestResponseChannel : IRequestSenderChannel, IResponseListenerChannel
 {
-    public interface IClientRequestResponseChannel : IRequestSenderChannel, IResponseListenerChannel
-    {
-    }
 }

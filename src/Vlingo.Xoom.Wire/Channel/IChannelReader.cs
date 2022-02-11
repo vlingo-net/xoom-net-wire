@@ -5,14 +5,13 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-namespace Vlingo.Xoom.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel;
+
+public interface IChannelReader
 {
-    public interface IChannelReader
-    {
-        void Close();
-        string Name { get; }
-        int Port { get; }
-        void OpenFor(IChannelReaderConsumer consumer);
-        void ProbeChannel();
-    }
+    void Close();
+    string Name { get; }
+    int Port { get; }
+    void OpenFor(IChannelReaderConsumer consumer);
+    void ProbeChannel();
 }

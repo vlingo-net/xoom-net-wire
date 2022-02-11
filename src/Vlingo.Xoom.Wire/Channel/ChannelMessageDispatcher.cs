@@ -9,44 +9,43 @@ using System;
 using Vlingo.Xoom.Actors;
 using Vlingo.Xoom.Wire.Message;
 
-namespace Vlingo.Xoom.Wire.Channel
+namespace Vlingo.Xoom.Wire.Channel;
+
+public abstract class ChannelMessageDispatcher
 {
-    public abstract class ChannelMessageDispatcher
+    public abstract IChannelReaderConsumer? Consumer { get; }
+
+    public abstract ILogger Logger { get; }
+
+    public abstract string Name { get; }
+
+    public virtual void DispatchMessageFor(RawMessageBuilder? builder)
     {
-        public abstract IChannelReaderConsumer? Consumer { get; }
-
-        public abstract ILogger Logger { get; }
-
-        public abstract string Name { get; }
-
-        public virtual void DispatchMessageFor(RawMessageBuilder? builder)
+        if (builder == null || !builder.HasContent)
         {
-            if (builder == null || !builder.HasContent)
+            return;
+        }
+
+        builder.PrepareContent().Sync();
+
+        while (builder.IsCurrentMessageComplete())
+        {
+            try
             {
-                return;
+                var message = builder.CurrentRawMessage();
+                Logger.Debug($"ChannelMessageDispatcher received and dispatching message '{message.AsTextMessage()}'");
+                Consumer?.Consume(message);
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"Cannot dispatch message for: '{Name}'", e);
             }
 
-            builder.PrepareContent().Sync();
+            builder.PrepareForNextMessage();
 
-            while (builder.IsCurrentMessageComplete())
+            if (builder.HasContent)
             {
-                try
-                {
-                    var message = builder.CurrentRawMessage();
-                    Logger.Debug($"ChannelMessageDispatcher received and dispatching message '{message.AsTextMessage()}'");
-                    Consumer?.Consume(message);
-                }
-                catch (Exception e)
-                {
-                    Logger.Error($"Cannot dispatch message for: '{Name}'", e);
-                }
-
-                builder.PrepareForNextMessage();
-
-                if (builder.HasContent)
-                {
-                    builder.Sync();
-                }
+                builder.Sync();
             }
         }
     }

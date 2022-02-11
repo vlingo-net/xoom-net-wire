@@ -9,27 +9,26 @@ using Vlingo.Xoom.Actors;
 using Vlingo.Xoom.Wire.Message;
 using Vlingo.Xoom.Wire.Nodes;
 
-namespace Vlingo.Xoom.Wire.Fdx.Outbound
+namespace Vlingo.Xoom.Wire.Fdx.Outbound;
+
+public interface IApplicationOutboundStream : IStoppable
 {
-    public interface IApplicationOutboundStream : IStoppable
-    {
-        void Broadcast(RawMessage message);
+    void Broadcast(RawMessage message);
         
-        void SendTo(RawMessage message, Id targetId);
-    }
+    void SendTo(RawMessage message, Id targetId);
+}
 
-    public static class ApplicationOutboundStreamFactory
+public static class ApplicationOutboundStreamFactory
+{
+    public static IApplicationOutboundStream Instance(
+        Stage stage,
+        IManagedOutboundChannelProvider provider,
+        ConsumerByteBufferPool byteBufferPool)
     {
-        public static IApplicationOutboundStream Instance(
-            Stage stage,
-            IManagedOutboundChannelProvider provider,
-            ConsumerByteBufferPool byteBufferPool)
-        {
-            var applicationOutboundStream =
-                stage.ActorFor<IApplicationOutboundStream>(
-                    () => new ApplicationOutboundStreamActor(provider, byteBufferPool), "application-outbound-stream");
+        var applicationOutboundStream =
+            stage.ActorFor<IApplicationOutboundStream>(
+                () => new ApplicationOutboundStreamActor(provider, byteBufferPool), "application-outbound-stream");
 
-            return applicationOutboundStream;
-        }
+        return applicationOutboundStream;
     }
 }

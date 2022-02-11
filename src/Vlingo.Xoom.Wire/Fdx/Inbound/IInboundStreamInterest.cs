@@ -8,10 +8,9 @@
 using Vlingo.Xoom.Wire.Message;
 using Vlingo.Xoom.Wire.Nodes;
 
-namespace Vlingo.Xoom.Wire.Fdx.Inbound
+namespace Vlingo.Xoom.Wire.Fdx.Inbound;
+
+public interface IInboundStreamInterest
 {
-    public interface IInboundStreamInterest
-    {
-        void HandleInboundStreamMessage(AddressType addressType, RawMessage message);
-    }
+    void HandleInboundStreamMessage(AddressType addressType, RawMessage message);
 }

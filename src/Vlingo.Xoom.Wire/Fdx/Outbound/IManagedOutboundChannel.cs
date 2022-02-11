@@ -7,12 +7,11 @@
 
 using System.IO;
 
-namespace Vlingo.Xoom.Wire.Fdx.Outbound
-{
-    public interface IManagedOutboundChannel
-    {
-        void Close();
+namespace Vlingo.Xoom.Wire.Fdx.Outbound;
 
-        void Write(Stream buffer);
-    }
+public interface IManagedOutboundChannel
+{
+    void Close();
+
+    void Write(Stream buffer);
 }

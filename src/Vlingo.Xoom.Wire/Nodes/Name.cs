@@ -7,51 +7,50 @@
 
 using System;
 
-namespace Vlingo.Xoom.Wire.Nodes
+namespace Vlingo.Xoom.Wire.Nodes;
+
+public sealed class Name : IComparable<Name>
 {
-    public sealed class Name : IComparable<Name>
+    public static string NoName => "?";
+    public static Name NoNodeName { get; } = new Name(NoName);
+
+    public static Name Of(string name) => new Name(name);
+        
+    public string Value { get; }
+
+    public Name(string name)
     {
-        public static string NoName => "?";
-        public static Name NoNodeName { get; } = new Name(NoName);
-
-        public static Name Of(string name) => new Name(name);
+        Value = name;
+    }
         
-        public string Value { get; }
+    public bool HasNoName => Value == NoName;
 
-        public Name(string name)
+    public bool SameAs(string name) => Value == name;
+
+    public int CompareTo(Name? other)
+    {
+        if (other == null || other.GetType() != typeof(Name))
         {
-            Value = name;
-        }
-        
-        public bool HasNoName => Value == NoName;
-
-        public bool SameAs(string name) => Value == name;
-
-        public int CompareTo(Name? other)
-        {
-            if (other == null || other.GetType() != typeof(Name))
-            {
-                return 1;
-            }
-
-            return string.Compare(Value, other.Value, StringComparison.Ordinal);
-        }
-        
-        public override bool Equals(object? obj)
-        {
-            if (obj == null || obj.GetType() != typeof(Name))
-            {
-                return false;
-            }
-
-            return Value.Equals(((Name)obj).Value);
+            return 1;
         }
 
-        public override int GetHashCode() => 31 * Value.GetHashCode();
+        return string.Compare(Value, other.Value, StringComparison.Ordinal);
+    }
         
-        public override string ToString()
+    public override bool Equals(object? obj)
+    {
+        if (obj == null || obj.GetType() != typeof(Name))
         {
-            return $"Name[{Value}]";
+            return false;
         }
+
+        return Value.Equals(((Name)obj).Value);
+    }
+
+    public override int GetHashCode() => 31 * Value.GetHashCode();
+        
+    public override string ToString()
+    {
+        return $"Name[{Value}]";
     }
 }

@@ -10,36 +10,35 @@ using Vlingo.Xoom.Wire.Nodes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Vlingo.Xoom.Wire.Tests.Nodes
-{
-    public class AddressTest
-    {
-        [Fact]
-        public void TestAddressCreationState()
-        {
-            var address = Address.From(Host.Of("localhost"), 11111, AddressType.Op);
-            Assert.True(address.IsValid);
-            Assert.False(address.HasNoAddress);
-            Assert.Equal("localhost", address.HostName);
-            Assert.Equal(11111, address.Port);
-            Assert.Equal(AddressType.Op, address.Type);
-        }
-        
-        [Fact]
-        public void TestAddressFromText()
-        {
-            var address = Address.From("localhost:22222", AddressType.App);
-            Assert.True(address.IsValid);
-            Assert.False(address.HasNoAddress);
-            Assert.Equal("localhost", address.HostName);
-            Assert.Equal(22222, address.Port);
-            Assert.Equal(AddressType.App, address.Type);
-        }
+namespace Vlingo.Xoom.Wire.Tests.Nodes;
 
-        public AddressTest(ITestOutputHelper output)
-        {
-            var converter = new Converter(output);
-            Console.SetOut(converter);
-        }
+public class AddressTest
+{
+    [Fact]
+    public void TestAddressCreationState()
+    {
+        var address = Address.From(Host.Of("localhost"), 11111, AddressType.Op);
+        Assert.True(address.IsValid);
+        Assert.False(address.HasNoAddress);
+        Assert.Equal("localhost", address.HostName);
+        Assert.Equal(11111, address.Port);
+        Assert.Equal(AddressType.Op, address.Type);
+    }
+        
+    [Fact]
+    public void TestAddressFromText()
+    {
+        var address = Address.From("localhost:22222", AddressType.App);
+        Assert.True(address.IsValid);
+        Assert.False(address.HasNoAddress);
+        Assert.Equal("localhost", address.HostName);
+        Assert.Equal(22222, address.Port);
+        Assert.Equal(AddressType.App, address.Type);
+    }
+
+    public AddressTest(ITestOutputHelper output)
+    {
+        var converter = new Converter(output);
+        Console.SetOut(converter);
     }
 }

@@ -8,111 +8,110 @@
 using System;
 using Vlingo.Xoom.Common;
 
-namespace Vlingo.Xoom.Wire.Message
-{
-    [Obsolete("Use ConsumerByteBufferPool instead")]
-    public class ByteBufferPool
-    {
-        // TODO: This should be converted to ArrayPool<T>
-        private readonly PooledByteBuffer[] _pool;
-        private readonly int _poolSize;
+namespace Vlingo.Xoom.Wire.Message;
 
-        public ByteBufferPool(int poolSize, int maxBufferSize)
-        {
-            _poolSize = poolSize;
-            _pool = new PooledByteBuffer[poolSize];
+[Obsolete("Use ConsumerByteBufferPool instead")]
+public class ByteBufferPool
+{
+    // TODO: This should be converted to ArrayPool<T>
+    private readonly PooledByteBuffer[] _pool;
+    private readonly int _poolSize;
+
+    public ByteBufferPool(int poolSize, int maxBufferSize)
+    {
+        _poolSize = poolSize;
+        _pool = new PooledByteBuffer[poolSize];
             
-            for (int idx = 0; idx < poolSize; ++idx)
+        for (int idx = 0; idx < poolSize; ++idx)
+        {
+            _pool[idx] = new PooledByteBuffer(idx, maxBufferSize);
+        }
+    }
+
+    public int Available()
+    {
+        // this is not an accurate calculation because the number
+        // of in-use buffers could change before the loop completes
+        // and/or the result is answered.
+        var available = _poolSize;
+    
+        for (var idx = 0; idx < _poolSize; ++idx)
+        {
+            if (_pool[idx].IsInUse())
             {
-                _pool[idx] = new PooledByteBuffer(idx, maxBufferSize);
+                --available;
             }
         }
-
-        public int Available()
-        {
-            // this is not an accurate calculation because the number
-            // of in-use buffers could change before the loop completes
-            // and/or the result is answered.
-            var available = _poolSize;
     
+        return available;
+    }
+        
+    public PooledByteBuffer Access() => AccessFor("untagged");
+
+    public PooledByteBuffer AccessFor(string tag) => AccessFor(tag, int.MaxValue);
+
+    public PooledByteBuffer AccessFor(string tag, int retries)
+    {
+        while (true)
+        {
             for (var idx = 0; idx < _poolSize; ++idx)
             {
-                if (_pool[idx].IsInUse())
+                var buffer = _pool[idx];
+                if (buffer.ClaimUse(tag))
                 {
-                    --available;
-                }
-            }
-    
-            return available;
-        }
-        
-        public PooledByteBuffer Access() => AccessFor("untagged");
-
-        public PooledByteBuffer AccessFor(string tag) => AccessFor(tag, int.MaxValue);
-
-        public PooledByteBuffer AccessFor(string tag, int retries)
-        {
-            while (true)
-            {
-                for (var idx = 0; idx < _poolSize; ++idx)
-                {
-                    var buffer = _pool[idx];
-                    if (buffer.ClaimUse(tag))
-                    {
-                        return buffer;
-                    }
+                    return buffer;
                 }
             }
         }
+    }
         
-        public class PooledByteBuffer : BasicConsumerByteBuffer
+    public class PooledByteBuffer : BasicConsumerByteBuffer
+    {
+        private readonly AtomicBoolean _inUse;
+
+        public PooledByteBuffer(int id, int maxBufferSize) : base(id, maxBufferSize)
         {
-            private readonly AtomicBoolean _inUse;
+            _inUse = new AtomicBoolean(false);
+        }
 
-            public PooledByteBuffer(int id, int maxBufferSize) : base(id, maxBufferSize)
+        public override void Release()
+        {
+            if (!_inUse.Get())
             {
-                _inUse = new AtomicBoolean(false);
+                throw new InvalidOperationException($"Attempt to release unclaimed buffer: {this}");
             }
-
-            public override void Release()
-            {
-                if (!_inUse.Get())
-                {
-                    throw new InvalidOperationException($"Attempt to release unclaimed buffer: {this}");
-                }
                 
-                NotInUse();
-            }
+            NotInUse();
+        }
             
-            public bool IsInUse() => _inUse.Get();
+        public bool IsInUse() => _inUse.Get();
             
-            public bool ClaimUse(string tag)
+        public bool ClaimUse(string tag)
+        {
+            if (_inUse.CompareAndSet(false, true))
             {
-                if (_inUse.CompareAndSet(false, true))
-                {
-                    Tag = tag;
-                    Clear();
-                    return true;
-                }
+                Tag = tag;
+                Clear();
+                return true;
+            }
 
+            return false;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj == null || obj.GetType() != typeof(BasicConsumerByteBuffer))
+            {
                 return false;
             }
 
-            public override bool Equals(object? obj)
-            {
-                if (obj == null || obj.GetType() != typeof(BasicConsumerByteBuffer))
-                {
-                    return false;
-                }
-
-                return Id == ((BasicConsumerByteBuffer) obj).Id;
-            }
-
-            public override int GetHashCode() => 31 * Id.GetHashCode();
-
-            public override string ToString() => $"PooledByteBuffer[id={Id}]";
-
-            private void NotInUse() => _inUse.Set(false);
+            return Id == ((BasicConsumerByteBuffer) obj).Id;
         }
+
+        public override int GetHashCode() => 31 * Id.GetHashCode();
+
+        public override string ToString() => $"PooledByteBuffer[id={Id}]";
+
+        private void NotInUse() => _inUse.Set(false);
     }
 }

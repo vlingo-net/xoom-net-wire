@@ -24,9 +24,11 @@ public sealed class Id : IComparable<Id>
 
     public Id(short value) => Value = value;
 
-    public static Id Of(int id) => new Id(id);
+    public static Id Of(int id) => new(id);
 
-    public static Id Of(short id) => new Id(id);
+    public static Id Of(short id) => new(id);
+    
+    public static Id Of(string id) => Of(short.Parse(id));
 
     public IEnumerable<Id> Collected => new[] {this};
 

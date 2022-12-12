@@ -82,7 +82,7 @@ public static class MessagePartsBuilder
         var opAddress = AddressFromRecord(record, AddressType.Op);
         var appAddress = AddressFromRecord(record, AddressType.App);
 
-        return new Node(id, name, opAddress, appAddress);
+        return new Node(id, name, opAddress, appAddress, false);
     }
 
     public static Id IdFrom(string content)

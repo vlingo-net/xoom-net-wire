@@ -12,22 +12,31 @@ namespace Vlingo.Xoom.Wire.Nodes;
 
 public sealed class Node : IComparable<Node>
 {
-    public static Node NoNode { get; } = new Node(Id.NoId, Name.NoNodeName, Address.NoNodeAddress, Address.NoNodeAddress);
+    public static Node NoNode { get; } = new(
+        Id.NoId,
+        Name.NoNodeName,
+        Address.NoNodeAddress,
+        Address.NoNodeAddress,
+        false);
 
-    public static Node With(Id id, Name name, Host host, int operationalPort, int applicationPort)
+    public static Node With(Id id, Name name, Host host, int operationalPort, int applicationPort) => 
+        With(id, name, host, operationalPort, applicationPort, false);
+
+    public static Node With(Id id, Name name, Host host, int operationalPort, int applicationPort, bool seed)
     {
         var operationalAddress = new Address(host, operationalPort, AddressType.Op);
         var applicationAddress = new Address(host, applicationPort, AddressType.App);
             
-        return new Node(id, name, operationalAddress, applicationAddress);
+        return new Node(id, name, operationalAddress, applicationAddress, seed);
     }
 
-    public Node(Id id, Name name, Address operationalAddress, Address applicationAddress)
+    public Node(Id id, Name name, Address operationalAddress, Address applicationAddress, bool seed)
     {
         Id = id;
         Name = name;
         OperationalAddress = operationalAddress;
         ApplicationAddress = applicationAddress;
+        Seed = seed;
     }
         
     public Id Id { get; }
@@ -37,6 +46,8 @@ public sealed class Node : IComparable<Node>
     public Address OperationalAddress { get; }
         
     public Address ApplicationAddress { get; }
+    
+    public bool Seed { get; }
         
     public IEnumerable<Node> Collected => new[] {this};
 
@@ -98,13 +109,17 @@ public sealed class Node : IComparable<Node>
             Id.Equals(node.Id) &&
             Name.Equals(node.Name) &&
             OperationalAddress.Equals(node.OperationalAddress) &&
-            ApplicationAddress.Equals(node.ApplicationAddress);
+            ApplicationAddress.Equals(node.ApplicationAddress) &&
+            Seed.Equals(node.Seed);
     }
 
-    public override int GetHashCode() => 31 * (Id.GetHashCode() + Name.GetHashCode() + OperationalAddress.GetHashCode() + ApplicationAddress.GetHashCode());
+    public override int GetHashCode() =>
+        31 *
+        (Id.GetHashCode() +
+         Name.GetHashCode() +
+         OperationalAddress.GetHashCode() +
+         ApplicationAddress.GetHashCode() +
+         Seed.GetHashCode());
 
-    public override string ToString()
-    {
-        return $"Node[{Id},{Name},{OperationalAddress},{ApplicationAddress}]";
-    }
+    public override string ToString() => $"Node[{Id},{Name},{OperationalAddress},{ApplicationAddress},{Seed}]";
 }

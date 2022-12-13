@@ -414,7 +414,7 @@ public sealed class SocketChannelSelectionProcessorActor : Actor,
         {
             try
             {
-                return _clientChannel.RemoteEndPoint.ToString();
+                return _clientChannel.RemoteEndPoint?.ToString();
             }
             catch (Exception)
             {

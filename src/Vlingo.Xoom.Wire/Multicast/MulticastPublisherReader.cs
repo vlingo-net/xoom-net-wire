@@ -61,7 +61,7 @@ public class MulticastPublisherReader : ChannelMessageDispatcher, IChannelPublis
         _readChannel.Bind(new IPEndPoint(IPAddress.Any, incomingSocketPort));
         _readChannel.Listen(120);
             
-        _publisherAddress = (IPEndPoint)_readChannel.LocalEndPoint;
+        _publisherAddress = (IPEndPoint)_readChannel.LocalEndPoint!;
             
         _clientReadChannels = new ConcurrentBag<Socket>();
         _socketChannelSelectionReader = new SocketChannelSelectionReader(this, logger);

@@ -15,28 +15,28 @@ public sealed class Node : IComparable<Node>
     public static Node NoNode { get; } = new(
         Id.NoId,
         Name.NoNodeName,
+        false,
         Address.NoNodeAddress,
-        Address.NoNodeAddress,
-        false);
+        Address.NoNodeAddress);
 
     public static Node With(Id id, Name name, Host host, int operationalPort, int applicationPort) => 
-        With(id, name, host, operationalPort, applicationPort, false);
+        With(id, name, host, false, operationalPort, applicationPort);
 
-    public static Node With(Id id, Name name, Host host, int operationalPort, int applicationPort, bool seed)
+    public static Node With(Id id, Name name, Host host, bool seed, int operationalPort, int applicationPort)
     {
         var operationalAddress = new Address(host, operationalPort, AddressType.Op);
         var applicationAddress = new Address(host, applicationPort, AddressType.App);
             
-        return new Node(id, name, operationalAddress, applicationAddress, seed);
+        return new Node(id, name, seed, operationalAddress, applicationAddress);
     }
 
-    public Node(Id id, Name name, Address operationalAddress, Address applicationAddress, bool seed)
+    public Node(Id id, Name name, bool seed, Address operationalAddress, Address applicationAddress)
     {
         Id = id;
         Name = name;
+        Seed = seed;
         OperationalAddress = operationalAddress;
         ApplicationAddress = applicationAddress;
-        Seed = seed;
     }
         
     public Id Id { get; }
@@ -80,6 +80,12 @@ public sealed class Node : IComparable<Node>
         {
             return result;
         }
+        
+        result = Seed.CompareTo(other.Seed);
+        if (result != 0)
+        {
+            return result;
+        }
 
         result = OperationalAddress.CompareTo(other.OperationalAddress);
         if (result != 0)
@@ -108,18 +114,18 @@ public sealed class Node : IComparable<Node>
         return
             Id.Equals(node.Id) &&
             Name.Equals(node.Name) &&
+            Seed.Equals(node.Seed) &&
             OperationalAddress.Equals(node.OperationalAddress) &&
-            ApplicationAddress.Equals(node.ApplicationAddress) &&
-            Seed.Equals(node.Seed);
+            ApplicationAddress.Equals(node.ApplicationAddress);
     }
 
     public override int GetHashCode() =>
         31 *
         (Id.GetHashCode() +
          Name.GetHashCode() +
+         Seed.GetHashCode() +
          OperationalAddress.GetHashCode() +
-         ApplicationAddress.GetHashCode() +
-         Seed.GetHashCode());
+         ApplicationAddress.GetHashCode());
 
-    public override string ToString() => $"Node[{Id},{Name},{OperationalAddress},{ApplicationAddress},{Seed}]";
+    public override string ToString() => $"Node[{Id},{Name},{Seed},{OperationalAddress},{ApplicationAddress}]";
 }

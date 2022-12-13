@@ -12,7 +12,7 @@ using Vlingo.Xoom.Wire.Nodes;
 
 namespace Vlingo.Xoom.Wire.Tests.Nodes;
 
-public class MockConfiguration : IConfiguration
+public class MockConfiguration
 {
     private readonly ISet<Node> _nodes;
 

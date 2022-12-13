@@ -17,16 +17,21 @@ namespace Vlingo.Xoom.Wire.Tests.Fdx.Outbound;
 
 public class ManagedOutboundSocketChannelProviderTest : AbstractMessageTool
 {
-    private readonly IEnumerable<Node> _allOtherNodes;
     private readonly ManagedOutboundSocketChannelProvider _provider;
 
     [Fact]
     public void TestProviderProvides()
     {
-        Assert.Equal(2, _provider.AllOtherNodeChannels.Count);
-        Assert.NotNull(_provider.ChannelFor(Id.Of(2)));
-        Assert.NotNull(_provider.ChannelFor(Id.Of(3)));
-        Assert.Equal(2, _provider.ChannelsFor(_allOtherNodes).Count);
+        Assert.Equal(0, _provider.AllOtherNodeChannels.Count); // channels are lazily created
+
+        var nodeIds = new List<Node>();
+        nodeIds.Add(Config.NodeMatching(Id.Of(2)));
+        nodeIds.Add(Config.NodeMatching(Id.Of(3)));
+
+        Assert.NotNull(_provider.ChannelFor(nodeIds[0]));
+        Assert.NotNull(_provider.ChannelFor(nodeIds[1]));
+
+        Assert.Equal(2, _provider.ChannelsFor(nodeIds).Count);
     }
         
     [Fact]
@@ -34,9 +39,9 @@ public class ManagedOutboundSocketChannelProviderTest : AbstractMessageTool
     {
         _provider.Close();
             
-        Assert.NotNull(_provider.ChannelFor(Id.Of(3)));
-        Assert.NotNull(_provider.ChannelFor(Id.Of(2)));
-        Assert.NotNull(_provider.ChannelFor(Id.Of(1)));
+        Assert.NotNull(_provider.ChannelFor(Config.NodeMatching(Id.Of(3))));
+        Assert.NotNull(_provider.ChannelFor(Config.NodeMatching(Id.Of(2))));
+        Assert.NotNull(_provider.ChannelFor(Config.NodeMatching(Id.Of(1))));
             
         Assert.Equal(2, _provider.AllOtherNodeChannels.Count);
     }
@@ -44,10 +49,17 @@ public class ManagedOutboundSocketChannelProviderTest : AbstractMessageTool
     [Fact]
     public void TestProviderCloseOneChannelReopen()
     {
-        _provider.Close(Id.Of(3));
-            
-        Assert.NotNull(_provider.ChannelFor(Id.Of(3)));
-            
+        var nodeIds = new List<Node>();
+        nodeIds.Add(Config.NodeMatching(Id.Of(3)));
+        nodeIds.Add(Config.NodeMatching(Id.Of(2)));
+
+        Assert.NotNull(_provider.ChannelFor(nodeIds[0])); // channels are created on demand; create the channel
+        _provider.Close(nodeIds[0].Id);
+
+        Assert.NotNull(_provider.ChannelFor(nodeIds[0]));
+        Assert.Equal(1, _provider.AllOtherNodeChannels.Count);
+
+        Assert.NotNull(_provider.ChannelFor(nodeIds[1])); // create the channel
         Assert.Equal(2, _provider.AllOtherNodeChannels.Count);
     }
 
@@ -55,7 +67,6 @@ public class ManagedOutboundSocketChannelProviderTest : AbstractMessageTool
     {
         var converter = new Converter(output);
         Console.SetOut(converter);
-        _allOtherNodes = Config.AllOtherNodes(Id.Of(1));
-        _provider = new ManagedOutboundSocketChannelProvider(Config.NodeMatching(Id.Of(1)), AddressType.Op, Config);
+        _provider = new ManagedOutboundSocketChannelProvider(Config.NodeMatching(Id.Of(1)), AddressType.Op, TestWorld.DefaultLogger);
     }
 }

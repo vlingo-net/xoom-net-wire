@@ -15,18 +15,16 @@ public class ApplicationOutboundStreamActor : Actor, IApplicationOutboundStream
 {
     private readonly Outbound _outbound;
 
-    public ApplicationOutboundStreamActor(IManagedOutboundChannelProvider provider, ConsumerByteBufferPool byteBufferPool)
-    {
+    public ApplicationOutboundStreamActor(IManagedOutboundChannelProvider provider, ConsumerByteBufferPool byteBufferPool) => 
         _outbound = new Outbound(provider, byteBufferPool);
-    }
-        
+
     //===================================
     // ClusterApplicationOutboundStream
     //===================================
 
     public void Broadcast(RawMessage message) => _outbound.Broadcast(message);
 
-    public void SendTo(RawMessage message, Id targetId) => _outbound.SendTo(message, targetId);
+    public void SendTo(RawMessage message, Node targetNode) => _outbound.SendTo(message, targetNode);
         
     //===================================
     // Stoppable

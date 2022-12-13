@@ -5,12 +5,13 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-using Vlingo.Xoom.Wire.Nodes;
+using Vlingo.Xoom.Actors.TestKit;
 using Vlingo.Xoom.Wire.Tests.Nodes;
 
 namespace Vlingo.Xoom.Wire.Tests.Message;
 
 public class AbstractMessageTool
 {
-    protected IConfiguration Config = new MockConfiguration();
+    protected MockConfiguration Config = new MockConfiguration();
+    protected TestWorld TestWorld = TestWorld.Start("xoom-wire-test");
 }

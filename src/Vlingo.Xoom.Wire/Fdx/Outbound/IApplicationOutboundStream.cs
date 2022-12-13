@@ -15,11 +15,8 @@ public interface IApplicationOutboundStream : IStoppable
 {
     void Broadcast(RawMessage message);
         
-    void SendTo(RawMessage message, Id targetId);
-}
-
-public static class ApplicationOutboundStreamFactory
-{
+    void SendTo(RawMessage message, Node targetNode);
+    
     public static IApplicationOutboundStream Instance(
         Stage stage,
         IManagedOutboundChannelProvider provider,

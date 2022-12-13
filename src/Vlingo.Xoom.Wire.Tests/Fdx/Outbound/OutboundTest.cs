@@ -89,7 +89,7 @@ public class OutboundTest : AbstractMessageTool
         _outbound.Broadcast(selectNodes, rawMessage2);
         _outbound.Broadcast(selectNodes, rawMessage3);
             
-        var mock = (MockManagedOutboundChannel) _channelProvider.ChannelFor(Id.Of(3));
+        var mock = (MockManagedOutboundChannel) _channelProvider.ChannelFor(selectNodes[0]);
             
         Assert.Equal(Message1, mock.Writes[0]);
         Assert.Equal(Message2, mock.Writes[1]);
@@ -103,13 +103,13 @@ public class OutboundTest : AbstractMessageTool
         var rawMessage2 = RawMessage.From(0, 0, Message2);
         var rawMessage3 = RawMessage.From(0, 0, Message3);
             
-        var id3 = Id.Of(3);
+        var node3 = Config.NodeMatching(Id.Of(3));
             
-        _outbound.SendTo(rawMessage1, id3);
-        _outbound.SendTo(rawMessage2, id3);
-        _outbound.SendTo(rawMessage3, id3);
+        _outbound.SendTo(rawMessage1, node3);
+        _outbound.SendTo(rawMessage2, node3);
+        _outbound.SendTo(rawMessage3, node3);
             
-        var mock = (MockManagedOutboundChannel)_channelProvider.ChannelFor(Id.Of(3));
+        var mock = (MockManagedOutboundChannel)_channelProvider.ChannelFor(node3);
             
         Assert.Equal(Message1, mock.Writes[0]);
         Assert.Equal(Message2, mock.Writes[1]);
@@ -130,13 +130,13 @@ public class OutboundTest : AbstractMessageTool
         var rawMessage3 = RawMessage.From(0, 0, Message3);
         rawMessage3.AsBuffer((MemoryStream)buffer3.AsStream());
             
-        var id3 = Id.Of(3);
+        var node3 = Config.NodeMatching(Id.Of(3));
             
-        _outbound.SendTo(buffer1, id3);
-        _outbound.SendTo(buffer2, id3);
-        _outbound.SendTo(buffer3, id3);
+        _outbound.SendTo(buffer1, node3);
+        _outbound.SendTo(buffer2, node3);
+        _outbound.SendTo(buffer3, node3);
             
-        var mock = (MockManagedOutboundChannel)_channelProvider.ChannelFor(Id.Of(3));
+        var mock = (MockManagedOutboundChannel)_channelProvider.ChannelFor(node3);
             
         Assert.Equal(Message1, mock.Writes[0]);
         Assert.Equal(Message2, mock.Writes[1]);

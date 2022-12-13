@@ -8,16 +8,17 @@
 using System.Collections.Generic;
 using Vlingo.Xoom.Wire.Fdx.Outbound;
 using Vlingo.Xoom.Wire.Nodes;
+using Vlingo.Xoom.Wire.Tests.Nodes;
 
 namespace Vlingo.Xoom.Wire.Tests.Fdx.Outbound;
 
 public class MockManagedOutboundChannelProvider : IManagedOutboundChannelProvider
 {
-    private readonly Dictionary<Id, IManagedOutboundChannel> _allChannels = new Dictionary<Id, IManagedOutboundChannel>();
-    private readonly IConfiguration _configuration;
+    private readonly Dictionary<Id, IManagedOutboundChannel> _allChannels = new();
+    private readonly MockConfiguration _configuration;
     private readonly Id _localNodeId;
 
-    public MockManagedOutboundChannelProvider(Id localNodeId, IConfiguration configuration)
+    public MockManagedOutboundChannelProvider(Id localNodeId, MockConfiguration configuration)
     {
         _localNodeId = localNodeId;
         _configuration = configuration;
@@ -46,10 +47,7 @@ public class MockManagedOutboundChannelProvider : IManagedOutboundChannelProvide
         }
     }
 
-    public IManagedOutboundChannel ChannelFor(Id id)
-    {
-        return _allChannels[id];
-    }
+    public IManagedOutboundChannel ChannelFor(Node node) => _allChannels[node.Id];
 
     public IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Node> nodes)
     {

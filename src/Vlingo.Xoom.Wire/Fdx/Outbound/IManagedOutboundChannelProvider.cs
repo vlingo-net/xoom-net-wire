@@ -14,7 +14,7 @@ public interface IManagedOutboundChannelProvider
 {
     IReadOnlyDictionary<Id, IManagedOutboundChannel> AllOtherNodeChannels { get; }
         
-    IManagedOutboundChannel ChannelFor(Id id);
+    IManagedOutboundChannel ChannelFor(Node node);
 
     IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Node> nodes);
 

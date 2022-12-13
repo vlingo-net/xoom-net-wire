@@ -56,22 +56,22 @@ public class Outbound
 
     public void Close(Id id) => _provider.Close(id);
 
-    public void Open(Id id) => _provider.ChannelFor(id);
+    public void Open(Node node) => _provider.ChannelFor(node);
 
     public IConsumerByteBuffer PooledByteBuffer() => _pool.Acquire();
 
-    public void SendTo(RawMessage message, Id id)
+    public void SendTo(RawMessage message, Node targetNode)
     {
         var buffer = _pool.Acquire();
-        SendTo(BytesFrom(message, buffer), id);
+        SendTo(BytesFrom(message, buffer), targetNode);
     }
 
-    public void SendTo(IConsumerByteBuffer buffer, Id id)
+    public void SendTo(IConsumerByteBuffer buffer, Node targetNode)
     {
         try 
         {
-            Open(id);
-            _provider.ChannelFor(id).Write(buffer.AsStream());
+            Open(targetNode);
+            _provider.ChannelFor(targetNode).Write(buffer.AsStream());
         }
         finally
         {

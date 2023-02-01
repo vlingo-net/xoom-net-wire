@@ -1,4 +1,4 @@
-// Copyright © 2012-2022 VLINGO LABS. All rights reserved.
+// Copyright © 2012-2023 VLINGO LABS. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the
 // Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -57,6 +57,8 @@ public class Outbound
     public void Close(Id id) => _provider.Close(id);
 
     public void Open(Node node) => _provider.ChannelFor(node);
+    
+    public void Open(Id id) => _provider.ChannelFor(id);
 
     public IConsumerByteBuffer PooledByteBuffer() => _pool.Acquire();
 
@@ -65,6 +67,12 @@ public class Outbound
         var buffer = _pool.Acquire();
         SendTo(BytesFrom(message, buffer), targetNode);
     }
+    
+    public void SendTo(RawMessage message, Id id)
+    {
+        var buffer = _pool.Acquire();
+        SendTo(BytesFrom(message, buffer), id);
+    }
 
     public void SendTo(IConsumerByteBuffer buffer, Node targetNode)
     {
@@ -72,6 +80,19 @@ public class Outbound
         {
             Open(targetNode);
             _provider.ChannelFor(targetNode).Write(buffer.AsStream());
+        }
+        finally
+        {
+            buffer.Release();
+        }
+    }
+    
+    public void SendTo(IConsumerByteBuffer buffer, Id id)
+    {
+        try 
+        {
+            Open(id);
+            _provider.ChannelFor(id).Write(buffer.AsStream());
         }
         finally
         {

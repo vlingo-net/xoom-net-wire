@@ -1,4 +1,4 @@
-// Copyright © 2012-2022 VLINGO LABS. All rights reserved.
+// Copyright © 2012-2023 VLINGO LABS. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the
 // Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -23,6 +23,8 @@ public class ApplicationOutboundStreamActor : Actor, IApplicationOutboundStream
     //===================================
 
     public void Broadcast(RawMessage message) => _outbound.Broadcast(message);
+
+    public void SendTo(RawMessage message, Id targetId) => _outbound.SendTo(message, targetId);
 
     public void SendTo(RawMessage message, Node targetNode) => _outbound.SendTo(message, targetNode);
         

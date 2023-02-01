@@ -1,4 +1,4 @@
-// Copyright © 2012-2022 VLINGO LABS. All rights reserved.
+// Copyright © 2012-2023 VLINGO LABS. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the
 // Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -14,7 +14,9 @@ namespace Vlingo.Xoom.Wire.Fdx.Outbound;
 public interface IApplicationOutboundStream : IStoppable
 {
     void Broadcast(RawMessage message);
-        
+    
+    void SendTo(RawMessage message, Id targetId);
+
     void SendTo(RawMessage message, Node targetNode);
     
     public static IApplicationOutboundStream Instance(

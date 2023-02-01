@@ -1,4 +1,4 @@
-// Copyright © 2012-2022 VLINGO LABS. All rights reserved.
+// Copyright © 2012-2023 VLINGO LABS. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the
 // Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -13,8 +13,10 @@ namespace Vlingo.Xoom.Wire.Fdx.Outbound;
 public interface IManagedOutboundChannelProvider
 {
     IReadOnlyDictionary<Id, IManagedOutboundChannel> AllOtherNodeChannels { get; }
-        
+
     IManagedOutboundChannel ChannelFor(Node node);
+    
+    IManagedOutboundChannel ChannelFor(Id id);
 
     IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Node> nodes);
 

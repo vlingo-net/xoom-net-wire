@@ -1,4 +1,4 @@
-// Copyright © 2012-2022 VLINGO LABS. All rights reserved.
+// Copyright © 2012-2023 VLINGO LABS. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the
 // Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -48,6 +48,8 @@ public class MockManagedOutboundChannelProvider : IManagedOutboundChannelProvide
     }
 
     public IManagedOutboundChannel ChannelFor(Node node) => _allChannels[node.Id];
+    
+    public IManagedOutboundChannel ChannelFor(Id id) => _allChannels[id];
 
     public IReadOnlyDictionary<Id, IManagedOutboundChannel> ChannelsFor(IEnumerable<Node> nodes)
     {
